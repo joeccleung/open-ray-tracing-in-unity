@@ -1,0 +1,14 @@
+﻿#ifndef YELLOW_COMPUTE
+#define YELLOW_COMPUTE
+
+// [shader(Yellow)]
+float3 Yellow(
+   inout Ray ray,
+   RayHit hit,
+   float3 ambientLightUpper
+)
+{
+   return float3(0.6f, 1, 0.2f);
+}
+
+#endif // YELLOW_COMPUTE 

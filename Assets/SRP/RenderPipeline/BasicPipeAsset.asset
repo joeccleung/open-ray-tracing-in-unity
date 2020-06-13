@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea3d2b86ad33c4d10ba1062d1896abd6, type: 3}
+  m_Name: BasicPipeAsset
+  m_EditorClassIdentifier: 
+  m_config:
+  - {fileID: 11400000, guid: dba33ade414fd4d4295b930a2ba9957e, type: 2}
+  clearColor: {r: 0, g: 1, b: 0, a: 1}
+  mainShader: {fileID: 7200000, guid: 0bad11295e9cf4154b4ebf0d97527947, type: 3}
+  useSoftShadow: 1

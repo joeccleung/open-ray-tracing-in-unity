@@ -1,0 +1,32 @@
+﻿#ifndef RAYHIT_COMPUTE
+#define RAYHIT_COMPUTE
+
+#define GT_NONE -1
+#define GT_SPHERE 0
+#define GT_TRIANGLE 3
+
+struct RayHit
+{
+    float3 barycentric;
+    float distance;
+    int geoIndex;  // the unique id for each geo.
+    int geoType;   // 0 is sphere, 1 is triangle
+    float3 position;
+    float3 normal;
+    int matIndex;
+};
+
+RayHit CreateRayHit()
+{
+    RayHit hit;
+    hit.barycentric = float3(1.0f, 0.0f, 0.0f);
+    hit.position = float3(0.0f, 0.0f, 0.0f);
+    hit.distance = 1.#INF;
+    hit.normal = float3(0.0f, 0.0f, 0.0f);
+    hit.geoIndex = -1;
+    hit.geoType = -1;
+    hit.matIndex = -1;
+    return hit;
+}
+
+#endif  // RAYHIT_COMPUTE

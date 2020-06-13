@@ -1,0 +1,29 @@
+// =============================================
+// =        Closet Hit Shader Collection       =
+// = Auto-generated File. Do not edit manually =
+// = Time: Saturday, June 13, 2020 4:40:33 PM =
+// =============================================
+
+#include "Green.compute"
+#include "Phong.compute"
+#include "Red.compute"
+#include "Sin.compute"
+#include "Yellow.compute"
+float3 Shade(inout Ray ray, RayHit hit, float3 ambientLightUpper)
+{
+switch(hit.matIndex)
+{
+case 0:
+   return Green(ray, hit, ambientLightUpper);
+case 1:
+   return Phong(ray, hit, ambientLightUpper);
+case 2:
+   return Red(ray, hit, ambientLightUpper);
+case 3:
+   return SinShader(ray, hit, ambientLightUpper);
+case 4:
+   return Yellow(ray, hit, ambientLightUpper);
+default:
+  return float3(0, 0, 0);
+}
+}

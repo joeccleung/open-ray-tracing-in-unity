@@ -1,0 +1,18 @@
+// =============================================
+// =         Intersect Shader Collection       =
+// = Auto-generated File. Do not edit manually =
+// = Time: Saturday, June 13, 2020 4:40:33 PM =
+// =============================================
+
+#include "IntersectTriangle.compute"
+RayHit Trace(inout Ray ray, int instanceId)
+{
+    RayHit bestHit = CreateRayHit();
+    RayHit curHit;
+    curHit = IntersectTriangle(ray);
+    if (curHit.distance < bestHit.distance)
+    {
+        bestHit = curHit;
+    }
+    return bestHit;
+}

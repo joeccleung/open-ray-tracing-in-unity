@@ -1,0 +1,27 @@
+﻿#ifndef RAY_COMPUTE
+#define RAY_COMPUTE
+
+/*
+The Ray structure
+*/
+
+struct Ray
+{
+    float3 origin;
+    float3 direction;
+};
+
+Ray CreateRay(float3 origin, float3 direction)
+{
+    Ray ray;
+    ray.origin = origin;
+    ray.direction = direction;
+    return ray;
+}
+
+float3 GetPoint(Ray ray, float distance)
+{
+    return ray.origin + ray.direction * distance;
+}
+
+#endif  // RAY_COMPUTE

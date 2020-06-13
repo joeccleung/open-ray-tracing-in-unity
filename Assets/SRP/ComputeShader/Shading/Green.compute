@@ -1,0 +1,16 @@
+﻿#ifndef GREEN_COMPUTE
+#define GREEN_COMPUTE
+
+float4 DemoMat_color;
+
+// [shader(Green)]
+float3 Green(
+   inout Ray ray,
+   RayHit hit,
+   float3 ambientLightUpper
+)
+{
+   return DemoMat_color.rgb;
+}
+
+#endif // GREEN_COMPUTE 

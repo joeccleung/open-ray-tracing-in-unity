@@ -1,0 +1,24 @@
+﻿#ifndef TRACE_COMPUTE
+#define TRACE_COMPUTE
+
+#include "../Ray.compute"
+#include "../RayHit.compute"
+#include "../Geometry/RTTriangle.compute"
+
+RayHit Trace(Ray ray, int _NumOfTriangles, StructuredBuffer<RTTriangle> _Triangles, int excludeGeometry)
+{
+    RayHit bestHit = CreateRayHit();
+    
+    for(int t = 0; t < _NumOfTriangles; t++)
+    {
+        if(_Triangles[t].id == excludeGeometry)
+        {
+            continue;
+        }
+        IntersectTriangle(ray, bestHit, _Triangles[t]);
+    }
+
+    return bestHit;
+}
+
+#endif //TRACE_COMPUTE

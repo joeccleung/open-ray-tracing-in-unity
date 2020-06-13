@@ -1,0 +1,14 @@
+﻿#ifndef RED_COMPUTE
+#define RED_COMPUTE
+
+// [shader(Red)]
+float3 Red(
+   inout Ray ray,
+   RayHit hit,
+   float3 ambientLightUpper
+)
+{
+   return float3(1, 0, 0);
+}
+
+#endif // Red_COMPUTE 

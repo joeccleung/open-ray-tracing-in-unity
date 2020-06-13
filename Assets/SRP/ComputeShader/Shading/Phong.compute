@@ -1,0 +1,15 @@
+﻿#ifndef PHONG_COMPUTE
+#define PHONG_COMPUTE
+
+// [shader(Phong)]
+float3 Phong(
+   inout Ray ray,
+   RayHit hit,
+   float3 ambientLightUpper
+)
+{
+   float3 color = ray.direction;
+   return color;
+}
+
+#endif // PHONG_COMPUTE
