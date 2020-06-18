@@ -1,11 +1,8 @@
-﻿#ifndef IntersectTriangle_COMPUTE
-#define IntersectTriangle_COMPUTE
+﻿#ifndef RTTriangle_Intersect_COMPUTE
+#define RTTriangle_Intersect_COMPUTE
 
-// [intersect(IntersectTriangle)]
-RayHit IntersectTriangle(
-   inout Ray ray,
-   int instanceId
-)
+// [intersect(RTTriangleIntersect)]
+void RTTriangleIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int primitiveId)
 {
     // (1) Here we try to intersect the plane equation of the triangle with the ray and see if there is intersect
     // (2) If there is intersection, calculate the Barycentric coordinates
@@ -16,13 +13,15 @@ RayHit IntersectTriangle(
     // (1d) dot(n, tD) = - d - dot(n, o)
     // (1e) t = - (d + dot(n, o)) / dot(n, D)
     // Here, we need to check |dot(n, D)| < float.Epsilon
+    
+    // if(tri.area < Epsilon)
+    // {
+    //     return;     // The triangle does not exists
+    // }
 
     float Epsilon = 1.19e-07f;
 
-    if(tri.area < Epsilon)
-    {
-        return;     // The triangle does not exists
-    }
+    RTTriangle tri = _Triangles[primitive.geometryInstanceIndex];
     
     float nDotD = dot(tri.normal, ray.direction);
     if(abs(nDotD) < Epsilon)
@@ -65,8 +64,7 @@ RayHit IntersectTriangle(
     bestHit.barycentric = float3(areaABQ / tri.area, areaBCQ / tri.area, areaAQC / tri.area);
     bestHit.position = hit;
     bestHit.distance = t;
-    bestHit.geoType = 1;
-    bestHit.geoIndex = tri.id;
+    bestHit.primitiveId = primitiveId;
 
     if(nDotD > 0)
     {
@@ -76,8 +74,6 @@ RayHit IntersectTriangle(
     {
         bestHit.normal = tri.normal;
     }
-
-    bestHit.matIndex = tri.matIndex;
 }
 
-#endif // Red_COMPUTE 
+#endif

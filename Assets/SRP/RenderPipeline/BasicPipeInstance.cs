@@ -1,10 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering; // Import this namespace for rendering supporting functions
 using UnityEngine.SceneManagement;
 
 namespace OpenRT {
+    using ISIdx = System.Int32;
+
     public class BasicPipeInstance : RenderPipeline // Our own renderer should subclass RenderPipeline
     {
         private readonly static string s_bufferName = "Ray Tracing Render Camera";
@@ -20,7 +23,8 @@ namespace OpenRT {
         private int kIndex = 0;
 
         private SceneParser m_sceneParser;
-        private ComputeBuffer m_triangleBuffer;
+        private ComputeBuffer m_primitiveBuffer;
+        private SortedList<ISIdx, ComputeBuffer> m_geometryInstanceBuffers;
 
         public BasicPipeInstance(Color clearColor, ComputeShader mainShader, List<RenderPipelineConfigObject> allConfig) {
             m_clearColor = clearColor;
@@ -28,6 +32,8 @@ namespace OpenRT {
             m_allConfig = allConfig;
 
             commands = new CommandBuffer { name = s_bufferName };
+
+            m_geometryInstanceBuffers = new SortedList<ISIdx, ComputeBuffer>();
 
             kIndex = mainShader.FindKernel("CSMain");
 
@@ -41,10 +47,10 @@ namespace OpenRT {
             foreach (var camera in cameras) {
                 RunTargetTextureInit(ref m_target);
                 RunClearCanvas(commands, camera);
-                RunLoadGeometryToBuffer(m_sceneParser, ref commands, ref m_triangleBuffer);
+                RunLoadGeometryToBuffer(m_sceneParser, ref commands, ref m_primitiveBuffer, ref m_geometryInstanceBuffers);
                 RunSetCameraToMainShader(camera);
                 RunSetAmbientToMainShader(m_config);
-                RunSetTrianglesToMainShader(ref m_triangleBuffer, m_sceneParser.GetTriangles().Count);
+                RunSetGeometryInstanceToMainShader(ref m_primitiveBuffer, ref m_geometryInstanceBuffers, m_sceneParser.NumberOfPrimitive());
                 RunRayTracing(ref commands, m_target);
                 RunSendTextureToUnity(commands, m_target, renderContext, camera);
                 RunBufferCleanUp();
@@ -136,24 +142,45 @@ namespace OpenRT {
                 camera.backgroundColor);
         }
 
-        private void RunLoadGeometryToBuffer(SceneParser sceneParser, ref CommandBuffer commands, ref ComputeBuffer triangleDataBuffer) {
+        private void RunLoadGeometryToBuffer(
+            SceneParser sceneParser,
+            ref CommandBuffer commands,
+            ref ComputeBuffer primitiveBuffer,
+            ref SortedList<ISIdx, ComputeBuffer> gemoetryInstanceBuffers) {
+
+            LoadBufferWithGeometryInstances(
+                sceneParser,
+                primitiveBuffer : ref primitiveBuffer,
+                gemoetryInstanceBuffers : ref gemoetryInstanceBuffers);
+
             PipelineMaterialToBuffer.MaterialsToBuffer(sceneParser.GetMaterials(),
                 ref commands);
-            LoadBufferWithTriangles(sceneParser,
-                triangleDataBuffer : ref triangleDataBuffer);
         }
 
-        private void LoadBufferWithTriangles(SceneParser sceneParser, ref ComputeBuffer triangleDataBuffer) {
-            int triCount = sceneParser.GetTriangles().Count;
+        private void LoadBufferWithGeometryInstances(
+            SceneParser sceneParser,
+            ref ComputeBuffer primitiveBuffer,
+            ref SortedList<ISIdx, ComputeBuffer> gemoetryInstanceBuffers) {
 
-            triangleDataBuffer?.Release();
+            int primitiveCount = sceneParser.NumberOfPrimitive();
 
-            if (triCount > 0) {
-                triangleDataBuffer = new ComputeBuffer(triCount, RTTriangle_t.GetSize());
-                triangleDataBuffer.SetData(sceneParser.GetTriangles());
-            } else {
-                triangleDataBuffer = new ComputeBuffer(1, RTTriangle_t.GetSize());
+            primitiveBuffer = new ComputeBuffer(primitiveCount, Primitive.GetStride());
+            var primitives = sceneParser.GetPrimitives();
+            primitiveBuffer.SetData(primitives);
+
+            foreach (var item in gemoetryInstanceBuffers) {
+                item.Value?.Release();
             }
+            gemoetryInstanceBuffers.Clear();
+
+            var geoInsIter = sceneParser.GetGeometryInstanceIterator();
+            while (geoInsIter.MoveNext()) {
+                var buffer = new ComputeBuffer(sceneParser.GetGeometryInstancesCount(geoInsIter.Current.Key),
+                    sceneParser.GetGeometryInstancesStride(geoInsIter.Current.Key));
+                buffer.SetData(geoInsIter.Current.Value);
+                gemoetryInstanceBuffers.Add(geoInsIter.Current.Key, buffer);
+            }
+
         }
 
         private void RunSetCameraToMainShader(Camera camera) {
@@ -165,9 +192,23 @@ namespace OpenRT {
             m_mainShader.SetVector("_AmbientLightUpper", config.upperAmbitent);
         }
 
-        private void RunSetTrianglesToMainShader(ref ComputeBuffer buffer, int count) {
-            m_mainShader.SetInt("_NumOfTriangles", count);
-            m_mainShader.SetBuffer(kIndex, "_Triangles", buffer);
+        private void RunSetGeometryInstanceToMainShader(ref ComputeBuffer primitiveBuffer, ref SortedList<ISIdx, ComputeBuffer> geoInsBuffers, int count) {
+
+            m_mainShader.SetInt("_NumOfPrimitive", count);
+            m_mainShader.SetBuffer(kIndex, "_Primitives", primitiveBuffer);
+
+            //TODO: Temp solution for demo RT sphere. Make it dynamic
+            if (geoInsBuffers.Count > 1) {
+                m_mainShader.SetBuffer(kIndex, "_RTSpheres", geoInsBuffers[0]); // FIXME: Hardcoded 0 = Sphere
+                m_mainShader.SetBuffer(kIndex, "_Triangles", geoInsBuffers[1]); // FIXME: Hardcoded 1 = triangle
+            } else {
+                //TODO: Look for solution to avoid assigning empty Structured Buffer
+                ComputeBuffer empty = new ComputeBuffer(1, 1);
+                m_mainShader.SetBuffer(kIndex, "_Triangles", empty);
+                m_mainShader.SetBuffer(kIndex, "_RTSpheres", empty);
+                empty.Release();
+            }
+
         }
 
         private void RunRayTracing(ref CommandBuffer commands, RenderTexture targetTexture) {
@@ -187,7 +228,10 @@ namespace OpenRT {
         }
 
         private void RunBufferCleanUp() {
-            m_triangleBuffer.Release();
+            m_primitiveBuffer.Release();
+            foreach (var item in m_geometryInstanceBuffers) {
+                item.Value?.Release();
+            }
         }
 
         private void RunSendTextureToUnity(CommandBuffer buffer, RenderTexture targeTexture,

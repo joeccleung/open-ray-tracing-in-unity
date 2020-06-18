@@ -1,10 +1,6 @@
 ﻿#include "Ray.compute"
 #include "RayHit.compute"
-#include "RayCasting/Trace.compute"
-#include "Shading/CustomShaderCollection.compute"
-
-// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CSMain
+#include "Primitive/Primitive.compute"
 
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
@@ -14,12 +10,22 @@ RWTexture2D<float4> Result;
 float4x4 _CameraToWorld;
 float4x4 _CameraInverseProjection;
 
-// triangle
-int _NumOfTriangles;
-StructuredBuffer<RTTriangle> _Triangles;
+// Primitive
+int _NumOfPrimitive;
+StructuredBuffer<Primitive> _Primitives;
 
 // Ambient
 float3 _AmbientLightUpper;
+
+#include "RayCasting/Trace.compute"
+#include "Shading/CustomShaderCollection.compute"
+
+
+#include "Custom/Geometry/CustomGeometry.compute"
+
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
 
 
 
@@ -51,16 +57,20 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
    // Trace
    RayHit hit = Trace(ray,
-                  _NumOfTriangles,
-                  _Triangles,
-                  -1);    // Exclude nothing
+                  _NumOfPrimitive);    // Exclude nothing
 
-   float3 result = Shade(
-      ray,
-      hit,
-      _AmbientLightUpper
-   );
-   
+    float3 result;
+    if (hit.primitiveId == -1) {
+        // Miss Shader
+        result = float3(0, 0, 0);
+    } else {
+        // Closet Hit Shader
+        result = Shade(
+            ray,
+            hit,
+            _AmbientLightUpper
+        );
+    }
+    
    Result[id.xy] = float4(result, 1);
-   // Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
 }

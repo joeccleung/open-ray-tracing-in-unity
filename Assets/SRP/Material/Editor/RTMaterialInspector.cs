@@ -10,11 +10,8 @@ namespace OpenRT {
             DrawDefaultInspector();
 
             var m_shaderIndexProp = serializedObject.FindProperty("shaderIndex");
-            var m_intersectShaderIndexProp = serializedObject.FindProperty("intersectShaderIndex");
 
             m_shaderIndexProp.intValue = EditorGUILayout.Popup("Shader", m_shaderIndexProp.intValue, CustomShaderDatabase.Instance.closestHitShaderNameList);
-
-            m_intersectShaderIndexProp.intValue = EditorGUILayout.Popup("Intersect", m_intersectShaderIndexProp.intValue, CustomShaderDatabase.Instance.intersectShaderNameList);
 
             serializedObject.ApplyModifiedProperties();
         }

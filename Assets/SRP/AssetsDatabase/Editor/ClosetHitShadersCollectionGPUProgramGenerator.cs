@@ -3,15 +3,16 @@ using System.Text;
 using UnityEngine;
 
 namespace OpenRT {
+    using GUID = System.String;
     public class ClosetHitShaderCollectionGPUProgramGenerator : IShaderCollectionGPUProgramGenerator {
 
         public const string CUSTOMER_SHADER_COLLECTION_FILENAME = "CustomShaderCollection";
 
-        public bool ExportShaderCollection(List<CustomShaderMeta> shadersImportMetaList) {
+        public bool ExportShaderCollection(SortedList<GUID, CustomShaderMeta> shadersImportMetaList) {
             return WriteToCustomShaderCollection(GenerateShaderCollectionFileContent(shadersImportMetaList));
         }
 
-        public string GenerateShaderCollectionFileContent(List<CustomShaderMeta> shadersImportMetaList) {
+        public string GenerateShaderCollectionFileContent(SortedList<GUID, CustomShaderMeta>  shadersImportMetaList) {
             StringBuilder sb = new StringBuilder();
             // Order is reverse
             sb.AppendLine("// =============================================");
@@ -22,24 +23,26 @@ namespace OpenRT {
             sb.AppendLine();
             // sb.AppendLine("#pragma editor_sync_compilation");
 
-            shadersImportMetaList.ForEach((shader) => {
-                var relPath = GPUMainProgramPathProvider.RelativeToGPUMain(shader.absPath);
+            foreach (var kvp in shadersImportMetaList) {
+                var relPath = GPUMainProgramPathProvider.RelativeToGPUMain(kvp.Value.absPath);
                 sb.AppendLine($"#include \"{relPath}\"");
-            });
+            }
 
             sb.AppendLine("float3 Shade(inout Ray ray, RayHit hit, float3 ambientLightUpper)");
             sb.AppendLine("{");
             // TODO: Determine which kind of switch attribute works
             // https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-switch
-            sb.AppendLine("switch(hit.matIndex)");
+            sb.AppendLine("switch(_Primitives[hit.primitiveId].materialIndex)");
             sb.AppendLine("{");
 
-            for (int s = 0; s < shadersImportMetaList.Count; s++) {
-                sb.AppendLine($"case {s}:");
-                sb.AppendLine($"   return {shadersImportMetaList[s].name}(ray, hit, ambientLightUpper);");
+            int index = 0;
+            foreach (var kvp in shadersImportMetaList) {
+                sb.AppendLine($"case {index}:");
+                sb.AppendLine($"   return {kvp.Value.name}(ray, hit, ambientLightUpper);");
+                index++;
             }
             sb.AppendLine($"default:");
-            sb.AppendLine($"  return float3(0, 0, 0);");
+            sb.AppendLine($"  return float3(0, 1, 1);");
 
             sb.AppendLine("}");
             sb.AppendLine("}");

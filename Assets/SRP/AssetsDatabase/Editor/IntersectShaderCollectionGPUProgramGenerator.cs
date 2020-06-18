@@ -3,16 +3,18 @@ using System.Text;
 using UnityEngine;
 
 namespace OpenRT {
+    using GUID = System.String;
+
     public class IntersectShaderCollectionGPUProgramGenerator : IShaderCollectionGPUProgramGenerator {
 
         public const string CUSTOMER_SHADER_COLLECTION_DIR = "Assets/SRP/ComputeShader/Intersect/";
         public const string CUSTOMER_SHADER_COLLECTION_FILENAME = "IntersectShaderCollection";
 
-        public bool ExportShaderCollection(List<CustomShaderMeta> shadersImportMetaList) {
+        public bool ExportShaderCollection(SortedList<GUID, CustomShaderMeta> shadersImportMetaList) {
             return WriteToCustomShaderCollection(GenerateShaderCollectionFileContent(shadersImportMetaList));
         }
 
-        public string GenerateShaderCollectionFileContent(List<CustomShaderMeta> shadersImportMetaList) {
+        public string GenerateShaderCollectionFileContent(SortedList<GUID, CustomShaderMeta> shadersImportMetaList) {
             StringBuilder sb = new StringBuilder();
             // Order is reverse
             sb.AppendLine("// =============================================");
@@ -23,17 +25,17 @@ namespace OpenRT {
             sb.AppendLine();
             // sb.AppendLine("#pragma editor_sync_compilation");
 
-            shadersImportMetaList.ForEach((shader) => {
-                var relPath = shader.absPath.Replace(CUSTOMER_SHADER_COLLECTION_DIR, "");
+            foreach (var kvp in shadersImportMetaList) {
+                var relPath = kvp.Value.absPath.Replace(CUSTOMER_SHADER_COLLECTION_DIR, "");
                 sb.AppendLine($"#include \"{relPath}\"");
-            });
+            }
 
             sb.AppendLine("RayHit Trace(inout Ray ray, int instanceId)");
             sb.AppendLine("{");
             sb.AppendLine("    RayHit bestHit = CreateRayHit();");
             sb.AppendLine("    RayHit curHit;");
-            for (int s = 0; s < shadersImportMetaList.Count; s++) {
-                sb.AppendLine($"    curHit = {shadersImportMetaList[s].name}(ray);");
+            foreach (var kvp in shadersImportMetaList) {
+                sb.AppendLine($"    curHit = {kvp.Value.name}(ray);");
                 sb.AppendLine($"    if (curHit.distance < bestHit.distance)");
                 sb.AppendLine("    {");
                 sb.AppendLine($"        bestHit = curHit;");

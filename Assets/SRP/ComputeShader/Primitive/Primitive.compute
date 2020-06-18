@@ -1,0 +1,13 @@
+﻿#ifndef PRIMITIVE_COMPUTE
+#define PRIMITIVE_COMPUTE
+
+struct Primitive
+{
+    int geometryIndex;
+    int geometryInstanceIndex;
+    int materialIndex;
+    int transformIndex;
+};
+
+
+#endif

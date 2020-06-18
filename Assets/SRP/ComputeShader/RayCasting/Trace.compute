@@ -3,19 +3,15 @@
 
 #include "../Ray.compute"
 #include "../RayHit.compute"
-#include "../Geometry/RTTriangle.compute"
+#include "../Custom/Geometry/CustomGeometry.compute"
 
-RayHit Trace(Ray ray, int _NumOfTriangles, StructuredBuffer<RTTriangle> _Triangles, int excludeGeometry)
+RayHit Trace(Ray ray, int _NumOfPrimitive)
 {
     RayHit bestHit = CreateRayHit();
     
-    for(int t = 0; t < _NumOfTriangles; t++)
+    for(int t = 0; t < _NumOfPrimitive; t++)
     {
-        if(_Triangles[t].id == excludeGeometry)
-        {
-            continue;
-        }
-        IntersectTriangle(ray, bestHit, _Triangles[t]);
+        IntersectByGeometry(ray, bestHit, t);
     }
 
     return bestHit;

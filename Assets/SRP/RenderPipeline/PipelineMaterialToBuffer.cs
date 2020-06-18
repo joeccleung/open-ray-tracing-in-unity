@@ -8,11 +8,11 @@ namespace OpenRT {
 
         public static void MaterialsToBuffer(in List<RTMaterial> materials, ref CommandBuffer buffer) {
             foreach (var mat in materials) {
-                MaterialToBuffer(material: mat, buffer: ref buffer);
+                MaterialToBuffer(material: mat, command: ref buffer);
             }
         }
 
-        public static void MaterialToBuffer(in RTMaterial material, ref CommandBuffer buffer) {
+        public static void MaterialToBuffer(in RTMaterial material, ref CommandBuffer command) {
             string matName = material.GetType().Name;
 
             var fields = material.GetType().GetFields(); // TODO: Later we may want to decide to include both public fields and private fields
@@ -21,15 +21,15 @@ namespace OpenRT {
                 string fieldName = $"{matName}_{field.Name}";
                 switch (field.GetValue(material)) {
                     case Color c:
-                        buffer.SetGlobalColor(name: fieldName, value: c);
+                        command.SetGlobalColor(name: fieldName, value: c);
                         break;
 
                     case int i:
-                        buffer.SetGlobalInt(name: fieldName, value: i);
+                        command.SetGlobalInt(name: fieldName, value: i);
                         break;
 
                     case float f:
-                        buffer.SetGlobalFloat(name: fieldName, value: f);
+                        command.SetGlobalFloat(name: fieldName, value: f);
                         break;
 
                     case Texture2D t:
@@ -37,15 +37,15 @@ namespace OpenRT {
                         break;
 
                     case Vector2 v2:
-                        buffer.SetGlobalVector(name: fieldName, value: v2);
+                        command.SetGlobalVector(name: fieldName, value: v2);
                         break;
 
                     case Vector3 v3:
-                        buffer.SetGlobalVector(name: fieldName, value: v3);
+                        command.SetGlobalVector(name: fieldName, value: v3);
                         break;
 
                     case Vector4 v4:
-                        buffer.SetGlobalVector(name: fieldName, value: v4);
+                        command.SetGlobalVector(name: fieldName, value: v4);
                         break;
                 }
             }

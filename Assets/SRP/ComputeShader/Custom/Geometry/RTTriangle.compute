@@ -1,0 +1,15 @@
+﻿#ifndef CUSTOM_RTTRIANGLE_COMPUTE
+#define CUSTOM_RTTRIANGLE_COMPUTE
+
+struct RTTriangle
+{
+    // int id;
+    float3 vertices[3];
+    float3 normal;
+    float planeD;
+    float area;
+    // int isDoubleSide;
+    // int matIndex;
+};
+
+#endif

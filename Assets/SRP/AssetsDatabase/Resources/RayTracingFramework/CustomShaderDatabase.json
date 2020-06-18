@@ -1,47 +1,42 @@
 {
-  "intersect": {
-    "afa270eb-1456-4476-8c9b-0595136bc4bc": {
-      "name": "IntersectTriangle",
-      "absPath": "Assets/SRP/ComputeShader/Intersect/IntersectTriangle.compute",
-      "shaderType": 3
+    "intersect": {
+        "f7bd7caa-56c2-4494-8c6a-97240d594fa4": {
+            "name": "RTTriangleIntersect",
+            "absPath": "Assets/SRP/ComputeShader/Custom/Geometry/RTTriangleIntersect.compute",
+            "shaderType": 3
+        },
+        "75adbc1b-9bc6-424a-919d-0bb40827bc61": {
+            "name": "RTSphereIntersect",
+            "absPath": "Assets/SRP/ComputeShader/Custom/Geometry/RTSphereIntersect.compute",
+            "shaderType": 3
+        }
     },
-    "92694636-db8b-4be2-8127-5ce67464bf4e": {
-      "name": "IntersectTriangle",
-      "absPath": "Assets/SRP/ComputeShader/Intersect/IntersectTriangle.compute",
-      "shaderType": 3
+    "closetHit": {
+        "39feb2bd-5273-4001-be13-a9b18abc1368": {
+            "name": "Phong",
+            "absPath": "Assets/SRP/ComputeShader/Shading/Phong.compute",
+            "shaderType": 0
+        },
+        "1a245b97-ee6f-4385-936d-6d8529111bfe": {
+            "name": "Green",
+            "absPath": "Assets/SRP/ComputeShader/Shading/Green.compute",
+            "shaderType": 0
+        },
+        "e8ef6fe3-1424-43d2-86b9-be368b8f6cc4": {
+            "name": "SinShader",
+            "absPath": "Assets/SRP/ComputeShader/Shading/Sin.compute",
+            "shaderType": 0
+        },
+        "9d90d5ac-7fc0-4ad7-8e4b-fbf26bce6312": {
+            "name": "Yellow",
+            "absPath": "Assets/SRP/ComputeShader/Shading/Yellow.compute",
+            "shaderType": 0
+        },
+        "d125b454-8242-4c6a-b62c-beca72fa4d95": {
+            "name": "Red",
+            "absPath": "Assets/SRP/ComputeShader/Shading/Red.compute",
+            "shaderType": 0
+        }
     },
-    "6ee90a9f-c68e-4e36-b48a-c7e1e9e339d8": {
-      "name": "IntersectTriangle",
-      "absPath": "Assets/SRP/ComputeShader/Intersect/IntersectTriangle.compute",
-      "shaderType": 3
-    }
-  },
-  "closetHit": {
-    "39feb2bd-5273-4001-be13-a9b18abc1368": {
-      "name": "Phong",
-      "absPath": "Assets/SRP/ComputeShader/Shading/Phong.compute",
-      "shaderType": 0
-    },
-    "1a245b97-ee6f-4385-936d-6d8529111bfe": {
-      "name": "Green",
-      "absPath": "Assets/SRP/ComputeShader/Shading/Green.compute",
-      "shaderType": 0
-    },
-    "e8ef6fe3-1424-43d2-86b9-be368b8f6cc4": {
-      "name": "SinShader",
-      "absPath": "Assets/SRP/ComputeShader/Shading/Sin.compute",
-      "shaderType": 0
-    },
-    "9d90d5ac-7fc0-4ad7-8e4b-fbf26bce6312": {
-      "name": "Yellow",
-      "absPath": "Assets/SRP/ComputeShader/Shading/Yellow.compute",
-      "shaderType": 0
-    },
-    "d125b454-8242-4c6a-b62c-beca72fa4d95": {
-      "name": "Red",
-      "absPath": "Assets/SRP/ComputeShader/Shading/Red.compute",
-      "shaderType": 0
-    }
-  },
-  "lights": {}
+    "lights": {}
 }

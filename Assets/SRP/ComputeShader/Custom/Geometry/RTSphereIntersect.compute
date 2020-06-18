@@ -1,0 +1,75 @@
+﻿#ifndef RTSphere_Intersect_Compute
+#define RTSphere_Intersect_Compute
+
+// [intersect(RTSphereIntersect)]
+void RTSphereIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int primitiveId)
+{
+    // The ray equation in from of (ray.origin) + (distance travelled, d) * (ray.direction) = (the contact point)   Equ(1)
+    // The sphere equation in form of [|(contact point) - (center; sphere.xyz)|]^2 = (radius; sphere.w)^2.0f          Equ(2)
+
+    // Step 1: Define
+    // float3 oriToCtr = sphere.xyz - ray.origin;    
+    // float d = dot(ray.direction, oriToCtr); // Vector projection to get initial distance travelled
+
+    // Equ(1) --> Equ(2)
+    // [|(ray.origin) + (d)*(ray.direction)- (sphere.xyz)|]^2 - (sphere.w)^2 = 0
+    // (ray.direction)^2*(d)^2 + 2(ray.direction)*(ray.origin-sphere.xyz)*(d) + (ray.origin-sphere.xyz)^2  - (sphere.w)^2 = 0.0f    Equ(3)
+
+    // Step 2: Discriminant
+    // We calculate discriminant to determine whether there is real roots, thus, intersection
+    // Check delta: b^2 - 4ac
+    // [2(ray.origin-sphere.xyz)*(ray.direction)]^2 - 4((ray.direction)^2)*((ray.origin - sphere.xyz)^2 - (sphere.w)^2)   Equ(4)
+    //
+    // Since (ray.direction) is a unit vector, (ray.direction)^2 = 1.0f     Equ(5)
+    // Equ(5) --> Equ(4)
+    //
+    // 4[(ray.origin-sphere.xyz)*(ray.direction)]^2 - 4((ray.origin - sphere.xyz)^2 - (sphere.w)^2)
+    // 4*dot(ray.direction, -oriToCtr)^2 - 4*dot(-oriToCtr, -oriToCtr)^2 + 4*(sphere.w)^2
+    // d * d - dot(oriToCtr, oriToCtr) + (sphere.w) * (sphere.w)    Note that the 4 is obmitted as it is taken out
+    //
+    // If discriminant < 0, then there is no intersection
+    //
+
+    // Step 3: Calculate hit distance
+    // If there is intersection(s), we calculate the actual distance travelled by solving d
+    // d = [-b +/- sqrt(b^2-4ac)] / 2a
+    //
+    // From Equ(5), we know that 2a = 2 * (ray.direction) ^ 2 = 2
+    //
+    // hitDis = -(ray.direction * (ray.origin - sphere.xyz)) +/- disSqrt
+    // hitDis = -dot(ray.direction, -oriToCtr) +/- disSqrt
+    // hitDis = d +/- disSqrt
+    //
+    // Because hitDis cannot be negative, and we want the closest hit, so we take the least positive value of d +/- disSqrt
+
+    // Step 4: Update best hit distance
+    //
+
+    // // Step 1: Define
+    RTSphere sphere = _RTSpheres[primitive.geometryInstanceIndex];;
+    float3 oriToCtr = sphere.center - ray.origin;
+    float d = dot(ray.direction, oriToCtr);
+
+    // Step 2: Discriminant
+    float discriminant = d * d - dot(-oriToCtr, -oriToCtr) + sphere.radius * sphere.radius;
+    if(discriminant < 0)
+    {
+        return;
+    }
+
+    // Step 3: Calculate hit distance
+    float disSqrt = sqrt(discriminant);
+    float hitDis = d - disSqrt > 0 ? d - disSqrt : d + disSqrt;     // If d - disSqrt > 0, then d + disSqrt must be greater than d - disSqrt, we take the least positive value; Otherwise, we take d + disSqrt
+
+    // Step 4: Update best hit distance
+    if (hitDis > 0 && hitDis < bestHit.distance)
+    {
+        bestHit.distance = hitDis;
+        bestHit.primitiveId = primitiveId;
+        bestHit.position = ray.origin + hitDis * ray.direction;
+        bestHit.normal = normalize(bestHit.position - sphere.center);
+        // bestHit.matIndex = sphere.matIndex;
+    }
+}
+
+#endif

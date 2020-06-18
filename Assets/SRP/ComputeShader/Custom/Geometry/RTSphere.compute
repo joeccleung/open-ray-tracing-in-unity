@@ -1,0 +1,12 @@
+﻿#ifndef RTSPHERE_COMPUTE
+#define RTSPHERE_COMPUTE
+
+struct RTSphere
+{
+    float3 center;
+    float radius;
+};
+
+
+
+#endif  // RTSPHERE_COMPUTE
