@@ -50,6 +50,7 @@ namespace OpenRT {
                 RunLoadGeometryToBuffer(m_sceneParser, ref commands, ref m_primitiveBuffer, ref m_geometryInstanceBuffers);
                 RunSetCameraToMainShader(camera);
                 RunSetAmbientToMainShader(m_config);
+                RunSetRayGenerationShader(m_config.rayGenId);
                 RunSetGeometryInstanceToMainShader(ref m_primitiveBuffer, ref m_geometryInstanceBuffers, m_sceneParser.NumberOfPrimitive());
                 RunRayTracing(ref commands, m_target);
                 RunSendTextureToUnity(commands, m_target, renderContext, camera);
@@ -185,11 +186,16 @@ namespace OpenRT {
 
         private void RunSetCameraToMainShader(Camera camera) {
             m_mainShader.SetMatrix("_CameraToWorld", camera.cameraToWorldMatrix);
+            m_mainShader.SetVector("_CameraForward", camera.transform.forward);
             m_mainShader.SetMatrix("_CameraInverseProjection", camera.projectionMatrix.inverse);
         }
 
         private void RunSetAmbientToMainShader(RenderPipelineConfigObject config) {
             m_mainShader.SetVector("_AmbientLightUpper", config.upperAmbitent);
+        }
+
+        private void RunSetRayGenerationShader(int rayGenId) {
+            m_mainShader.SetInt("_RayGenID", rayGenId);
         }
 
         private void RunSetGeometryInstanceToMainShader(ref ComputeBuffer primitiveBuffer, ref SortedList<ISIdx, ComputeBuffer> geoInsBuffers, int count) {

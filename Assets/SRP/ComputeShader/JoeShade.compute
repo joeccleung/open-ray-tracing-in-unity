@@ -1,4 +1,4 @@
-﻿#include "Ray.compute"
+#include "Ray.compute"
 #include "RayHit.compute"
 #include "Primitive/Primitive.compute"
 
@@ -7,8 +7,12 @@
 RWTexture2D<float4> Result;
 
 // Camera
+float4 _CameraForward;
 float4x4 _CameraToWorld;
 float4x4 _CameraInverseProjection;
+
+// Ray Generation
+int _RayGenID;
 
 // Primitive
 int _NumOfPrimitive;
@@ -18,59 +22,53 @@ StructuredBuffer<Primitive> _Primitives;
 float3 _AmbientLightUpper;
 
 #include "RayCasting/Trace.compute"
-#include "Shading/CustomShaderCollection.compute"
 
+#include "Custom/RayGeneration/CustomRayGeneration.compute"
 
 #include "Custom/Geometry/CustomGeometry.compute"
+
+
+#include "Shading/CustomShaderCollection.compute"
 
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
 
-
-
-Ray CreateCameraRay(float2 uv)
-{
-    // Transform the camera origin to world space
-    float3 origin = mul(_CameraToWorld, float4(0.0f, 0.0f, 0.0f, 1.0f)).xyz;
-    
-    // Invert the perspective projection of the view-space position
-    float3 direction = mul(_CameraInverseProjection, float4(uv, 0.0f, 1.0f)).xyz;
-    // Transform the direction from camera to world space and normalize
-    direction = mul(_CameraToWorld, float4(direction, 0.0f)).xyz;
-    direction = normalize(direction);
-    return CreateRay(origin, direction);
-}
-
-
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-   // Get the dimensions of the RenderTexture
-   uint width, height;
-   Result.GetDimensions(width, height);
-   
-   // Transform pixel to [-1,1] range
-   float2 uv = float2((id.xy + float2(0.5f, 0.5f)) / float2(width, height) * 2.0f - 1.0f);
-   // Get a ray for the UVs
-   Ray ray = CreateCameraRay(uv);
+    // Get the dimensions of the RenderTexture
+    uint width, height;
+    Result.GetDimensions(width, height);
 
-   // Trace
-   RayHit hit = Trace(ray,
-                  _NumOfPrimitive);    // Exclude nothing
+    uint numberOfRay = NumberOfRay(width, height, id, _RayGenID);
 
-    float3 result;
-    if (hit.primitiveId == -1) {
-        // Miss Shader
-        result = float3(0, 0, 0);
-    } else {
-        // Closet Hit Shader
-        result = Shade(
-            ray,
-            hit,
-            _AmbientLightUpper
-        );
+    float4 finalColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+    for (uint i = 0; i < numberOfRay; i++) {
+        Ray ray = RayGeneration(width, height, id, _RayGenID, i);
+
+        // Trace
+        RayHit hit = Trace(ray,
+                        _NumOfPrimitive);    // Exclude nothing
+
+            float3 result;
+            if (hit.primitiveId == -1) {
+                // Miss Shader
+                result = float3(0, 0, 0);
+            } else {
+                // Closet Hit Shader
+                result = Shade(
+                    ray,
+                    hit,
+                    _AmbientLightUpper
+                );
+            }
+            
+        finalColor += float4(result, 1) / numberOfRay;
     }
     
-   Result[id.xy] = float4(result, 1);
+    Result[id.xy] = finalColor;
+
+
 }
