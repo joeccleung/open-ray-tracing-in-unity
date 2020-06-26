@@ -21,6 +21,8 @@ namespace OpenRT {
 
         [UnityEngine.Range(0, 0.05f)] public float fogFactor = 0;
 
+        public int rayGenId = 0;
+
         private void Awake() {
             if (skybox == null) {
                 skybox = new Texture2D(2, 2);

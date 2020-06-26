@@ -1,0 +1,40 @@
+﻿#ifndef Custom_RayGeneration_Collection_Compute
+#define Custom_RayGeneration_Collection_Compute
+
+#include "CustomPinCameraRayGenShader.compute"
+#include "CustomPinCameraSSRayGenShader.compute"
+#include "CustomOrthographicRayGenShader.compute"
+
+Ray RayGeneration(uint width, uint height, uint3 id, int rayGenId, uint iter) {
+    switch(rayGenId) {
+        case 0:
+            return CustomPinCamera(width, height, id, iter);
+
+        case 1:
+            return CustomPinCameraSS(width, height, id, iter);
+
+        case 2:
+            return CustomOrthographic(width, height, id, iter);
+
+        default:
+            return CustomPinCamera(width, height, id, iter);
+    }
+}
+
+uint NumberOfRay(uint width, uint height, uint3 id, int rayGenId) {
+    switch(rayGenId) {
+        case 0:
+            return CustomPinCameraNumberOfRay(width, height, id);
+
+        case 1:
+            return CustomPinCameraSSNumberOfRay(width, height, id);
+
+        case 2:
+            return CustomOrthographicNumberOfRay(width, height, id);
+
+        default:
+            return 0;
+    }
+}
+
+#endif
