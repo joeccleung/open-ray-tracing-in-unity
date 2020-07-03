@@ -1,7 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
-using System;
 
 namespace OpenRT {
     [CustomEditor(typeof(RTGeometry), true)]
@@ -17,9 +17,12 @@ namespace OpenRT {
                 shaderIndex = 0;
             }
 
-            var selectedShaderIndex = EditorGUILayout.Popup("Intersect", shaderIndex, CustomShaderDatabase.Instance.intersectShaderNameList);
+            var selectedShaderIndex = EditorGUILayout.Popup(
+                "Intersect",
+                shaderIndex,
+                CustomShaderDatabase.Instance.ShaderNameList(EShaderType.Intersect));
 
-            var selectedShaderName = CustomShaderDatabase.Instance.intersectShaderNameList[selectedShaderIndex];
+            var selectedShaderName = CustomShaderDatabase.Instance.ShaderNameList(EShaderType.Intersect) [selectedShaderIndex];
             shaderGUIDProp.stringValue = CustomShaderDatabase.Instance.ShaderNameToGUID(selectedShaderName, EShaderType.Intersect);
 
             serializedObject.ApplyModifiedProperties();

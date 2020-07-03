@@ -17,93 +17,101 @@ namespace OpenRT {
             }
         }
 
-        private CustomShaderDatabaseDataTable m_dataTable;
+        private ClosestHitDataTable closestHitDataTable;
+        private IntersectDataTable intersectDataTable;
+
+        private CustomShaderDatabaseFile databaseFile;
+        private CustomShaderDatabaseFileIO fileIO;
 
         public CustomShaderDatabase() {
-            m_dataTable = new CustomShaderDatabaseDataTable();
+            closestHitDataTable = new ClosestHitDataTable();
+            intersectDataTable = new IntersectDataTable();
+
+            fileIO = new CustomShaderDatabaseFileIO();
+            databaseFile = fileIO.ReadDatabaseFromFile();
+
+            closestHitDataTable.Populate(databaseFile.closetHit);
+            intersectDataTable.Populate(databaseFile.intersect);
         }
 
-        public string[] closestHitShaderNameList {
-            get {
-                return m_dataTable.GetClosestShaderNameList;
+        public string[] ShaderNameList(EShaderType shaderType) {
+            switch (shaderType) {
+                case EShaderType.CloestHit:
+                    return closestHitDataTable.ShaderNameList;
+
+                case EShaderType.Intersect:
+                    return intersectDataTable.ShaderNameList;
+
+                default:
+                    return new string[0];
             }
         }
 
-        public SortedList<GUID, CustomShaderMeta> closetHitShaderMetaList {
-            get {
-                return m_dataTable.GetClosestShaderMetaList;
-            }
-        }
+        public SortedList<GUID, CustomShaderMeta> ShaderMetaList(EShaderType shaderType) {
+            switch (shaderType) {
+                case EShaderType.CloestHit:
+                    return closestHitDataTable.ShaderMetaList;
 
-        public string[] intersectShaderNameList {
-            get {
-                return m_dataTable.GetIntersectShaderNameList;
-            }
-        }
+                case EShaderType.Intersect:
+                    return intersectDataTable.ShaderMetaList;
 
-        public SortedList<GUID, CustomShaderMeta> intersectShaderMetaList {
-            get {
-                return m_dataTable.GetIntersectShaderMetaList;
+                default:
+                    return new SortedList<GUID, CustomShaderMeta>();
             }
         }
 
         public void Add(CustomShaderMeta meta) {
-            if (m_dataTable.ContainsThisShader(meta.shaderType, meta.name)) {
+
+            switch (meta.shaderType) {
+                case OpenRT.EShaderType.CloestHit:
+                    _Add(meta, closestHitDataTable);
+                    break;
+
+                case OpenRT.EShaderType.Intersect:
+                    _Add(meta, intersectDataTable);
+                    break;
+
+                default:
+                    // TODO: Support adding shaders of type {meta.shaderType}
+                    Debug.LogWarning($"TODO: Support adding shaders of type {meta.shaderType}");
+                    break;
+            }
+        }
+
+        private void _Add(CustomShaderMeta meta, ICustomShaderDatabaseDataTable datatable) {
+            if (datatable.Contains(meta.name)) {
                 // TODO: Support Update
                 Debug.LogWarning("TODO: Support shader update");
             } else {
-                switch (meta.shaderType) {
-                    case OpenRT.EShaderType.CloestHit:
-                        m_dataTable.AddClosetHitShader(meta);
-                        break;
-
-                    case OpenRT.EShaderType.Intersect:
-                        m_dataTable.AddIntersectShader(meta);
-                        break;
-
-                    default:
-                        // TODO: Support adding shaders of type {meta.shaderType}
-                        Debug.LogWarning($"TODO: Support adding shaders of type {meta.shaderType}");
-                        break;
-                }
-
+                datatable.AddShader(meta, databaseFile, fileIO);
             }
+
         }
 
-        public string GUIDToShaderName(GUID guid, EShaderType shaderType) {
+        public int GUIDToShaderIndex(GUID guid, EShaderType shaderType) {
             switch (shaderType) {
                 case EShaderType.CloestHit:
-                    return m_dataTable.GUIDToClosestHitShaderName(guid);
+                    return closestHitDataTable.GUIDToShaderIndex(guid);
 
                 case EShaderType.Intersect:
-                    return m_dataTable.GUIDToIntersectShaderName(guid);
-
-                default:
-                    return string.Empty;
-            }
-        }
-
-        public int GUIDToShaderIndex(GUID guid, EShaderType shaderType)
-        {
-            switch (shaderType) {
-                case EShaderType.CloestHit:
-                    return m_dataTable.GUIDToClosestHitShaderIndex(guid);
-
-                case EShaderType.Intersect:
-                    return m_dataTable.GUIDToIntersectShaderIndex(guid);
+                    return intersectDataTable.GUIDToShaderIndex(guid);
 
                 default:
                     return -1;
             }
         }
 
+        public void PopulateShaderDatabase(CustomShaderDatabaseFile databaseFile) {
+            
+        }
+
         public string ShaderNameToGUID(string shaderName, EShaderType shaderType) {
             switch (shaderType) {
                 case EShaderType.CloestHit:
-                    return m_dataTable.ClosestHitShaderNameToGUID(shaderName);
+                    return closestHitDataTable.ShaderNameToGUID(shaderName);
 
                 case EShaderType.Intersect:
-                    return m_dataTable.IntersectShaderNameToGUID(shaderName);
+                    return intersectDataTable.ShaderNameToGUID(shaderName);
 
                 default:
                     return string.Empty;

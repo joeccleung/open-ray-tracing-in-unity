@@ -11,7 +11,7 @@ namespace OpenRT {
 
             var m_shaderIndexProp = serializedObject.FindProperty("shaderIndex");
 
-            m_shaderIndexProp.intValue = EditorGUILayout.Popup("Shader", m_shaderIndexProp.intValue, CustomShaderDatabase.Instance.closestHitShaderNameList);
+            m_shaderIndexProp.intValue = EditorGUILayout.Popup("Shader", m_shaderIndexProp.intValue, CustomShaderDatabase.Instance.ShaderNameList(EShaderType.CloestHit));
 
             serializedObject.ApplyModifiedProperties();
         }

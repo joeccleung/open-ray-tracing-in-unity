@@ -1,0 +1,77 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+namespace OpenRT {
+    using ShaderName = System.String;
+    using GUID = System.String;
+
+    public abstract class BaseDataTable : ICustomShaderDatabaseDataTable {
+        protected SortedList<ShaderName, GUID> shaderList;
+        protected SortedList<GUID, CustomShaderMeta> shaderMetaList;
+
+        public virtual GUID AddShader(CustomShaderMeta shaderMeta, CustomShaderDatabaseFile database, IShaderDatabaseFileIO fileIOHandler) {
+            return AddShaderHelper(shaderMeta);
+        }
+
+        public virtual bool Contains(string shaderName) {
+            return shaderMetaList.Any((kvp) => {
+                return kvp.Value.name == shaderName;
+            });
+        }
+
+        public virtual int GUIDToShaderIndex(string guid) {
+            var name = GUIDToShaderName(guid);
+            return shaderList.IndexOfKey(name);
+        }
+
+        public virtual string GUIDToShaderName(string guid) {
+            if (shaderMetaList.ContainsKey(guid)) {
+                return shaderMetaList[guid].name;
+            } else {
+                return string.Empty;
+            }
+        }
+
+        public virtual void Populate(Dictionary<string, CustomShaderMeta> data) {
+            shaderList = new SortedList<ShaderName, ShaderName>();
+            shaderMetaList = new SortedList<GUID, CustomShaderMeta>(comparer: new CustomShaderMetaGUIDComparer());
+
+            foreach (var kvp in data) {
+                // Shader Name = kvp.Value.name
+                // Shader GUID = kvp.Key
+                shaderList.Add(kvp.Value.name, kvp.Key);
+                shaderMetaList.Add(kvp.Key, kvp.Value);
+            }
+        }
+
+        public virtual SortedList<string, CustomShaderMeta> ShaderMetaList {
+            get {
+                return shaderMetaList;
+            }
+        }
+        public virtual string[] ShaderNameList {
+            get {
+                return shaderList.Keys.ToArray();
+            }
+        }
+
+        public virtual GUID ShaderNameToGUID(ShaderName shaderName) {
+            return shaderList[shaderName];
+        }
+
+        protected GUID AddShaderHelper(CustomShaderMeta shaderMeta) {
+            string guid;
+            do {
+                guid = Guid.NewGuid().ToString();
+            } while (shaderMetaList.ContainsKey(guid));
+            shaderList.Add(shaderMeta.name, guid);
+            shaderMetaList.Add(guid, shaderMeta);
+
+            return guid;
+        }
+
+    }
+}
