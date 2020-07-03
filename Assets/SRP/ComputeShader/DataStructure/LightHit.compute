@@ -1,0 +1,18 @@
+﻿#ifndef LightHit_COMPUTE
+#define LightHit_COMPUTE
+
+struct LightHit
+{
+    float3 color;
+    float3 direction;
+};
+
+LightHit CreateLightHit(float3 color, float3 direction)
+{
+    LightHit hit;
+    hit.color = color;
+    hit.direction = normalize(direction);
+    return hit;
+}
+
+#endif

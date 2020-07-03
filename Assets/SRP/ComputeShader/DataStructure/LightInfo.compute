@@ -1,0 +1,13 @@
+﻿#ifndef LightInfo_COMPUTE
+#define LightInfo_COMPUTE
+
+struct LightInfo
+{
+    int instance;
+    float3 position;
+    float3 rotation;
+    int type;
+};
+
+
+#endif

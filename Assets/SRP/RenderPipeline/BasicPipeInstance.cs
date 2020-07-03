@@ -26,6 +26,8 @@ namespace OpenRT {
         private ComputeBuffer m_primitiveBuffer;
         private SortedList<ISIdx, ComputeBuffer> m_geometryInstanceBuffers;
 
+        private ComputeBuffer m_lightInfoBuffer;
+
         public BasicPipeInstance(Color clearColor, ComputeShader mainShader, List<RenderPipelineConfigObject> allConfig) {
             m_clearColor = clearColor;
             m_mainShader = mainShader;
@@ -45,13 +47,16 @@ namespace OpenRT {
         {
             RunParseScene();
             foreach (var camera in cameras) {
+                // TODO: We don't have to bind buffers again for each camera
                 RunTargetTextureInit(ref m_target);
                 RunClearCanvas(commands, camera);
                 RunLoadGeometryToBuffer(m_sceneParser, ref commands, ref m_primitiveBuffer, ref m_geometryInstanceBuffers);
+                RunLoadLightToBuffer(m_sceneParser, ref m_lightInfoBuffer);
                 RunSetCameraToMainShader(camera);
                 RunSetAmbientToMainShader(m_config);
                 RunSetRayGenerationShader(m_config.rayGenId);
                 RunSetGeometryInstanceToMainShader(ref m_primitiveBuffer, ref m_geometryInstanceBuffers, m_sceneParser.NumberOfPrimitive());
+                RunSetLightsToMainShader(m_sceneParser.GetLightInfos().Count, ref m_lightInfoBuffer);
                 RunRayTracing(ref commands, m_target);
                 RunSendTextureToUnity(commands, m_target, renderContext, camera);
                 RunBufferCleanUp();
@@ -184,6 +189,14 @@ namespace OpenRT {
 
         }
 
+        private void RunLoadLightToBuffer(SceneParser sceneParser, ref ComputeBuffer lightInfoBuffer)
+        {
+            int numberOfLights = sceneParser.GetLightInfos().Count;
+
+            lightInfoBuffer = new ComputeBuffer(numberOfLights, RTLightInfo.Stride);
+            lightInfoBuffer.SetData(sceneParser.GetLightInfos());
+        }
+
         private void RunSetCameraToMainShader(Camera camera) {
             m_mainShader.SetMatrix("_CameraToWorld", camera.cameraToWorldMatrix);
             m_mainShader.SetVector("_CameraForward", camera.transform.forward);
@@ -217,6 +230,12 @@ namespace OpenRT {
 
         }
 
+        private void RunSetLightsToMainShader(int count, ref ComputeBuffer lightInfoBuffer)
+        {
+            m_mainShader.SetInt("_NumOfLights", count);
+            m_mainShader.SetBuffer(kIndex, "_Lights", lightInfoBuffer);
+        }
+
         private void RunRayTracing(ref CommandBuffer commands, RenderTexture targetTexture) {
             m_mainShader.SetTexture(kIndex, "Result", targetTexture);
             int threadGroupsX = Mathf.CeilToInt(Screen.width / 8.0f);
@@ -238,6 +257,7 @@ namespace OpenRT {
             foreach (var item in m_geometryInstanceBuffers) {
                 item.Value?.Release();
             }
+            m_lightInfoBuffer?.Release();
         }
 
         private void RunSendTextureToUnity(CommandBuffer buffer, RenderTexture targeTexture,

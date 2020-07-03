@@ -15,7 +15,7 @@ Ray CreateRay(float3 origin, float3 direction)
 {
     Ray ray;
     ray.origin = origin;
-    ray.direction = direction;
+    ray.direction = normalize(direction);
     return ray;
 }
 

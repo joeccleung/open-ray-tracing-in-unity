@@ -12,6 +12,7 @@ namespace OpenRT {
 
         private static SceneParser _sharedInstance = new SceneParser();
 
+        private List<RTLightInfo> m_lightInfos;
         private List<Primitive> m_primitives;
         private SortedList<ISIdx, List<float>> m_geometryInstances;
         private Dictionary<ISIdx, int> m_geometryCount;
@@ -23,11 +24,16 @@ namespace OpenRT {
         }
 
         private SceneParser() {
+            m_lightInfos = new List<RTLightInfo>();
             m_primitives = new List<Primitive>();
             m_geometryInstances = new SortedList<ISIdx, List<float>>();
             m_geometryCount = new Dictionary<ISIdx, int>();
             m_geometryStrides = new Dictionary<ISIdx, int>();
             m_materials = new List<RTMaterial>();
+        }
+
+        public List<RTLightInfo> GetLightInfos() {
+            return m_lightInfos;
         }
 
         public List<Primitive> GetPrimitives() {
@@ -75,6 +81,27 @@ namespace OpenRT {
                 ref m_geometryCount,
                 ref m_geometryStrides,
                 ref m_materials);
+
+            ParseLight(ref m_lightInfos);
+        }
+
+        private void ParseLight(ref List<RTLightInfo> lightInfos) {
+            lightInfos.Clear();
+
+            // Placeholder for scene parsing
+            lightInfos.Add(new RTLightInfo(
+                instance: 0,
+                position: new Vector3(1, 1, 1),
+                rotation: new Vector3(45, 45, 45),
+                type : 0
+            ));
+
+            lightInfos.Add(new RTLightInfo(
+                instance: 0,
+                position: new Vector3(0, 0, -3),
+                rotation: new Vector3(0, 0, 0),
+                type : 1
+            ));
         }
 
         private void ParseGeometry(GameObject[] roots,

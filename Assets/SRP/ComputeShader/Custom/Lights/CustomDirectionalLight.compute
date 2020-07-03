@@ -1,0 +1,9 @@
+﻿#ifndef Custom_DirectionalLight_COMPUTE
+#define Custom_DirectionalLight_COMPUTE
+
+LightHit GetIlluminate_CustomDirectionalLight(LightInfo lightInfo, Ray ray)
+{
+    return CreateLightHit(float3(0.1, 0.1, 0.1), lightInfo.rotation);
+}
+
+#endif
