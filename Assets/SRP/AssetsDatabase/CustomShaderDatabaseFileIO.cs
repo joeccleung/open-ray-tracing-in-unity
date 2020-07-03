@@ -5,10 +5,10 @@ using Newtonsoft.Json;
 using UnityEngine;
 
 namespace OpenRT {
-    public static class CustomShaderDatabaseFileIO {
+    public class CustomShaderDatabaseFileIO : IShaderDatabaseFileIO {
         public const string JSON_FILE_PATH = "Assets/SRP/AssetsDatabase/Resources/RayTracingFramework/CustomShaderDatabase.json";
 
-        public static CustomShaderDatabaseFile ReadDatabaseFromFile() {
+        public CustomShaderDatabaseFile ReadDatabaseFromFile() {
 
             if (!File.Exists(JSON_FILE_PATH)) {
                 // Return a brand new Custom Shader Database File
@@ -21,7 +21,7 @@ namespace OpenRT {
             return db;
         }
 
-        public static void WriteDatabaseToFile(CustomShaderDatabaseFile file) {
+        public void WriteDatabaseToFile(CustomShaderDatabaseFile file) {
 
             StreamWriter writer = new StreamWriter(JSON_FILE_PATH, false);
             writer.WriteLine(JsonConvert.SerializeObject(file, formatting : Formatting.Indented));
