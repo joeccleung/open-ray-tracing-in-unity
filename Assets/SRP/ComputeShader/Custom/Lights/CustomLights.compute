@@ -1,0 +1,24 @@
+﻿#ifndef Custom_Lights_COMPUTE
+#define Custom_Lights_COMPUTE
+
+#include "CustomDirectionalLight.compute"
+#include "CustomPointLight.compute"
+
+LightHit GetIlluminate(Ray ray, int lightID)
+{
+
+    switch(_Lights[lightID].type)
+    {
+        case 0:
+            return GetIlluminate_CustomDirectionalLight(_Lights[lightID], ray);
+        
+        case 1:
+            return GetIlluminate_CustomPointLight(_Lights[lightID], ray);
+
+        default:
+            return CreateLightHit(float3(0, 0, 0), float3(0, 0, 0));
+    }
+    
+}
+
+#endif

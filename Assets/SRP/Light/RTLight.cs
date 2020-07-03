@@ -12,5 +12,13 @@ public class RTLight : MonoBehaviour {
       Gizmos.color = Color.yellow;
       Gizmos.DrawLine(transform.position, transform.position + transform.forward);
    }
+
+   public virtual RTLightInfo GetLightInfo()
+   {
+       return new RTLightInfo(
+           position: transform.position,
+           type: shaderIndex
+       );
+   }
 }
 }
