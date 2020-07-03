@@ -82,8 +82,8 @@ namespace OpenRT {
         }
 
         private static void ExportAllShadersToGPUProgram() {
-            closetHitShaderCollectionGPUProgramGenerator.ExportShaderCollection(CustomShaderDatabase.Instance.closetHitShaderMetaList);
-            intersectShaderCollectionGPUProgramGenerator.ExportShaderCollection(CustomShaderDatabase.Instance.intersectShaderMetaList);
+            closetHitShaderCollectionGPUProgramGenerator.ExportShaderCollection(CustomShaderDatabase.Instance.ShaderMetaList(EShaderType.CloestHit));
+            intersectShaderCollectionGPUProgramGenerator.ExportShaderCollection(CustomShaderDatabase.Instance.ShaderMetaList(EShaderType.Intersect));
         }
     }
 }
