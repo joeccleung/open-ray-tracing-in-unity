@@ -35,6 +35,16 @@ namespace OpenRT {
             }
         }
 
+        public virtual GUID MoveShader(CustomShaderMeta shaderMeta, CustomShaderMeta previousShaderMeta, CustomShaderDatabaseFile database, IShaderDatabaseFileIO fileIOHandler) {
+            var guid = shaderList[previousShaderMeta.name];
+            shaderList.Remove(previousShaderMeta.name);
+            shaderMetaList.Remove(previousShaderMeta.name);
+            shaderList.Add(shaderMeta.name, guid);
+            shaderMetaList.Add(shaderMeta.name, shaderMeta);
+
+            return guid;
+        }
+
         public virtual void Populate(Dictionary<string, CustomShaderMeta> data) {
             shaderList = new SortedList<ShaderName, ShaderName>();
             shaderMetaList = new SortedList<GUID, CustomShaderMeta>(comparer: new CustomShaderMetaGUIDComparer());
@@ -45,6 +55,14 @@ namespace OpenRT {
                 shaderList.Add(kvp.Value.name, kvp.Key);
                 shaderMetaList.Add(kvp.Key, kvp.Value);
             }
+        }
+
+        public virtual GUID RemoveShader(CustomShaderMeta shaderMeta, CustomShaderDatabaseFile database, IShaderDatabaseFileIO fileIOHandler) {
+            var guid = shaderList[shaderMeta.name];
+            shaderList.Remove(shaderMeta.name);
+            shaderMetaList.Remove(shaderMeta.name);
+
+            return guid;
         }
 
         public virtual SortedList<string, CustomShaderMeta> ShaderMetaList {

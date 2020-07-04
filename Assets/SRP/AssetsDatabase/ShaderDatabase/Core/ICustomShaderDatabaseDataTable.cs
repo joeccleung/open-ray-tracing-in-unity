@@ -19,7 +19,11 @@ namespace OpenRT {
 
         string GUIDToShaderName(GUID guid);
 
+        GUID MoveShader(CustomShaderMeta shaderMeta, CustomShaderMeta previousShaderMeta, CustomShaderDatabaseFile database, IShaderDatabaseFileIO fileIOHandler);
+
         void Populate(Dictionary<string, CustomShaderMeta> data);
+
+        GUID RemoveShader(CustomShaderMeta shaderMeta, CustomShaderDatabaseFile database, IShaderDatabaseFileIO fileIOHandler);
 
         SortedList<GUID, CustomShaderMeta> ShaderMetaList {
             get;
