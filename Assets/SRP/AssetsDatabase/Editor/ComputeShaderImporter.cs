@@ -34,16 +34,20 @@ namespace OpenRT {
                 }
             }
 
-            foreach (string str in deletedAssets) {
-                if (shouldProcess(str)) {
-                    //TODO: [ComputeShaderImporter] Deleted Compute Shader
-                    Debug.LogWarning("TODO: [ComputeShaderImporter] Deleted Compute Shader: " + str);
+            foreach (string absPath in deletedAssets) {
+                if (shouldProcess(absPath)) {
+                    var meta = ReadShaderMeta(absPath: absPath);
+                    Debug.Log($"[ComputeShaderImporter] Delete assert meta = {meta.Value.absPath}");
+                    CustomShaderDatabase.Instance.Remove(meta.Value);
+                    Debug.LogWarning("[ComputeShaderImporter] Deleted Compute Shader: " + absPath);
                 }
             }
 
             for (int i = 0; i < movedAssets.Length; i++) {
                 if (shouldProcess(movedAssets[i])) {
-                    //TODO: [ComputeShaderImporter] Moved Compute Shader
+                    var meta = ReadShaderMeta(absPath: movedAssets[i]);
+                    var previous = ReadShaderMeta(absPath: movedFromAssetPaths[i]);
+                    CustomShaderDatabase.Instance.Move(meta.Value, previous.Value);
                     Debug.LogWarning("[ComputeShaderImporter] Moved Compute Shader: " + movedAssets[i] + " from: " + movedFromAssetPaths[i]);
                 }
             }

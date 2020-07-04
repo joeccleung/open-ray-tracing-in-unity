@@ -80,8 +80,7 @@ namespace OpenRT {
 
         private void _Add(CustomShaderMeta meta, ICustomShaderDatabaseDataTable datatable) {
             if (datatable.Contains(meta.name)) {
-                // TODO: Support Update
-                Debug.LogWarning("TODO: Support shader update");
+                datatable.MoveShader(meta, meta, databaseFile, fileIO);
             } else {
                 datatable.AddShader(meta, databaseFile, fileIO);
             }
@@ -101,8 +100,46 @@ namespace OpenRT {
             }
         }
 
-        public void PopulateShaderDatabase(CustomShaderDatabaseFile databaseFile) {
-            
+        public void Move(CustomShaderMeta meta, CustomShaderMeta previous) {
+            switch (meta.shaderType) {
+                case OpenRT.EShaderType.CloestHit:
+                    _Move(meta, previous, closestHitDataTable);
+                    break;
+
+                case OpenRT.EShaderType.Intersect:
+                    _Move(meta, previous, intersectDataTable);
+                    break;
+
+                default:
+                    // TODO: Support adding shaders of type {meta.shaderType}
+                    Debug.LogWarning($"TODO: Support adding shaders of type {meta.shaderType}");
+                    break;
+            }
+        }
+
+        private void _Move(CustomShaderMeta meta, CustomShaderMeta previous, ICustomShaderDatabaseDataTable table) {
+            table.MoveShader(meta, previous, databaseFile, fileIO);
+        }
+
+        public void Remove(CustomShaderMeta meta) {
+            switch (meta.shaderType) {
+                case OpenRT.EShaderType.CloestHit:
+                    _Remove(meta, closestHitDataTable);
+                    break;
+
+                case OpenRT.EShaderType.Intersect:
+                    _Remove(meta, intersectDataTable);
+                    break;
+
+                default:
+                    // TODO: Support adding shaders of type {meta.shaderType}
+                    Debug.LogWarning($"TODO: Support adding shaders of type {meta.shaderType}");
+                    break;
+            }
+        }
+
+        private void _Remove(CustomShaderMeta meta, ICustomShaderDatabaseDataTable table) {
+            table.RemoveShader(meta, databaseFile, fileIO);
         }
 
         public string ShaderNameToGUID(string shaderName, EShaderType shaderType) {
