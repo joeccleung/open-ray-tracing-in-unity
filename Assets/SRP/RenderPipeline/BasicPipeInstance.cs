@@ -48,73 +48,22 @@ namespace OpenRT {
         protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras) // This is the function called every frame to draw on the screen
         {
             RunParseScene();
+            RunLoadGeometryToBuffer(m_sceneParser, ref m_mainShader, ref m_primitiveBuffer, ref m_geometryInstanceBuffers);
+            RunLoadLightToBuffer(m_sceneParser, ref m_lightInfoBuffer);
+            RunSetAmbientToMainShader(m_config);
+            RunSetRayGenerationShader(m_config.rayGenId);
+            RunSetGeometryInstanceToMainShader(ref m_primitiveBuffer, ref m_geometryInstanceBuffers, sceneParseResult.Primitives.Count);
+            RunSetLightsToMainShader(sceneParseResult.Lights.Count, ref m_lightInfoBuffer);
+
             foreach (var camera in cameras) {
                 // TODO: We don't have to bind buffers again for each camera
                 RunTargetTextureInit(ref m_target);
                 RunClearCanvas(commands, camera);
-                RunLoadGeometryToBuffer(m_sceneParser, ref commands, ref m_primitiveBuffer, ref m_geometryInstanceBuffers);
-                RunLoadLightToBuffer(m_sceneParser, ref m_lightInfoBuffer);
                 RunSetCameraToMainShader(camera);
-                RunSetAmbientToMainShader(m_config);
-                RunSetRayGenerationShader(m_config.rayGenId);
-                RunSetGeometryInstanceToMainShader(ref m_primitiveBuffer, ref m_geometryInstanceBuffers, sceneParseResult.Primitives.Count);
-                RunSetLightsToMainShader(sceneParseResult.Lights.Count, ref m_lightInfoBuffer);
                 RunRayTracing(ref commands, m_target);
                 RunSendTextureToUnity(commands, m_target, renderContext, camera);
-                RunBufferCleanUp();
-
-                // // Create an structure to hold the culling paramaters
-                // ScriptableCullingParameters cullingParams;
-
-                // //Populate the culling paramaters from the camera
-                // if (camera.TryGetCullingParameters(out cullingParams))
-                // {
-                //    continue;
-                // }
-
-                // // Perform the culling operation
-                // CullingResults cullingResults = renderContext.Cull(ref cullingParams);
-
-                // // Get the opaque rendering filter settings
-                // var opaqueRange = new FilteringSettings();
-
-                // //Set the range to be the opaque queues
-                // // relacing min/max with lowerBound/upperBound
-                // opaqueRange.renderQueueRange = new RenderQueueRange()
-                // {
-                //    lowerBound = 0,
-                //    upperBound = (int)UnityEngine.Rendering.RenderQueue.GeometryLast,
-                // };
-
-                // //Include all layers
-                // opaqueRange.layerMask = ~0;
-
-                // // Create the draw render settings
-                // // note that it takes a shader pass name
-                // var sortingSettings = new SortingSettings(camera);
-                // sortingSettings.criteria = SortingCriteria.CommonOpaque;
-                // var drs = new DrawingSettings(new ShaderTagId("Opaque"), sortingSettings);
-
-                // // enable instancing for the draw call
-                // drs.enableInstancing = true;
-
-                // // A batch of rendering commands
-                // var cmd = new CommandBuffer();
-                // cmd.ClearRenderTarget(true, true, m_clearColor);
-
-                // // Execute the commands
-                // renderContext.ExecuteCommandBuffer(cmd);
-
-                // // Release the memory hold by the buffer
-                // cmd.Release();
-
-                // // draw all of the renderers
-                // renderContext.DrawRenderers(cullingResults, ref drs, ref opaqueRange);
-
-                // // Return the render context
-                // renderContext.Submit();
             }
-
+            RunBufferCleanUp();
         }
 
         private void InitSceneParsing() {
@@ -152,7 +101,7 @@ namespace OpenRT {
 
         private void RunLoadGeometryToBuffer(
             SceneParser sceneParser,
-            ref CommandBuffer commands,
+            ref ComputeShader mainShader,
             ref ComputeBuffer primitiveBuffer,
             ref SortedList<ISIdx, ComputeBuffer> gemoetryInstanceBuffers) {
 
@@ -162,7 +111,7 @@ namespace OpenRT {
                 gemoetryInstanceBuffers : ref gemoetryInstanceBuffers);
 
             PipelineMaterialToBuffer.MaterialsToBuffer(sceneParseResult.Materials,
-                                                       ref commands);
+                ref mainShader);
         }
 
         private void LoadBufferWithGeometryInstances(
@@ -183,15 +132,14 @@ namespace OpenRT {
             var geoInsIter = sceneParseResult.GeometryInstances.GetEnumerator();
             while (geoInsIter.MoveNext()) {
                 var buffer = new ComputeBuffer(sceneParseResult.GetGeometryInstancesCount(geoInsIter.Current.Key),
-                                               sceneParseResult.GetGeometryInstancesStride(geoInsIter.Current.Key));
+                    sceneParseResult.GetGeometryInstancesStride(geoInsIter.Current.Key));
                 buffer.SetData(geoInsIter.Current.Value);
                 gemoetryInstanceBuffers.Add(geoInsIter.Current.Key, buffer);
             }
 
         }
 
-        private void RunLoadLightToBuffer(SceneParser sceneParser, ref ComputeBuffer lightInfoBuffer)
-        {
+        private void RunLoadLightToBuffer(SceneParser sceneParser, ref ComputeBuffer lightInfoBuffer) {
             int numberOfLights = sceneParseResult.Lights.Count;
 
             lightInfoBuffer = new ComputeBuffer(numberOfLights, RTLightInfo.Stride);
@@ -231,8 +179,7 @@ namespace OpenRT {
 
         }
 
-        private void RunSetLightsToMainShader(int count, ref ComputeBuffer lightInfoBuffer)
-        {
+        private void RunSetLightsToMainShader(int count, ref ComputeBuffer lightInfoBuffer) {
             m_mainShader.SetInt("_NumOfLights", count);
             m_mainShader.SetBuffer(kIndex, "_Lights", lightInfoBuffer);
         }
@@ -261,16 +208,16 @@ namespace OpenRT {
             m_lightInfoBuffer?.Release();
         }
 
-        private void RunSendTextureToUnity(CommandBuffer buffer, RenderTexture targeTexture,
+        private void RunSendTextureToUnity(CommandBuffer commands, RenderTexture targeTexture,
             ScriptableRenderContext renderContext, Camera camera) {
-            buffer.Blit(targeTexture, camera.activeTexture); // This also mark dest as active render target
+            commands.Blit(targeTexture, camera.activeTexture); // This also mark dest as active render target
 
             // End Unity profiler sample for frame debugger
             //            buffer.EndSample(s_bufferName);
             renderContext
                 .ExecuteCommandBuffer(
-                    buffer); // We copied all the commands to an internal memory that is ready to send to GPU
-            buffer.Clear(); // Clear the command buffer
+                    commands); // We copied all the commands to an internal memory that is ready to send to GPU
+            commands.Clear(); // Clear the command buffer
 
             renderContext.Submit(); // Send all the batched commands to GPU
         }
