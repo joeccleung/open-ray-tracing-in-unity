@@ -12,6 +12,8 @@ namespace OpenRT {
     {
         private readonly static string s_bufferName = "Ray Tracing Render Camera";
 
+        private SceneParseResult sceneParseResult;
+
         private List<RenderPipelineConfigObject> m_allConfig; // A list of config objects containing all global rendering settings   
         private RenderPipelineConfigObject m_config;
 
@@ -55,8 +57,8 @@ namespace OpenRT {
                 RunSetCameraToMainShader(camera);
                 RunSetAmbientToMainShader(m_config);
                 RunSetRayGenerationShader(m_config.rayGenId);
-                RunSetGeometryInstanceToMainShader(ref m_primitiveBuffer, ref m_geometryInstanceBuffers, m_sceneParser.NumberOfPrimitive());
-                RunSetLightsToMainShader(m_sceneParser.GetLightInfos().Count, ref m_lightInfoBuffer);
+                RunSetGeometryInstanceToMainShader(ref m_primitiveBuffer, ref m_geometryInstanceBuffers, sceneParseResult.Primitives.Count);
+                RunSetLightsToMainShader(sceneParseResult.Lights.Count, ref m_lightInfoBuffer);
                 RunRayTracing(ref commands, m_target);
                 RunSendTextureToUnity(commands, m_target, renderContext, camera);
                 RunBufferCleanUp();
@@ -122,7 +124,7 @@ namespace OpenRT {
         private void RunParseScene() {
             var scene = SceneManager.GetActiveScene();
 
-            m_sceneParser.ParseScene(scene);
+            sceneParseResult = m_sceneParser.ParseScene(scene);
         }
 
         private void RunTargetTextureInit(ref RenderTexture targetTexture) {
@@ -159,8 +161,8 @@ namespace OpenRT {
                 primitiveBuffer : ref primitiveBuffer,
                 gemoetryInstanceBuffers : ref gemoetryInstanceBuffers);
 
-            PipelineMaterialToBuffer.MaterialsToBuffer(sceneParser.GetMaterials(),
-                ref commands);
+            PipelineMaterialToBuffer.MaterialsToBuffer(sceneParseResult.Materials,
+                                                       ref commands);
         }
 
         private void LoadBufferWithGeometryInstances(
@@ -168,21 +170,20 @@ namespace OpenRT {
             ref ComputeBuffer primitiveBuffer,
             ref SortedList<ISIdx, ComputeBuffer> gemoetryInstanceBuffers) {
 
-            int primitiveCount = sceneParser.NumberOfPrimitive();
+            int primitiveCount = sceneParseResult.Primitives.Count;
 
             primitiveBuffer = new ComputeBuffer(primitiveCount, Primitive.GetStride());
-            var primitives = sceneParser.GetPrimitives();
-            primitiveBuffer.SetData(primitives);
+            primitiveBuffer.SetData(sceneParseResult.Primitives);
 
             foreach (var item in gemoetryInstanceBuffers) {
                 item.Value?.Release();
             }
             gemoetryInstanceBuffers.Clear();
 
-            var geoInsIter = sceneParser.GetGeometryInstanceIterator();
+            var geoInsIter = sceneParseResult.GeometryInstances.GetEnumerator();
             while (geoInsIter.MoveNext()) {
-                var buffer = new ComputeBuffer(sceneParser.GetGeometryInstancesCount(geoInsIter.Current.Key),
-                    sceneParser.GetGeometryInstancesStride(geoInsIter.Current.Key));
+                var buffer = new ComputeBuffer(sceneParseResult.GetGeometryInstancesCount(geoInsIter.Current.Key),
+                                               sceneParseResult.GetGeometryInstancesStride(geoInsIter.Current.Key));
                 buffer.SetData(geoInsIter.Current.Value);
                 gemoetryInstanceBuffers.Add(geoInsIter.Current.Key, buffer);
             }
@@ -191,10 +192,10 @@ namespace OpenRT {
 
         private void RunLoadLightToBuffer(SceneParser sceneParser, ref ComputeBuffer lightInfoBuffer)
         {
-            int numberOfLights = sceneParser.GetLightInfos().Count;
+            int numberOfLights = sceneParseResult.Lights.Count;
 
             lightInfoBuffer = new ComputeBuffer(numberOfLights, RTLightInfo.Stride);
-            lightInfoBuffer.SetData(sceneParser.GetLightInfos());
+            lightInfoBuffer.SetData(sceneParseResult.Lights);
         }
 
         private void RunSetCameraToMainShader(Camera camera) {
