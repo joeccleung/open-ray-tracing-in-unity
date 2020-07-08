@@ -12,111 +12,54 @@ namespace OpenRT {
 
         private static SceneParser _sharedInstance = new SceneParser();
 
-        private List<RTLightInfo> m_lightInfos;
-        private List<Primitive> m_primitives;
-        private SortedList<ISIdx, List<float>> m_geometryInstances;
-        private Dictionary<ISIdx, int> m_geometryCount;
-        private Dictionary<ISIdx, int> m_geometryStrides;
-        private List<RTMaterial> m_materials;
+        public SceneParseResult sceneParseResult;
 
         public static SceneParser Instance {
             get { return _sharedInstance; }
         }
 
         private SceneParser() {
-            m_lightInfos = new List<RTLightInfo>();
-            m_primitives = new List<Primitive>();
-            m_geometryInstances = new SortedList<ISIdx, List<float>>();
-            m_geometryCount = new Dictionary<ISIdx, int>();
-            m_geometryStrides = new Dictionary<ISIdx, int>();
-            m_materials = new List<RTMaterial>();
+            sceneParseResult = new SceneParseResult();
         }
 
-        public List<RTLightInfo> GetLightInfos() {
-            return m_lightInfos;
-        }
-
-        public List<Primitive> GetPrimitives() {
-            return m_primitives;
-        }
-
-        public IEnumerator<KeyValuePair<ISIdx, List<float>>> GetGeometryInstanceIterator() {
-            return m_geometryInstances.GetEnumerator();
-        }
-
-        public List<float> GetGeometryInstancesByType(int geometryIndex) {
-            return m_geometryInstances[geometryIndex];
-        }
-
-        public int GetGeometryInstancesCount(int geometryIndex) {
-            if (m_geometryCount.ContainsKey(geometryIndex)) {
-                return m_geometryCount[geometryIndex];
-            } else {
-                return 0;
-            }
-        }
-
-        public int GetGeometryInstancesStride(int geometryIndex) {
-            if (m_geometryStrides.ContainsKey(geometryIndex)) {
-                return m_geometryStrides[geometryIndex];
-            } else {
-                return 1;
-            }
-        }
-
-        public int NumberOfPrimitive() {
-            return m_primitives.Count;
-        }
-
-        public List<RTMaterial> GetMaterials() {
-            return m_materials;
-        }
-
-        public void ParseScene(Scene scene) {
+        public SceneParseResult ParseScene(Scene scene) {
             GameObject[] roots = scene.GetRootGameObjects();
 
             ParseGeometry(roots,
-                ref m_primitives,
-                ref m_geometryInstances,
-                ref m_geometryCount,
-                ref m_geometryStrides,
-                ref m_materials);
+                          ref sceneParseResult);
 
-            ParseLight(ref m_lightInfos);
+            ParseLight(ref sceneParseResult);
+
+            return sceneParseResult;
         }
 
-        private void ParseLight(ref List<RTLightInfo> lightInfos) {
-            lightInfos.Clear();
+        private void ParseLight(ref SceneParseResult sceneParseResult) {
+            sceneParseResult.ClearAllLights();
 
             // Placeholder for scene parsing
-            lightInfos.Add(new RTLightInfo(
+            sceneParseResult.AddLight(new RTLightInfo(
                 instance: 0,
                 position: new Vector3(1, 1, 1),
-                rotation: new Vector3(45, 45, 45),
+                rotation : new Vector3(45, 45, 45),
                 type : 0
             ));
 
-            lightInfos.Add(new RTLightInfo(
+            sceneParseResult.AddLight(new RTLightInfo(
                 instance: 0,
                 position: new Vector3(0, 0, -3),
-                rotation: new Vector3(0, 0, 0),
+                rotation : new Vector3(0, 0, 0),
                 type : 1
             ));
         }
 
-        private void ParseGeometry(GameObject[] roots,
-            ref List<Primitive> primitives,
-            ref SortedList<ISIdx, List<float>> geoIns,
-            ref Dictionary<ISIdx, int> geoCount,
-            ref Dictionary<ISIdx, int> geoStride,
-            ref List<RTMaterial> mats) {
+        private void ParseGeometry(
+            GameObject[] roots,
+            ref SceneParseResult sceneParseResult) {
 
             // TODO: Optimize dynamic array generation
-            primitives.Clear();
-            geoIns.Clear();
-            geoCount.Clear();
-            geoStride.Clear();
-            mats.Clear();
+            sceneParseResult.ClearAllPrimitives();
+            sceneParseResult.ClearAllGeometries();
+            sceneParseResult.ClearAllMaterials();
 
             foreach (var root in roots) {
                 RTRenderer[] renderers = root.GetComponentsInChildren<RTRenderer>();
@@ -127,8 +70,8 @@ namespace OpenRT {
                         var intersectShaderGUID = renderer.geometry.GetIntersectShaderGUID();
                         int intersectShaderIndex = CustomShaderDatabase.Instance.GUIDToShaderIndex(intersectShaderGUID, EShaderType.Intersect);
 
-                        if (!geoStride.ContainsKey(intersectShaderIndex)) {
-                            geoStride.Add(intersectShaderIndex, renderer.geometry.GetStride());
+                        if (!sceneParseResult.GeometryStride.ContainsKey(intersectShaderIndex)) {
+                            sceneParseResult.GeometryStride.Add(intersectShaderIndex, renderer.geometry.GetStride());
                         }
 
                         RTMaterial material = renderer.material;
@@ -137,28 +80,28 @@ namespace OpenRT {
                             continue;
                         }
 
-                        if (geoIns.ContainsKey(intersectShaderIndex)) {
-                            geoIns[intersectShaderIndex].AddRange(geoInsData);
+                        if (sceneParseResult.GeometryInstances.ContainsKey(intersectShaderIndex)) {
+                            sceneParseResult.GeometryInstances[intersectShaderIndex].AddRange(geoInsData);
                         } else {
-                            geoIns[intersectShaderIndex] = geoInsData;
+                            sceneParseResult.GeometryInstances[intersectShaderIndex] = geoInsData;
                         }
 
                         for (int t = 0; t < renderer.geometry.GetCount(); t++) {
 
-                            if (geoCount.ContainsKey(intersectShaderIndex)) {
-                                geoCount[intersectShaderIndex] += 1;
+                            if (sceneParseResult.GeometryCount.ContainsKey(intersectShaderIndex)) {
+                                sceneParseResult.GeometryCount[intersectShaderIndex] += 1;
                             } else {
-                                geoCount.Add(intersectShaderIndex, 1);
+                                sceneParseResult.GeometryCount.Add(intersectShaderIndex, 1);
                             }
 
-                            primitives.Add(new Primitive(
+                            sceneParseResult.AddPrimitive(new Primitive(
                                 geometryIndex: intersectShaderIndex,
-                                geometryInstanceIndex: geoCount[intersectShaderIndex] - 1,
+                                geometryInstanceIndex: sceneParseResult.GeometryCount[intersectShaderIndex] - 1,
                                 materialIndex: material.shaderIndex,
                                 transformIndex: 0
                             ));
                         }
-                        mats.Add(material);
+                        sceneParseResult.AddMaterial(material);
                     }
                 }
             }
