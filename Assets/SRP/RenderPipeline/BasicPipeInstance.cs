@@ -62,57 +62,6 @@ namespace OpenRT {
                 RunRayTracing(ref commands, m_target);
                 RunSendTextureToUnity(commands, m_target, renderContext, camera);
                 RunBufferCleanUp();
-
-                // // Create an structure to hold the culling paramaters
-                // ScriptableCullingParameters cullingParams;
-
-                // //Populate the culling paramaters from the camera
-                // if (camera.TryGetCullingParameters(out cullingParams))
-                // {
-                //    continue;
-                // }
-
-                // // Perform the culling operation
-                // CullingResults cullingResults = renderContext.Cull(ref cullingParams);
-
-                // // Get the opaque rendering filter settings
-                // var opaqueRange = new FilteringSettings();
-
-                // //Set the range to be the opaque queues
-                // // relacing min/max with lowerBound/upperBound
-                // opaqueRange.renderQueueRange = new RenderQueueRange()
-                // {
-                //    lowerBound = 0,
-                //    upperBound = (int)UnityEngine.Rendering.RenderQueue.GeometryLast,
-                // };
-
-                // //Include all layers
-                // opaqueRange.layerMask = ~0;
-
-                // // Create the draw render settings
-                // // note that it takes a shader pass name
-                // var sortingSettings = new SortingSettings(camera);
-                // sortingSettings.criteria = SortingCriteria.CommonOpaque;
-                // var drs = new DrawingSettings(new ShaderTagId("Opaque"), sortingSettings);
-
-                // // enable instancing for the draw call
-                // drs.enableInstancing = true;
-
-                // // A batch of rendering commands
-                // var cmd = new CommandBuffer();
-                // cmd.ClearRenderTarget(true, true, m_clearColor);
-
-                // // Execute the commands
-                // renderContext.ExecuteCommandBuffer(cmd);
-
-                // // Release the memory hold by the buffer
-                // cmd.Release();
-
-                // // draw all of the renderers
-                // renderContext.DrawRenderers(cullingResults, ref drs, ref opaqueRange);
-
-                // // Return the render context
-                // renderContext.Submit();
             }
 
         }
