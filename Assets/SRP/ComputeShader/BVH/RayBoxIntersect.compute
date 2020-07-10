@@ -1,0 +1,45 @@
+﻿/// Reference: https://github.com/CRCS-Graphics/2020.4.Kaihua.Hu.RealTime-RayTracer
+#ifndef RT_BOX_INTERSECTION_COMPUTE
+#define RT_BOX_INTERSECTION_COMPUTE
+
+bool RayBoxIntersection(Ray ray, float3 minPoint, float3 maxPoint) {
+	// r.dir is unit direction vector of ray
+	float dirfracX = 1.0f / ray.direction.x;
+	float dirfracY = 1.0f / ray.direction.y;
+	float dirfracZ = 1.0f / ray.direction.z;
+
+	// lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
+	// r.org is origin of ray
+	float t1 = (minPoint.x - ray.origin.x) * dirfracX;
+	float t2 = (maxPoint.x - ray.origin.x) * dirfracX;
+	float t3 = (minPoint.y - ray.origin.y) * dirfracY;
+	float t4 = (maxPoint.y - ray.origin.y) * dirfracY;
+	float t5 = (minPoint.z - ray.origin.z) * dirfracZ;
+	float t6 = (maxPoint.z - ray.origin.z) * dirfracZ;
+
+	float tmin = max(max(min(t1, t2), min(t3, t4)), min(t5, t6));
+	float tmax = min(min(max(t1, t2), max(t3, t4)), max(t5, t6));
+
+	// if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is behind us
+	if (tmax < 0)
+	{
+		return false;
+	}
+
+	// if tmin > tmax, ray doesn't intersect AABB
+	if (tmin > tmax)
+	{
+		return false;
+	}
+
+	//// if tmin < 0 then the ray origin is inside of the AABB and tmin is behind the start of the ray so tmax is the first intersection
+	//if (tmin < 0) {
+	//	//t = tmax;
+	//}
+	//else {
+	//	//t = tmin;
+	//}
+	return true;
+}
+
+#endif 
