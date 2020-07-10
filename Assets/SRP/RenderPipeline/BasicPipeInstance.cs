@@ -56,7 +56,6 @@ namespace OpenRT {
             RunSetLightsToMainShader(sceneParseResult.Lights.Count, ref m_lightInfoBuffer);
 
             foreach (var camera in cameras) {
-                // TODO: We don't have to bind buffers again for each camera
                 RunTargetTextureInit(ref m_target);
                 RunClearCanvas(commands, camera);
                 RunSetCameraToMainShader(camera);
