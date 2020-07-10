@@ -6,7 +6,7 @@ namespace OpenRT {
     public abstract class RTGeometry : MonoBehaviour, IRTGeometryData {
         [HideInInspector, SerializeField] private string intersectShaderGUID = string.Empty;
 
-        protected RTBoundingBox boundingBox = new RTBoundingBox();
+        protected RTBoundingBox boundingBox = RTBoundingBox.Empty;
 
         public abstract RTBoundingBox GetBoundingBox();
         public abstract int GetCount();
