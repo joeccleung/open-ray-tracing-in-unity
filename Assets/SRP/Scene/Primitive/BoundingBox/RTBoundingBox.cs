@@ -9,8 +9,10 @@ namespace OpenRT {
     /// </summary>
     public struct RTBoundingBox {
 
-        public const int stride = 2 * 4 * 3 + 2 * 4; // 2 Vector3 + 2 int
+        public const int stride = 2 * 4 * 3 + 4 * 4; // 2 Vector3 + 4 int
 
+        public int leftID; // For referrencing in flatten array
+        public int rightID; // For referrencing in flatten array
         public Vector3 max;
         public Vector3 min;
         public readonly int primitiveBegin;
@@ -19,15 +21,19 @@ namespace OpenRT {
         public static RTBoundingBox Empty {
             get {
                 return new RTBoundingBox(
-                    max: new Vector3(float.MinValue, float.MinValue, float.MinValue),
+                    leftID: -1,
+                    rightID: -1,
+                    max : new Vector3(float.MinValue, float.MinValue, float.MinValue),
                     min : new Vector3(float.MaxValue, float.MaxValue, float.MaxValue),
-                    primitiveBegin: 0,
-                    primitiveEnd: 0
+                    primitiveBegin : 0,
+                    primitiveEnd : 0
                 );
             }
         }
 
-        public RTBoundingBox(Vector3 max, Vector3 min, int primitiveBegin, int primitiveEnd) {
+        public RTBoundingBox(int leftID, int rightID, Vector3 max, Vector3 min, int primitiveBegin, int primitiveEnd) {
+            this.leftID = leftID;
+            this.rightID = rightID;
             this.max = max;
             this.min = min;
             this.primitiveBegin = primitiveBegin;
@@ -35,6 +41,8 @@ namespace OpenRT {
         }
 
         public RTBoundingBox(Vector3 max, Vector3 min, List<int> primitiveIds) {
+            this.leftID = -1;
+            this.rightID = -1;
             this.max = max;
             this.min = min;
             this.primitiveBegin = primitiveIds[0];
@@ -65,6 +73,17 @@ namespace OpenRT {
 
                 return res;
             }
+        }
+
+        public RTBoundingBox SetLeftRight(int left, int right) {
+            return new RTBoundingBox(
+                leftID: left,
+                rightID: right,
+                max: this.max,
+                min: this.min,
+                primitiveBegin: this.primitiveBegin,
+                primitiveEnd: this.primitiveEnd
+            );
         }
 
         public Vector3 size {

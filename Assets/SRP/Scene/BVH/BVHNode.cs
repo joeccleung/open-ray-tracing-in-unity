@@ -8,10 +8,11 @@ namespace OpenRT {
         public List<RTBoundingBox> boxes = new List<RTBoundingBox>(1);
 
         public BVHNode left;
+        public int leftID; // For referrencing in flatten array
         public BVHNode right;
+        public int rightID; // For referrencing in flatten array
 
-        public BVHNode(RTBoundingBox box)
-        {
+        public BVHNode(RTBoundingBox box) {
             boxes.Add(box);
         }
     }

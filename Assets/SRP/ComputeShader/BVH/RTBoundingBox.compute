@@ -4,6 +4,8 @@
 // This struct should match RTBoundingBox.cs
 struct RTBoundingBox
 {
+    int leftIdx;
+    int rightIdx;
     float3 max;
     float3 min;
     int primitiveIdBegin;
