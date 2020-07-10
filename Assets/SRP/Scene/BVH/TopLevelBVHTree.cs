@@ -106,6 +106,25 @@ namespace OpenRT {
             return cp;
         }
 
+        public List<RTBoundingBox> Flatten() {
+            List<RTBoundingBox> flattern = new List<RTBoundingBox>();
+
+            Queue<BVHNode> bfs = new Queue<BVHNode>();
+            bfs.Enqueue(m_root);
+            while (bfs.Count > 0) {
+                var node = bfs.Dequeue();
+                flattern.Add(node.boxes[0]); //TODO: Support overlapping bounding box and include all their primitives IDs
+                if (node.left != null) {
+                    bfs.Enqueue(node.left);
+                }
+                if (node.right != null) {
+                    bfs.Enqueue(node.right);
+                }
+            }
+
+            return flattern;
+        }
+
         public BVHNode Root {
             get {
                 return m_root;
