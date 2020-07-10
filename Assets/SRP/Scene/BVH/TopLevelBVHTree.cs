@@ -85,12 +85,14 @@ namespace OpenRT {
         private RTBoundingBox Combine2Box(RTBoundingBox a, RTBoundingBox b) {
             var max = Vector3.Max(a.max, b.max);
             var min = Vector3.Min(a.min, b.min);
+            var primitiveBegin = Mathf.Min(a.primitiveBegin, b.primitiveBegin);
+            var primitiveEnd = Mathf.Max(a.primitiveEnd, b.primitiveEnd);
 
-            return new RTBoundingBox(max, min);
+            return new RTBoundingBox(max, min, primitiveBegin, primitiveEnd);
         }
 
         private RTBoundingBox CombineAllBox(List<RTBoundingBox> boxes) {
-            RTBoundingBox root = new RTBoundingBox();
+            RTBoundingBox root = boxes[0];
             foreach (var box in boxes) {
                 root = Combine2Box(root, box);
             }

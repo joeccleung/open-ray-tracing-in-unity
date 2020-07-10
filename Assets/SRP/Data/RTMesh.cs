@@ -27,7 +27,7 @@ namespace OpenRT {
             boundingBox.max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
             foreach (var vertex in vertices)
             {
-                AddVertices(boundingBox, vertex);
+                AddVertices(ref boundingBox, vertex);
             }
 
             tris.Clear();
@@ -49,7 +49,7 @@ namespace OpenRT {
         }
 
 
-        private void AddVertices(RTBoundingBox boundingBox, Vector3 vertex)
+        private void AddVertices(ref RTBoundingBox boundingBox, Vector3 vertex)
         {
             Vector3 worldVex = transform.localToWorldMatrix.MultiplyPoint(vertex);
             boundingBox.min = Vector3.Min(boundingBox.min, worldVex);
