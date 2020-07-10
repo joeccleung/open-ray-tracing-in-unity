@@ -8,19 +8,26 @@ namespace Example {
 
         [SerializeField] private CustomSphereData sphereData;
 
-        public override int GetCount()
-        {
+        public override RTBoundingBox GetBoundingBox() {
+            return boundingBox;
+        }
+
+        public override int GetCount() {
             return sphereData.GetCount();
         }
 
-        public override List<float> GetGeometryInstanceData()
-        {
+        public override List<float> GetGeometryInstanceData() {
+
             sphereData.SetGameObjectCenter(transform.position);
+
+            Vector3 r3 = new Vector3(sphereData.radius, sphereData.radius, sphereData.radius);
+            boundingBox.min = sphereData.center - r3;
+            boundingBox.max = sphereData.center + r3;
+
             return sphereData.GetGeometryInstanceData();
         }
 
-        public override int GetStride()
-        {
+        public override int GetStride() {
             return sphereData.GetStride();
         }
     }
