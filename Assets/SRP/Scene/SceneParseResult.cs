@@ -9,6 +9,7 @@ namespace OpenRT {
         private List<RTLightInfo> m_lightInfos;
         private List<RTMaterial> m_materials;
         private List<Primitive> m_primitives;
+        private TopLevelBVH topLevelBVH;
 
         public SceneParseResult() {
             m_geometryCount = new Dictionary<ISIdx, int>();
@@ -17,6 +18,7 @@ namespace OpenRT {
             m_lightInfos = new List<RTLightInfo>();
             m_materials = new List<RTMaterial>();
             m_primitives = new List<Primitive>();
+            topLevelBVH = new TopLevelBVH();
         }
 
         public Dictionary<ISIdx, int> GeometryCount {
@@ -69,6 +71,17 @@ namespace OpenRT {
             }
         }
 
+
+        public TopLevelBVH TopLevelBVH {
+            get {
+                return topLevelBVH;
+            }
+        }
+
+        public void AddBoundingBox(RTBoundingBox box) {
+            topLevelBVH.AddBoundingBox(box);
+        }
+
         public void AddLight(RTLightInfo lightInfo) {
             m_lightInfos.Add(lightInfo);
         }
@@ -79,6 +92,10 @@ namespace OpenRT {
 
         public void AddPrimitive(Primitive primitive) {
             m_primitives.Add(primitive);
+        }
+
+        public void ClearTopLevelBVH() {
+            topLevelBVH.Clear();
         }
 
         public void ClearAllGeometries() {
@@ -98,5 +115,7 @@ namespace OpenRT {
         public void ClearAllPrimitives() {
             m_primitives.Clear();
         }
+    
+
     }
 }
