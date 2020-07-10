@@ -30,6 +30,8 @@ namespace OpenRT {
 
             ParseLight(ref sceneParseResult);
 
+            sceneParseResult.TopLevelBVH.Construct();
+
             return sceneParseResult;
         }
 
@@ -60,6 +62,7 @@ namespace OpenRT {
             sceneParseResult.ClearAllPrimitives();
             sceneParseResult.ClearAllGeometries();
             sceneParseResult.ClearAllMaterials();
+            sceneParseResult.ClearTopLevelBVH();
 
             foreach (var root in roots) {
                 RTRenderer[] renderers = root.GetComponentsInChildren<RTRenderer>();
@@ -86,6 +89,7 @@ namespace OpenRT {
                             sceneParseResult.GeometryInstances[intersectShaderIndex] = geoInsData;
                         }
 
+                        List<int> primitiveIdsOfThisBox = new List<int>();
                         for (int t = 0; t < renderer.geometry.GetCount(); t++) {
 
                             if (sceneParseResult.GeometryCount.ContainsKey(intersectShaderIndex)) {
@@ -94,6 +98,9 @@ namespace OpenRT {
                                 sceneParseResult.GeometryCount.Add(intersectShaderIndex, 1);
                             }
 
+                            int primitiveIndex = sceneParseResult.Primitives.Count;
+                            primitiveIdsOfThisBox.Add(primitiveIndex);
+
                             sceneParseResult.AddPrimitive(new Primitive(
                                 geometryIndex: intersectShaderIndex,
                                 geometryInstanceIndex: sceneParseResult.GeometryCount[intersectShaderIndex] - 1,
@@ -101,6 +108,12 @@ namespace OpenRT {
                                 transformIndex: 0
                             ));
                         }
+                        var boxOfThisObject = renderer.geometry.GetBoundingBox();
+                        sceneParseResult.AddBoundingBox(new RTBoundingBox(
+                            max: boxOfThisObject.max,
+                            min: boxOfThisObject.min,
+                            primitiveIds: primitiveIdsOfThisBox
+                        ));
                         sceneParseResult.AddMaterial(material);
                     }
                 }

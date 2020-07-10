@@ -10,6 +10,11 @@ namespace OpenRT {
         private List<float> tris = new List<float>();
         private int numberOfTriangles = 0;
 
+        public override RTBoundingBox GetBoundingBox() {
+            //TODO: Optimization. Does not need to rebuild the bounding box if the mesh did not deform or transform
+            return boundingBox;
+        }
+
         public override List<float> GetGeometryInstanceData() {
 
             //TODO: Cache the mesh if it does not deform
@@ -17,6 +22,13 @@ namespace OpenRT {
             int[] trianglesVertexOrder = m_mesh.GetTriangles(0);
             numberOfTriangles = trianglesVertexOrder.Length / 3;
             Vector3[] vertices = m_mesh.vertices;
+
+            boundingBox.min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+            boundingBox.max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+            foreach (var vertex in vertices)
+            {
+                AddVertices(ref boundingBox, vertex);
+            }
 
             tris.Clear();
 
@@ -34,6 +46,14 @@ namespace OpenRT {
 
         public override int GetCount() {
             return numberOfTriangles;
+        }
+
+
+        private void AddVertices(ref RTBoundingBox boundingBox, Vector3 vertex)
+        {
+            Vector3 worldVex = transform.localToWorldMatrix.MultiplyPoint(vertex);
+            boundingBox.min = Vector3.Min(boundingBox.min, worldVex);
+            boundingBox.max = Vector3.Max(boundingBox.max, worldVex);
         }
 
         private List<float> GenerateTriangle(Vector3 v0, Vector3 v1, Vector3 v2) {
@@ -63,5 +83,6 @@ namespace OpenRT {
                     area
             };
         }
+
     }
 }
