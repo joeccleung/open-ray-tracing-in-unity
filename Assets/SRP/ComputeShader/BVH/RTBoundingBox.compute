@@ -1,0 +1,15 @@
+﻿#ifndef RT_BoundingBox_COMPUTE
+#define RT_BoundingBox_COMPUTE
+
+// This struct should match RTBoundingBox.cs
+struct RTBoundingBox
+{
+    int leftIdx;
+    int rightIdx;
+    float3 max;
+    float3 min;
+    int primitiveIdBegin;
+    int primitiveIdEnd;
+};
+
+#endif

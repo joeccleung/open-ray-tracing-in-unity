@@ -3,6 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace OpenRT {
+
+    /// <summary>
+    /// Tree building algorithm from 
+    /// Reference: https://github.com/CRCS-Graphics/2020.4.Kaihua.Hu.RealTime-RayTracer
+    /// 
+    /// </summary>
     public class TopLevelBVH {
         private List<RTBoundingBox> m_boxes = new List<RTBoundingBox>();
         private BVHNode m_root;
@@ -88,7 +94,11 @@ namespace OpenRT {
             var primitiveBegin = Mathf.Min(a.primitiveBegin, b.primitiveBegin);
             var primitiveEnd = Mathf.Max(a.primitiveEnd, b.primitiveEnd);
 
-            return new RTBoundingBox(max, min, primitiveBegin, primitiveEnd);
+            return new RTBoundingBox(-1, -1,
+                max,
+                min,
+                primitiveBegin,
+                primitiveEnd);
         }
 
         private RTBoundingBox CombineAllBox(List<RTBoundingBox> boxes) {
@@ -106,6 +116,39 @@ namespace OpenRT {
                 cp = cp + (box.center * div);
             }
             return cp;
+        }
+
+        public List<RTBoundingBox> Flatten() {
+            int id = 0;
+
+            List<RTBoundingBox> flattern = new List<RTBoundingBox>();
+
+            Queue<BVHNode> bfs = new Queue<BVHNode>();
+
+            bfs.Enqueue(m_root);
+            while (bfs.Count > 0) {
+                var node = bfs.Dequeue();
+
+                if (node.left != null) {
+                    id++;
+                    node.leftID = id;
+                    bfs.Enqueue(node.left);
+                }
+                if (node.right != null) {
+                    id++;
+                    node.rightID = id;
+                    bfs.Enqueue(node.right);
+                }
+
+                RTBoundingBox box = node.boxes[0].SetLeftRight(
+                    left: node.leftID,
+                    right: node.rightID
+                );
+
+                flattern.Add(box); //TODO: Support overlapping bounding box and include all their primitives IDs
+            }
+
+            return flattern;
         }
 
         public BVHNode Root {

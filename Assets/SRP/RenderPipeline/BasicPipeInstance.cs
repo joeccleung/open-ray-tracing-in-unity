@@ -25,6 +25,7 @@ namespace OpenRT {
         private int kIndex = 0;
 
         private SceneParser m_sceneParser;
+        private ComputeBuffer m_bvhBuffer;
         private ComputeBuffer m_primitiveBuffer;
         private SortedList<ISIdx, ComputeBuffer> m_geometryInstanceBuffers;
 
@@ -48,11 +49,11 @@ namespace OpenRT {
         protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras) // This is the function called every frame to draw on the screen
         {
             RunParseScene();
-            RunLoadGeometryToBuffer(m_sceneParser, ref m_mainShader, ref m_primitiveBuffer, ref m_geometryInstanceBuffers);
+            RunLoadGeometryToBuffer(sceneParseResult, ref m_bvhBuffer, ref m_mainShader, ref m_primitiveBuffer, ref m_geometryInstanceBuffers);
             RunLoadLightToBuffer(m_sceneParser, ref m_lightInfoBuffer);
             RunSetAmbientToMainShader(m_config);
             RunSetRayGenerationShader(m_config.rayGenId);
-            RunSetGeometryInstanceToMainShader(ref m_primitiveBuffer, ref m_geometryInstanceBuffers, sceneParseResult.Primitives.Count);
+            RunSetGeometryInstanceToMainShader(ref m_bvhBuffer, ref m_primitiveBuffer, ref m_geometryInstanceBuffers, sceneParseResult.Primitives.Count);
             RunSetLightsToMainShader(sceneParseResult.Lights.Count, ref m_lightInfoBuffer);
 
             foreach (var camera in cameras) {
@@ -99,13 +100,15 @@ namespace OpenRT {
         }
 
         private void RunLoadGeometryToBuffer(
-            SceneParser sceneParser,
+            SceneParseResult sceneParseResult,
+            ref ComputeBuffer bvhBuffer,
             ref ComputeShader mainShader,
             ref ComputeBuffer primitiveBuffer,
             ref SortedList<ISIdx, ComputeBuffer> gemoetryInstanceBuffers) {
 
             LoadBufferWithGeometryInstances(
-                sceneParser,
+                sceneParseResult,
+                bvhBuffer : ref bvhBuffer,
                 primitiveBuffer : ref primitiveBuffer,
                 gemoetryInstanceBuffers : ref gemoetryInstanceBuffers);
 
@@ -114,7 +117,8 @@ namespace OpenRT {
         }
 
         private void LoadBufferWithGeometryInstances(
-            SceneParser sceneParser,
+            SceneParseResult sceneParseResult,
+            ref ComputeBuffer bvhBuffer,
             ref ComputeBuffer primitiveBuffer,
             ref SortedList<ISIdx, ComputeBuffer> gemoetryInstanceBuffers) {
 
@@ -136,6 +140,9 @@ namespace OpenRT {
                 gemoetryInstanceBuffers.Add(geoInsIter.Current.Key, buffer);
             }
 
+            var flattenBVH = sceneParseResult.TopLevelBVH.Flatten();
+            bvhBuffer = new ComputeBuffer(flattenBVH.Count, RTBoundingBox.stride);
+            bvhBuffer.SetData(flattenBVH);
         }
 
         private void RunLoadLightToBuffer(SceneParser sceneParser, ref ComputeBuffer lightInfoBuffer) {
@@ -159,10 +166,16 @@ namespace OpenRT {
             m_mainShader.SetInt("_RayGenID", rayGenId);
         }
 
-        private void RunSetGeometryInstanceToMainShader(ref ComputeBuffer primitiveBuffer, ref SortedList<ISIdx, ComputeBuffer> geoInsBuffers, int count) {
+        private void RunSetGeometryInstanceToMainShader(
+            ref ComputeBuffer bvhBuffer,
+            ref ComputeBuffer primitiveBuffer,
+            ref SortedList<ISIdx, ComputeBuffer> geoInsBuffers,
+            int count) {
 
             m_mainShader.SetInt("_NumOfPrimitive", count);
             m_mainShader.SetBuffer(kIndex, "_Primitives", primitiveBuffer);
+
+            m_mainShader.SetBuffer(kIndex, "_BVHTree", bvhBuffer);
 
             //TODO: Temp solution for demo RT sphere. Make it dynamic
             if (geoInsBuffers.Count > 1) {
@@ -200,6 +213,7 @@ namespace OpenRT {
         }
 
         private void RunBufferCleanUp() {
+            m_bvhBuffer.Release();
             m_primitiveBuffer.Release();
             foreach (var item in m_geometryInstanceBuffers) {
                 item.Value?.Release();

@@ -3,6 +3,7 @@
 #include "DataStructure/LightInfo.compute"
 #include "DataStructure/LightHit.compute"
 #include "Primitive/Primitive.compute"
+#include "BVH/RTBoundingBox.compute"
 
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
@@ -19,6 +20,9 @@ int _RayGenID;
 // Primitive
 int _NumOfPrimitive;
 StructuredBuffer<Primitive> _Primitives;
+
+// BVH
+StructuredBuffer<RTBoundingBox> _BVHTree;
 
 // Light
 int _NumOfLights;
