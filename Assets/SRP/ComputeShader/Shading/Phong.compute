@@ -2,6 +2,15 @@
 #define PHONG_COMPUTE
 
 // [shader(Phong)]
+
+void Phong_SecRays(
+    inout Ray ray,
+    RayHit hit,
+    out Ray rays[8]
+) 
+{
+}
+
 float3 Phong(
    inout Ray ray,
    RayHit hit,

@@ -12,7 +12,7 @@ namespace OpenRT {
             return WriteToCustomShaderCollection(GenerateShaderCollectionFileContent(shadersImportMetaList));
         }
 
-        public string GenerateShaderCollectionFileContent(SortedList<GUID, CustomShaderMeta>  shadersImportMetaList) {
+        public string GenerateShaderCollectionFileContent(SortedList<GUID, CustomShaderMeta> shadersImportMetaList) {
             StringBuilder sb = new StringBuilder();
             // Order is reverse
             sb.AppendLine("// =============================================");
@@ -28,7 +28,23 @@ namespace OpenRT {
                 sb.AppendLine($"#include \"{relPath}\"");
             }
 
-            sb.AppendLine("float3 Shade(inout Ray ray, RayHit hit, float3 ambientLightUpper)");
+            sb.AppendLine("void SecRays(Ray ray, RayHit hit, out Ray secRays[8])");
+            sb.AppendLine("{");
+            // TODO: Determine which kind of switch attribute works
+            // https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-switch
+            sb.AppendLine("     switch(_Primitives[hit.primitiveId].materialIndex)");
+            sb.AppendLine("     {");
+            int secRaysIndex = 0;
+            foreach (var kvp in shadersImportMetaList) {
+                sb.AppendLine($"        case {secRaysIndex}:");
+                sb.AppendLine($"            {kvp.Value.name}_SecRays(ray, hit, secRays);");
+                sb.AppendLine($"        break;");
+                secRaysIndex++;
+            }
+            sb.AppendLine("     }");
+            sb.AppendLine("}");
+
+            sb.AppendLine("float3 ClosestHit(inout Ray ray, RayHit hit, float3 ambientLightUpper)");
             sb.AppendLine("{");
             // TODO: Determine which kind of switch attribute works
             // https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-switch

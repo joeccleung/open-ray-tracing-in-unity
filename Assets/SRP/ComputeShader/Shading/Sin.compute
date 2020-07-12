@@ -4,6 +4,15 @@
 float SinMat_sin;
 
 // [shader(SinShader)]
+
+void SinShader_SecRays(
+    inout Ray ray,
+    RayHit hit,
+    out Ray rays[8]
+) 
+{
+}
+
 float3 SinShader(
    inout Ray ray,
    RayHit hit,

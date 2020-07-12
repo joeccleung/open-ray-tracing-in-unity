@@ -44,6 +44,8 @@ float3 _AmbientLightUpper;
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
+// MAX_RAY_GENERATION = 8;
+// MAX_SECONDARY_RAYS_PER_GENERATION = 8;
 
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
@@ -60,21 +62,31 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         Ray ray = RayGeneration(width, height, id, _RayGenID, i);
 
         // Trace
-        RayHit hit = Trace(ray,
-                        _NumOfPrimitive);    // Exclude nothing
+        RayHit hit = Trace(ray, _NumOfPrimitive);    // Exclude nothing
 
-            float3 result;
-            if (hit.primitiveId == -1) {
-                // Miss Shader
-                result = float3(0, 0, 0);
-            } else {
-                // Closet Hit Shader
-                result = Shade(
-                    ray,
-                    hit,
-                    _AmbientLightUpper
-                );
-            }
+        float3 result;
+        if (hit.primitiveId == -1) {
+            // Miss Shader
+            result = float3(0, 0, 0);
+        } else {
+            // Closet Hit Shader
+            Ray secondary[8][8];
+            int secondaryHead = -1;
+            
+            // SecRays(ray, hit, out secondary[8][0]);
+
+            // while( secondary[8][i] has valid ) {
+            //     RayHit secHit[8];
+            //     secHit[0..7] = Trace(secondary[8][0..7]);
+            //     SecRays();
+            // }
+            
+            result = ClosestHit(
+                ray,
+                hit,
+                _AmbientLightUpper
+            );
+        }
             
         finalColor += float4(result, 1) / numberOfRay;
     }

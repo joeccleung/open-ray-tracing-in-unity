@@ -1,0 +1,33 @@
+﻿#ifndef Reflective_COMPUTE
+#define Reflective_COMPUTE
+
+// [shader(Reflective)]
+
+void Reflective_SecRays(
+    inout Ray ray,
+    RayHit hit,
+    out Ray rays[8]
+) 
+{
+    if (ray.gen <= 1) {
+        return;
+    }
+
+    Ray reflectRay;
+    reflectRay.origin = hit.position;
+    reflectRay.direction = reflect(ray.direction, hit.normal);
+    reflectRay.gen = ray.gen - 1;
+
+    rays[0] = reflectRay;
+}
+
+float3 Reflective(
+   inout Ray ray,
+   RayHit hit,
+   float3 ambientLightUpper
+)
+{
+   return float3(0.6f, 1, 0.2f);
+}
+
+#endif // Reflective_COMPUTE 

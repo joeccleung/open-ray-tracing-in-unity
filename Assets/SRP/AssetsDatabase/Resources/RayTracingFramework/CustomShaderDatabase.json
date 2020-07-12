@@ -15,27 +15,27 @@
     "39feb2bd-5273-4001-be13-a9b18abc1368": {
       "name": "Phong",
       "absPath": "Assets/SRP/ComputeShader/Shading/Phong.compute",
-      "shaderType": 0
+      "shaderType": 1
     },
     "1a245b97-ee6f-4385-936d-6d8529111bfe": {
       "name": "Green",
       "absPath": "Assets/SRP/ComputeShader/Shading/Green.compute",
-      "shaderType": 0
+      "shaderType": 1
     },
     "e8ef6fe3-1424-43d2-86b9-be368b8f6cc4": {
       "name": "SinShader",
       "absPath": "Assets/SRP/ComputeShader/Shading/Sin.compute",
-      "shaderType": 0
-    },
-    "9d90d5ac-7fc0-4ad7-8e4b-fbf26bce6312": {
-      "name": "Yellow",
-      "absPath": "Assets/SRP/ComputeShader/Shading/Yellow.compute",
       "shaderType": 1
     },
     "d125b454-8242-4c6a-b62c-beca72fa4d95": {
       "name": "Red",
       "absPath": "Assets/SRP/ComputeShader/Shading/Red.compute",
-      "shaderType": 0
+      "shaderType": 1
+    },
+    "60e52e81-959c-4784-87f1-1110e76152dd": {
+      "name": "Reflective",
+      "absPath": "Assets/SRP/ComputeShader/Shading/Reflective.compute",
+      "shaderType": 1
     }
   },
   "lights": {}
