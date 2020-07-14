@@ -10,6 +10,9 @@ namespace OpenRT {
     /// 
     /// </summary>
     public class TopLevelBVH {
+
+        public const int HARD_LIMIT_MAX_DEPTH = 31;
+
         private List<RTBoundingBox> m_boxes = new List<RTBoundingBox>();
         private BVHNode m_root;
 
@@ -24,11 +27,10 @@ namespace OpenRT {
             }
         }
 
-        private BVHNode Build(List<RTBoundingBox> boxes) {
+        private BVHNode Build(List<RTBoundingBox> boxes, in int depth) {
 
-            RTBoundingBox rootBox = CombineAllBox(boxes);
-            char rootBoxLongestAxis = rootBox.longestAxis;
-            BVHNode rootNode = new BVHNode(rootBox);
+            BVHNode rootNode = BVHNode.CombineAllBoxesAndPrimitives(boxes);
+            char rootBoxLongestAxis = rootNode.bounding.longestAxis;
 
             if (boxes.Count <= 1) {
                 return rootNode;
@@ -67,46 +69,24 @@ namespace OpenRT {
                 }
             }
 
-            if (left.Count == 0 || right.Count == 0) {
+            if (left.Count == 0 || right.Count == 0 || depth == HARD_LIMIT_MAX_DEPTH) {
                 // Can no longer bisect the bounding box, group them into one
-                rootNode.boxes.AddRange(left);
-                rootNode.boxes.AddRange(right);
+
             } else {
                 // Continue bisect
-                rootNode.left = Build(left);
-                rootNode.right = Build(right);
+                rootNode.left = Build(left, depth + 1);
+                rootNode.right = Build(right, depth + 1);
             }
 
             return rootNode;
         }
 
         public void Construct() {
-            m_root = Build(m_boxes);
+            m_root = Build(m_boxes, 0);
         }
 
         public void Clear() {
             m_boxes.Clear();
-        }
-
-        private RTBoundingBox Combine2Box(RTBoundingBox a, RTBoundingBox b) {
-            var max = Vector3.Max(a.max, b.max);
-            var min = Vector3.Min(a.min, b.min);
-            var primitiveBegin = Mathf.Min(a.primitiveBegin, b.primitiveBegin);
-            var primitiveEnd = Mathf.Max(a.primitiveEnd, b.primitiveEnd);
-
-            return new RTBoundingBox(-1, -1,
-                max,
-                min,
-                primitiveBegin,
-                primitiveEnd);
-        }
-
-        private RTBoundingBox CombineAllBox(List<RTBoundingBox> boxes) {
-            RTBoundingBox root = boxes[0];
-            foreach (var box in boxes) {
-                root = Combine2Box(root, box);
-            }
-            return root;
         }
 
         private Vector3 CuttingPlane(List<RTBoundingBox> boxes) {
@@ -118,10 +98,14 @@ namespace OpenRT {
             return cp;
         }
 
-        public List<RTBoundingBox> Flatten() {
+        public void Flatten(in List<Primitive> scenePrimitives,
+            out List<RTBoundingBox> flatten,
+            out List<Primitive> reorderedPrimitives) {
+
             int id = 0;
 
-            List<RTBoundingBox> flattern = new List<RTBoundingBox>();
+            flatten = new List<RTBoundingBox>();
+            reorderedPrimitives = new List<Primitive>();
 
             Queue<BVHNode> bfs = new Queue<BVHNode>();
 
@@ -140,15 +124,24 @@ namespace OpenRT {
                     bfs.Enqueue(node.right);
                 }
 
-                RTBoundingBox box = node.boxes[0].SetLeftRight(
+                RTBoundingBox box = node.bounding.SetLeftRight(
                     left: node.leftID,
                     right: node.rightID
                 );
 
-                flattern.Add(box); //TODO: Support overlapping bounding box and include all their primitives IDs
-            }
+                if (node.leftID == 0 && node.rightID == 0) {
+                    // Leaf Node
+                    box.primitiveBegin = reorderedPrimitives.Count;
+                    box.primitiveCount = node.children.Count;
+                    foreach (var child in node.children)
+                    {
+                        reorderedPrimitives.Add(scenePrimitives[child.primitiveBegin]);
+                    }
+                }
 
-            return flattern;
+                flatten.Add(box); //TODO: Support overlapping bounding box and include all their primitives IDs
+
+            }
         }
 
         public BVHNode Root {

@@ -26,7 +26,7 @@ namespace OpenRT {
             GameObject[] roots = scene.GetRootGameObjects();
 
             ParseGeometry(roots,
-                          ref sceneParseResult);
+                ref sceneParseResult);
 
             ParseLight(ref sceneParseResult);
 
@@ -73,47 +73,41 @@ namespace OpenRT {
                         var intersectShaderGUID = renderer.geometry.GetIntersectShaderGUID();
                         int intersectShaderIndex = CustomShaderDatabase.Instance.GUIDToShaderIndex(intersectShaderGUID, EShaderType.Intersect);
 
-                        if (!sceneParseResult.GeometryStride.ContainsKey(intersectShaderIndex)) {
-                            sceneParseResult.GeometryStride.Add(intersectShaderIndex, renderer.geometry.GetStride());
-                        }
-
                         RTMaterial material = renderer.material;
 
                         if (geoInsData == null || material == null) {
                             continue;
                         }
 
-                        if (sceneParseResult.GeometryInstances.ContainsKey(intersectShaderIndex)) {
-                            sceneParseResult.GeometryInstances[intersectShaderIndex].AddRange(geoInsData);
-                        } else {
-                            sceneParseResult.GeometryInstances[intersectShaderIndex] = geoInsData;
+                        if (!sceneParseResult.GeometryStride.ContainsKey(intersectShaderIndex)) {
+                            sceneParseResult.GeometryStride.Add(intersectShaderIndex, renderer.geometry.GetStride());
                         }
 
-                        List<int> primitiveIdsOfThisBox = new List<int>();
-                        for (int t = 0; t < renderer.geometry.GetCount(); t++) {
+                        sceneParseResult.AddGeometryData(
+                            geometryData: geoInsData,
+                            intersectIndex: intersectShaderIndex
+                        );
 
-                            if (sceneParseResult.GeometryCount.ContainsKey(intersectShaderIndex)) {
-                                sceneParseResult.GeometryCount[intersectShaderIndex] += 1;
-                            } else {
-                                sceneParseResult.GeometryCount.Add(intersectShaderIndex, 1);
-                            }
+                        int startIndex = sceneParseResult.AddGeometryCount(
+                            count: renderer.geometry.GetCount(),
+                            intersectIndex: intersectShaderIndex
+                        );
 
-                            int primitiveIndex = sceneParseResult.Primitives.Count;
-                            primitiveIdsOfThisBox.Add(primitiveIndex);
+                        sceneParseResult.AddPrimitive(new Primitive(
+                            geometryIndex: intersectShaderIndex,
+                            geometryInstanceBegin: startIndex,
+                            geometryInstanceCount: renderer.geometry.GetCount(),
+                            materialIndex: material.shaderIndex,
+                            transformIndex: 0
+                        ));
 
-                            sceneParseResult.AddPrimitive(new Primitive(
-                                geometryIndex: intersectShaderIndex,
-                                geometryInstanceIndex: sceneParseResult.GeometryCount[intersectShaderIndex] - 1,
-                                materialIndex: material.shaderIndex,
-                                transformIndex: 0
-                            ));
-                        }
                         var boxOfThisObject = renderer.geometry.GetBoundingBox();
                         sceneParseResult.AddBoundingBox(new RTBoundingBox(
                             max: boxOfThisObject.max,
                             min: boxOfThisObject.min,
-                            primitiveIds: primitiveIdsOfThisBox
+                            primitive: sceneParseResult.Primitives.Count - 1
                         ));
+
                         sceneParseResult.AddMaterial(material);
                     }
                 }

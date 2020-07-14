@@ -8,8 +8,8 @@ struct RTBoundingBox
     int rightIdx;
     float3 max;
     float3 min;
-    int primitiveIdBegin;
-    int primitiveIdEnd;
+    int primitiveBegin;
+    int primitiveCount;
 };
 
 #endif
