@@ -6,6 +6,11 @@ namespace OpenRT {
     public class BVHVisualizer : MonoBehaviour {
         public void OnDrawGizmos() {
 
+            if (SceneParser.Instance.sceneParseResult.TopLevelBVH.Root == null)
+            {
+                return;
+            }
+
             Queue<BVHNode> bfs = new Queue<BVHNode>();
             Queue<int> depthQ = new Queue<int>();
             bfs.Enqueue(SceneParser.Instance.sceneParseResult.TopLevelBVH.Root);
@@ -15,7 +20,7 @@ namespace OpenRT {
                 var node = bfs.Dequeue();
                 var depth = depthQ.Dequeue();
                 Gizmos.color = Rainbow(depth);
-                Gizmos.DrawWireCube(node.boxes[0].center, node.boxes[0].size);
+                Gizmos.DrawWireCube(node.bounding.center, node.bounding.size);
                 if (node.left != null) {
                     bfs.Enqueue(node.left);
                     depthQ.Enqueue(depth + 1);

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace OpenRT {
     using ISIdx = System.Int32; // IntersectShaderIndex
     public class SceneParseResult {
-        private SortedList<ISIdx, List<float>> m_geometryInstances;
+        private SortedList<ISIdx, List<float>> m_geometryData;
         private Dictionary<ISIdx, int> m_geometryCount;
         private Dictionary<ISIdx, int> m_geometryStrides;
         private List<RTLightInfo> m_lightInfos;
@@ -13,7 +13,7 @@ namespace OpenRT {
 
         public SceneParseResult() {
             m_geometryCount = new Dictionary<ISIdx, int>();
-            m_geometryInstances = new SortedList<ISIdx, List<float>>();
+            m_geometryData = new SortedList<ISIdx, List<float>>();
             m_geometryStrides = new Dictionary<ISIdx, int>();
             m_lightInfos = new List<RTLightInfo>();
             m_materials = new List<RTMaterial>();
@@ -21,65 +21,28 @@ namespace OpenRT {
             topLevelBVH = new TopLevelBVH();
         }
 
-        public Dictionary<ISIdx, int> GeometryCount {
-            get {
-                return m_geometryCount;
-            }
-        }
-        public SortedList<ISIdx, List<float>> GeometryInstances {
-            get {
-                return m_geometryInstances;
-            }
-        }
-
-        public int GetGeometryInstancesCount(int geometryIndex) {
-            if (m_geometryCount.ContainsKey(geometryIndex)) {
-                return m_geometryCount[geometryIndex];
-            } else {
-                return 0;
-            }
-        }
-
-        public int GetGeometryInstancesStride(int geometryIndex) {
-            if (m_geometryStrides.ContainsKey(geometryIndex)) {
-                return m_geometryStrides[geometryIndex];
-            } else {
-                return 1;
-            }
-        }
-
-        public Dictionary<ISIdx, int> GeometryStride {
-            get {
-                return m_geometryStrides;
-            }
-        }
-        public List<RTLightInfo> Lights {
-            get {
-                return m_lightInfos;
-            }
-        }
-
-        public List<RTMaterial> Materials {
-            get {
-                return m_materials;
-            }
-        }
-
-        public List<Primitive> Primitives {
-            get {
-                return m_primitives;
-            }
-        }
-
-
-        public TopLevelBVH TopLevelBVH {
-            get {
-                return topLevelBVH;
-            }
-        }
-
         public void AddBoundingBox(RTBoundingBox box) {
             topLevelBVH.AddBoundingBox(box);
+        }
+
+        public int AddGeometryCount(int count, int intersectIndex) {
+            int startIndex = 0;
+            if (m_geometryCount.ContainsKey(intersectIndex)) {
+                startIndex = m_geometryCount[intersectIndex];
+                m_geometryCount[intersectIndex] += count;
+            } else {
+                m_geometryCount.Add(intersectIndex, count);
+            }
+            return startIndex;
+        }
+
+        public void AddGeometryData(List<float> geometryData, int intersectIndex) {
+
+            if (m_geometryData.ContainsKey(intersectIndex)) {
+                m_geometryData[intersectIndex].AddRange(geometryData);
+            } else {
+                m_geometryData[intersectIndex] = geometryData;
+            }
         }
 
         public void AddLight(RTLightInfo lightInfo) {
@@ -99,7 +62,7 @@ namespace OpenRT {
         }
 
         public void ClearAllGeometries() {
-            m_geometryInstances.Clear();
+            m_geometryData.Clear();
             m_geometryCount.Clear();
             m_geometryStrides.Clear();
         }
@@ -115,7 +78,64 @@ namespace OpenRT {
         public void ClearAllPrimitives() {
             m_primitives.Clear();
         }
-    
+
+        public Dictionary<ISIdx, int> GeometryCount {
+            get {
+                return m_geometryCount;
+            }
+        }
+
+        public SortedList<ISIdx, List<float>> GeometryInstances {
+            get {
+                return m_geometryData;
+            }
+        }
+
+        public Dictionary<ISIdx, int> GeometryStride {
+            get {
+                return m_geometryStrides;
+            }
+        }
+
+        public int GetGeometryInstancesCount(int geometryIndex) {
+            if (m_geometryCount.ContainsKey(geometryIndex)) {
+                return m_geometryCount[geometryIndex];
+            } else {
+                return 0;
+            }
+        }
+
+        public int GetGeometryInstancesStride(int geometryIndex) {
+            if (m_geometryStrides.ContainsKey(geometryIndex)) {
+                return m_geometryStrides[geometryIndex];
+            } else {
+                return 1;
+            }
+        }
+
+        public List<RTLightInfo> Lights {
+            get {
+                return m_lightInfos;
+            }
+        }
+
+        public List<RTMaterial> Materials {
+            get {
+                return m_materials;
+            }
+        }
+
+        public List<Primitive> Primitives {
+            get {
+                return m_primitives;
+            }
+        }
+
+        public TopLevelBVH TopLevelBVH {
+            get {
+                return topLevelBVH;
+            }
+        }
 
     }
 }

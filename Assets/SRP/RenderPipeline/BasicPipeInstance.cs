@@ -122,11 +122,6 @@ namespace OpenRT {
             ref ComputeBuffer primitiveBuffer,
             ref SortedList<ISIdx, ComputeBuffer> gemoetryInstanceBuffers) {
 
-            int primitiveCount = sceneParseResult.Primitives.Count;
-
-            primitiveBuffer = new ComputeBuffer(primitiveCount, Primitive.GetStride());
-            primitiveBuffer.SetData(sceneParseResult.Primitives);
-
             foreach (var item in gemoetryInstanceBuffers) {
                 item.Value?.Release();
             }
@@ -140,9 +135,16 @@ namespace OpenRT {
                 gemoetryInstanceBuffers.Add(geoInsIter.Current.Key, buffer);
             }
 
-            var flattenBVH = sceneParseResult.TopLevelBVH.Flatten();
+            List<RTBoundingBox> flattenBVH;
+            List<Primitive> reorderedPrimitives;
+            sceneParseResult.TopLevelBVH.Flatten(
+                scenePrimitives: sceneParseResult.Primitives,
+                flatten: out flattenBVH,
+                reorderedPrimitives: out reorderedPrimitives);
             bvhBuffer = new ComputeBuffer(flattenBVH.Count, RTBoundingBox.stride);
             bvhBuffer.SetData(flattenBVH);
+            primitiveBuffer = new ComputeBuffer(reorderedPrimitives.Count, Primitive.GetStride());
+            primitiveBuffer.SetData(reorderedPrimitives);
         }
 
         private void RunLoadLightToBuffer(SceneParser sceneParser, ref ComputeBuffer lightInfoBuffer) {

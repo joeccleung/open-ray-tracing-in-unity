@@ -45,30 +45,33 @@ void RTSphereIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int p
     // Step 4: Update best hit distance
     //
 
-    // // Step 1: Define
-    RTSphere sphere = _RTSpheres[primitive.geometryInstanceIndex];;
-    float3 oriToCtr = sphere.center - ray.origin;
-    float d = dot(ray.direction, oriToCtr);
-
-    // Step 2: Discriminant
-    float discriminant = d * d - dot(-oriToCtr, -oriToCtr) + sphere.radius * sphere.radius;
-    if(discriminant < 0)
+    for(int s = 0; s < primitive.geometryInstanceCount; s++)
     {
-        return;
-    }
+        // Step 1: Define
+        RTSphere sphere = _RTSpheres[primitive.geometryInstanceBegin + s];;
+        float3 oriToCtr = sphere.center - ray.origin;
+        float d = dot(ray.direction, oriToCtr);
 
-    // Step 3: Calculate hit distance
-    float disSqrt = sqrt(discriminant);
-    float hitDis = d - disSqrt > 0 ? d - disSqrt : d + disSqrt;     // If d - disSqrt > 0, then d + disSqrt must be greater than d - disSqrt, we take the least positive value; Otherwise, we take d + disSqrt
+        // Step 2: Discriminant
+        float discriminant = d * d - dot(-oriToCtr, -oriToCtr) + sphere.radius * sphere.radius;
+        if(discriminant < 0)
+        {
+            continue;
+        }
 
-    // Step 4: Update best hit distance
-    if (hitDis > 0 && hitDis < bestHit.distance)
-    {
-        bestHit.distance = hitDis;
-        bestHit.primitiveId = primitiveId;
-        bestHit.position = ray.origin + hitDis * ray.direction;
-        bestHit.normal = normalize(bestHit.position - sphere.center);
-        // bestHit.matIndex = sphere.matIndex;
+        // Step 3: Calculate hit distance
+        float disSqrt = sqrt(discriminant);
+        float hitDis = d - disSqrt > 0 ? d - disSqrt : d + disSqrt;     // If d - disSqrt > 0, then d + disSqrt must be greater than d - disSqrt, we take the least positive value; Otherwise, we take d + disSqrt
+
+        // Step 4: Update best hit distance
+        if (hitDis > 0 && hitDis < bestHit.distance)
+        {
+            bestHit.distance = hitDis;
+            bestHit.primitiveId = primitiveId;
+            bestHit.position = ray.origin + hitDis * ray.direction;
+            bestHit.normal = normalize(bestHit.position - sphere.center);
+            // bestHit.matIndex = sphere.matIndex;
+        }
     }
 }
 
