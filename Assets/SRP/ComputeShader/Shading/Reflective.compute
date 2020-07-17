@@ -6,7 +6,7 @@
 void Reflective_SecRays(
     inout Ray ray,
     RayHit hit,
-    out Ray rays[8]
+    out Ray rays[4]
 ) 
 {
     if (ray.gen <= 1) {

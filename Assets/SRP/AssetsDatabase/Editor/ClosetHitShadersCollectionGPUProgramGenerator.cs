@@ -28,7 +28,7 @@ namespace OpenRT {
                 sb.AppendLine($"#include \"{relPath}\"");
             }
 
-            sb.AppendLine("void SecRays(Ray ray, RayHit hit, out Ray secRays[8])");
+            sb.AppendLine("void SecRays(Ray ray, RayHit hit, out Ray secRays[4])");
             sb.AppendLine("{");
             // TODO: Determine which kind of switch attribute works
             // https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-switch

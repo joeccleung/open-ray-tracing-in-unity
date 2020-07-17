@@ -69,18 +69,20 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             // Miss Shader
             result = float3(0, 0, 0);
         } else {
-            // Closet Hit Shader
-            Ray secondary[8][8];
-            int secondaryHead = -1;
             
-            // SecRays(ray, hit, out secondary[8][0]);
+            Ray secondaryRays[32];
+            int secondaryRaysJump[64];  //[even]: start; [old]: count
+            int initialEntry[2];    //[0]:start; [1]:count
+            initialEntry[0] = 0;
+            initialEntry[1] = 0;
+            
+            Ray secRays[4];
+            SecRays(ray, hit, secRays);
+            for (int i = 0; i < 4; i++) {
+                
+            }
 
-            // while( secondary[8][i] has valid ) {
-            //     RayHit secHit[8];
-            //     secHit[0..7] = Trace(secondary[8][0..7]);
-            //     SecRays();
-            // }
-            
+            // Closet Hit Shader
             result = ClosestHit(
                 ray,
                 hit,
