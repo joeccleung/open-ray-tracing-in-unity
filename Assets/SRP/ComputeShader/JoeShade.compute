@@ -17,6 +17,10 @@ float4x4 _CameraInverseProjection;
 // Ray Generation
 int _RayGenID;
 
+//Skybox
+Texture2D<float4> _SkyboxTexture;
+SamplerState sampler_SkyboxTexture;
+
 // Primitive
 int _NumOfPrimitive;
 StructuredBuffer<Primitive> _Primitives;
@@ -30,6 +34,14 @@ StructuredBuffer<LightInfo> _Lights;
 
 // Ambient
 float3 _AmbientLightUpper;
+
+// Placeholder
+float3 missShader(float3 direction) {
+    // Sample the skybox and write it
+    float theta = acos(direction.y) / -3.14159265359f;
+    float phi = atan2(direction.x, -direction.z) / -3.14159265359f * 0.5f;
+    return _SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
+}
 
 #include "RayCasting/Trace.compute"
 

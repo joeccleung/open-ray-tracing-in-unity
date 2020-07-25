@@ -52,6 +52,7 @@ namespace OpenRT {
             RunLoadGeometryToBuffer(sceneParseResult, ref m_bvhBuffer, ref m_mainShader, ref m_primitiveBuffer, ref m_geometryInstanceBuffers);
             RunLoadLightToBuffer(m_sceneParser, ref m_lightInfoBuffer);
             RunSetAmbientToMainShader(m_config);
+            RunSetMissShader(m_mainShader, m_config);
             RunSetRayGenerationShader(m_config.rayGenId);
             RunSetGeometryInstanceToMainShader(ref m_bvhBuffer, ref m_primitiveBuffer, ref m_geometryInstanceBuffers, sceneParseResult.Primitives.Count);
             RunSetLightsToMainShader(sceneParseResult.Lights.Count, ref m_lightInfoBuffer);
@@ -74,6 +75,10 @@ namespace OpenRT {
             var scene = SceneManager.GetActiveScene();
 
             sceneParseResult = m_sceneParser.ParseScene(scene);
+        }
+
+        private void RunSetMissShader(ComputeShader shader, RenderPipelineConfigObject m_config) {
+            shader.SetTexture(kIndex, "_SkyboxTexture", m_config.skybox);
         }
 
         private void RunTargetTextureInit(ref RenderTexture targetTexture) {
