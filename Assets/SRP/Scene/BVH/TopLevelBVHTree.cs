@@ -12,6 +12,7 @@ namespace OpenRT {
     public class TopLevelBVH {
 
         public const int HARD_LIMIT_MAX_DEPTH = 31;
+        public const int MIN_NUMBER_OF_GEO_IN_BOX = 0;
 
         private List<RTBoundingBox> m_boxes = new List<RTBoundingBox>();
         private BVHNode m_root;
@@ -69,7 +70,9 @@ namespace OpenRT {
                 }
             }
 
-            if (left.Count == 0 || right.Count == 0 || depth == HARD_LIMIT_MAX_DEPTH) {
+            if (left.Count <= MIN_NUMBER_OF_GEO_IN_BOX
+                || right.Count <= MIN_NUMBER_OF_GEO_IN_BOX
+                || depth == HARD_LIMIT_MAX_DEPTH) {
                 // Can no longer bisect the bounding box, group them into one
 
             } else {
