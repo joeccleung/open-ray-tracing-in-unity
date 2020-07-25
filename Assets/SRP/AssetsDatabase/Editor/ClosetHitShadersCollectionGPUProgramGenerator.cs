@@ -28,7 +28,7 @@ namespace OpenRT {
                 sb.AppendLine($"#include \"{relPath}\"");
             }
 
-            sb.AppendLine("void SecRays(Ray ray, RayHit hit, out Ray secRays[4])");
+            sb.AppendLine("void SecRays(Ray ray, RayHit hit, inout SecRaysAtHit secRays)");
             sb.AppendLine("{");
             // TODO: Determine which kind of switch attribute works
             // https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-switch
@@ -44,7 +44,7 @@ namespace OpenRT {
             sb.AppendLine("     }");
             sb.AppendLine("}");
 
-            sb.AppendLine("float3 ClosestHit(inout Ray ray, RayHit hit, float3 ambientLightUpper)");
+            sb.AppendLine("float3 ClosestHit(inout Ray ray, RayHit hit, float3 ambientLightUpper, float3 secondaryRayColor)");
             sb.AppendLine("{");
             // TODO: Determine which kind of switch attribute works
             // https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-switch
@@ -54,7 +54,7 @@ namespace OpenRT {
             int index = 0;
             foreach (var kvp in shadersImportMetaList) {
                 sb.AppendLine($"case {index}:");
-                sb.AppendLine($"   return {kvp.Value.name}(ray, hit, ambientLightUpper);");
+                sb.AppendLine($"   return {kvp.Value.name}(ray, hit, ambientLightUpper, secondaryRayColor);");
                 index++;
             }
             sb.AppendLine($"default:");

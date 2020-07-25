@@ -64,7 +64,7 @@ void RTSphereIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int p
         float hitDis = d - disSqrt > 0 ? d - disSqrt : d + disSqrt;     // If d - disSqrt > 0, then d + disSqrt must be greater than d - disSqrt, we take the least positive value; Otherwise, we take d + disSqrt
 
         // Step 4: Update best hit distance
-        if (hitDis > 0 && hitDis < bestHit.distance)
+        if (hitDis > ray.tmin && hitDis < bestHit.distance)
         {
             bestHit.distance = hitDis;
             bestHit.primitiveId = primitiveId;

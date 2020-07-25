@@ -11,7 +11,7 @@ Ray CustomOrthographic(uint width, uint height, uint3 id, uint iter)
     float3 origin = mul(_CameraInverseProjection, float4(uv * 6.0f, 0.0f, 1.0f)).xyz;
     // Transform the direction from camera to world space and normalize
     float3 direction = normalize(_CameraForward.xyz);
-    return CreateRay(origin, direction);
+    return CreateRay(origin, direction, 1);
 }
 
 uint CustomOrthographicNumberOfRay(uint width, uint height, uint3 id)

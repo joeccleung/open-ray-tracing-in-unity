@@ -7,16 +7,33 @@ The Ray structure
 
 struct Ray
 {
+    float3 color;
     float3 origin;
     float3 direction;
+    float tmin;
+    float weight;
     uint gen;
 };
 
-Ray CreateRay(float3 origin, float3 direction)
+Ray EmptyRay();
+
+Ray CreateRay(float3 origin, float3 direction, int gen)
 {
-    Ray ray;
+    Ray ray = EmptyRay();
     ray.origin = origin;
     ray.direction = normalize(direction);
+    ray.gen = gen;
+    return ray;
+}
+
+Ray EmptyRay()
+{
+    Ray ray;
+    ray.color = float3(0, 0, 0);
+    ray.origin = float3(0, 0, 0);
+    ray.direction = float3(0, 0, 0);
+    ray.tmin = -1 * 1.#INF;
+    ray.weight = 0;
     ray.gen = 1;
     return ray;
 }

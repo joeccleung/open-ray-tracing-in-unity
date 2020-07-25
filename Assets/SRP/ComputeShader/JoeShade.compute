@@ -2,6 +2,7 @@
 #include "RayHit.compute"
 #include "DataStructure/LightInfo.compute"
 #include "DataStructure/LightHit.compute"
+#include "DataStructure/SecRaysAtHit.compute"
 #include "Primitive/Primitive.compute"
 #include "BVH/RTBoundingBox.compute"
 
@@ -56,8 +57,15 @@ float3 missShader(float3 direction) {
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
-// MAX_RAY_GENERATION = 8;
-// MAX_SECONDARY_RAYS_PER_GENERATION = 8;
+// MAX_RAY_GENERATION = 4;
+// MAX_SECONDARY_RAYS_PER_GENERATION = 4;
+
+static const int MAX_RAY_GEN = 4;
+static const int MAX_RAY_PER_LEVEL = 4;
+
+int childRayOffset(int myLevel) {
+    return (myLevel + 1) * MAX_RAY_PER_LEVEL;
+}
 
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
@@ -70,35 +78,122 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
     float4 finalColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
+    Ray secondaryRays[MAX_RAY_GEN * MAX_RAY_PER_LEVEL];
+    int srElement[MAX_RAY_PER_LEVEL] = {-1, -1, -1, -1};
+
     for (uint i = 0; i < numberOfRay; i++) {
         Ray ray = RayGeneration(width, height, id, _RayGenID, i);
+        ray.tmin = 0.1f;
 
         // Trace
         RayHit hit = Trace(ray, _NumOfPrimitive);    // Exclude nothing
 
         float3 result;
         if (hit.primitiveId == -1) {
-            // Miss Shader
-            result = float3(0, 0, 0);
+            result = missShader(ray.direction);
         } else {
             
-            Ray secondaryRays[32];
-            int secondaryRaysJump[64];  //[even]: start; [old]: count
-            int initialEntry[2];    //[0]:start; [1]:count
-            initialEntry[0] = 0;
-            initialEntry[1] = 0;
+            int srLevel = -1;
+            float3 secRayCombinedColor = float3(0, 0, 0);
             
-            Ray secRays[4];
-            SecRays(ray, hit, secRays);
-            for (int i = 0; i < 4; i++) {
-                
+            // TODO: Refactor this to avoid special case for primary ray
+            SecRaysAtHit secRaysAtHit = CreateSecRaysAtHit();   // TODO: Optimization: Avoid initialize the internal Ray array
+            SecRays(ray, hit, secRaysAtHit);
+            // Check if there is secondary rays
+            if (secRaysAtHit.srays[0].tmin > -1 * 1.#INF) {
+                srLevel = srLevel + 1;
+                srElement[0] = 0;
+                for (int i = 0; i < MAX_RAY_PER_LEVEL; i++) {
+                    secondaryRays[srLevel * 4 + i] = secRaysAtHit.srays[i];  // Copy to secondary rays stack
+                }
+
+                while (srLevel > -1)
+                {
+                    if (srElement[srLevel] < MAX_RAY_PER_LEVEL)
+                    {
+                        int secRayIndex = srLevel * MAX_RAY_PER_LEVEL + srElement[srLevel];
+                        if (srLevel < (MAX_RAY_GEN - 1))
+                        {
+                            if (srElement[srLevel + 1] < 0) 
+                            {
+                                RayHit secHit = Trace(secondaryRays[secRayIndex], _NumOfPrimitive);
+                                if (secHit.primitiveId == -1)
+                                {
+                                    secondaryRays[secRayIndex].color = missShader(secondaryRays[secRayIndex].direction);
+                                    // Move to sibling
+                                    srElement[srLevel] = srElement[srLevel] + 1;
+                                }
+                                else
+                                {
+                                    SecRaysAtHit _secRaysAtHit = CreateSecRaysAtHit();   // TODO: Optimization: Avoid initialize the internal Ray array
+                                    SecRays(secondaryRays[secRayIndex], secHit, _secRaysAtHit);
+                                    for (int i = 0; i < MAX_RAY_PER_LEVEL; i++) {
+                                        secondaryRays[childRayOffset(srLevel) + i] = secRaysAtHit.srays[i];  // Copy to secondary rays stack
+                                    }
+                                    // Move to children
+                                    srLevel = srLevel + 1;
+                                }
+                            }
+                            else
+                            {
+                                // Back from children. Calculate the ray color from children rays
+                                srElement[srLevel + 1] = -1;
+                                float3 children = float3(0, 0, 0);
+                                for (int c = 0; c < MAX_RAY_PER_LEVEL; c++) {
+                                    children = children + secondaryRays[childRayOffset(srLevel) + c].color * secondaryRays[childRayOffset(srLevel) + c].weight;
+                                }
+                                RayHit secHit = Trace(secondaryRays[secRayIndex], _NumOfPrimitive); //TODO: Optimization. Avoid doing trace again.
+                                secondaryRays[secRayIndex].color = ClosestHit(
+                                                                        secondaryRays[secRayIndex],
+                                                                        secHit,
+                                                                        _AmbientLightUpper,
+                                                                        children
+                                                                    );
+                                // Move to sibling
+                                srElement[srLevel] = srElement[srLevel] + 1;
+                            }
+                        }
+                        else
+                        {
+                            // The deepest iteration. We only allow ray-scene intersection. No more secondary ray spawning.
+                            RayHit secHit = Trace(secondaryRays[secRayIndex], _NumOfPrimitive);
+                            if (secHit.primitiveId == -1)
+                            {
+                                secondaryRays[secRayIndex].color = missShader(secondaryRays[secRayIndex].direction);
+                            }
+                            else
+                            {
+                                secondaryRays[secRayIndex].color = ClosestHit(
+                                                                        secondaryRays[secRayIndex],
+                                                                        secHit,
+                                                                        _AmbientLightUpper,
+                                                                        float3(0, 0, 0) // No more secondary hit
+                                                                    );
+                            }
+                            
+                            // Move to sibling
+                            srElement[srLevel] = srElement[srLevel] + 1;
+                        }
+                    }
+                    else
+                    {
+                        // Finish iterating this level. Fallback to parent.
+                        srLevel = srLevel - 1;
+                    }
+                }
+                srElement[0] = -1;
+
+                for (int c = 0; c < MAX_RAY_PER_LEVEL; c++) {
+                    secRayCombinedColor = secRayCombinedColor + secondaryRays[c].color * secondaryRays[c].weight;
+                }
             }
 
             // Closet Hit Shader
             result = ClosestHit(
                 ray,
                 hit,
-                _AmbientLightUpper
+                _AmbientLightUpper,
+                secRayCombinedColor
             );
         }
             

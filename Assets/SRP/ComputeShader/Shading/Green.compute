@@ -8,7 +8,7 @@ float4 DemoMat_color;
 void Green_SecRays(
     inout Ray ray,
     RayHit hit,
-    out Ray rays[4]
+    inout SecRaysAtHit secRaysAtHit
 ) 
 {
 }
@@ -16,7 +16,8 @@ void Green_SecRays(
 float3 Green(
    inout Ray ray,
    RayHit hit,
-   float3 ambientLightUpper
+   float3 ambientLightUpper,
+   float3 secondaryRayColor
 )
 {
    return DemoMat_color.rgb;

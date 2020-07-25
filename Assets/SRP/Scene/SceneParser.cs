@@ -42,7 +42,7 @@ namespace OpenRT {
             sceneParseResult.AddLight(new RTLightInfo(
                 instance: 0,
                 position: new Vector3(1, 1, 1),
-                rotation : new Vector3(45, 45, 45),
+                rotation : new Vector3(0, 0, -1),
                 type : 0
             ));
 
