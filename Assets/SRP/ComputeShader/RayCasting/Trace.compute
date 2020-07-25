@@ -10,6 +10,10 @@ RayHit Trace(Ray ray, int _NumOfPrimitive)
 {
     RayHit bestHit = CreateRayHit();
 
+    if (ray.tmin <= 0) {
+        return bestHit;
+    }
+
     int bvhStack[32];
     bvhStack[0] = 0;
     int bvhHead = 0;
@@ -26,9 +30,9 @@ RayHit Trace(Ray ray, int _NumOfPrimitive)
         if (RayBoxIntersection(ray, _BVHTree[nodeIdx].min, _BVHTree[nodeIdx].max)) {
             if (_BVHTree[nodeIdx].leftIdx == 0 && _BVHTree[nodeIdx].rightIdx == 0) {
                 // Leaf node
-                for(int t = _BVHTree[nodeIdx].primitiveIdBegin; t <= _BVHTree[nodeIdx].primitiveIdEnd; t++)
+                for(int p = 0; p < _BVHTree[nodeIdx].primitiveCount; p++)
                 {
-                    IntersectByGeometry(ray, bestHit, t);
+                    IntersectByGeometry(ray, bestHit, _BVHTree[nodeIdx].primitiveBegin + p);
                 }
             }
             else

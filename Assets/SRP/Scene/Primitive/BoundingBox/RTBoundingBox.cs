@@ -15,8 +15,8 @@ namespace OpenRT {
         public int rightID; // For referrencing in flatten array
         public Vector3 max;
         public Vector3 min;
-        public readonly int primitiveBegin;
-        public readonly int primitiveEnd;
+        public int primitiveBegin;
+        public int primitiveCount;
 
         public static RTBoundingBox Empty {
             get {
@@ -26,27 +26,31 @@ namespace OpenRT {
                     max : new Vector3(float.MinValue, float.MinValue, float.MinValue),
                     min : new Vector3(float.MaxValue, float.MaxValue, float.MaxValue),
                     primitiveBegin : 0,
-                    primitiveEnd : 0
+                    primitiveCount : 0
                 );
             }
         }
 
-        public RTBoundingBox(int leftID, int rightID, Vector3 max, Vector3 min, int primitiveBegin, int primitiveEnd) {
+        public RTBoundingBox(int leftID, int rightID, Vector3 max, Vector3 min, int primitiveBegin, int primitiveCount) {
             this.leftID = leftID;
             this.rightID = rightID;
             this.max = max;
             this.min = min;
             this.primitiveBegin = primitiveBegin;
-            this.primitiveEnd = primitiveEnd;
+            this.primitiveCount = primitiveCount;
         }
 
-        public RTBoundingBox(Vector3 max, Vector3 min, List<int> primitiveIds) {
+        public RTBoundingBox(
+            Vector3 max,
+            Vector3 min,
+            int primitive) {
+
             this.leftID = -1;
             this.rightID = -1;
             this.max = max;
             this.min = min;
-            this.primitiveBegin = primitiveIds[0];
-            this.primitiveEnd = primitiveIds[primitiveIds.Count - 1];
+            this.primitiveBegin = primitive;
+            this.primitiveCount = 1;
         }
 
         public Vector3 center {
@@ -82,7 +86,7 @@ namespace OpenRT {
                 max: this.max,
                 min: this.min,
                 primitiveBegin: this.primitiveBegin,
-                primitiveEnd: this.primitiveEnd
+                primitiveCount: this.primitiveCount
             );
         }
 

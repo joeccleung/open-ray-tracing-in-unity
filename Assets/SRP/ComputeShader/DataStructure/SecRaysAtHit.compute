@@ -1,0 +1,19 @@
+﻿#ifndef RT_SecRaysAtHit_COMPUTE
+#define RT_SecRaysAtHit_COMPUTE
+
+struct SecRaysAtHit {
+    Ray srays[4];
+};
+
+SecRaysAtHit CreateSecRaysAtHit()
+{
+    SecRaysAtHit o;
+    o.srays[0] = EmptyRay();
+    o.srays[1] = EmptyRay();
+    o.srays[2] = EmptyRay();
+    o.srays[3] = EmptyRay();
+    
+    return o;
+}
+
+#endif

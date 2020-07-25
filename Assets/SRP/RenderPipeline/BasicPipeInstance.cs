@@ -24,7 +24,6 @@ namespace OpenRT {
         private CommandBuffer commands;
         private int kIndex = 0;
 
-        private SceneParser m_sceneParser;
         private ComputeBuffer m_bvhBuffer;
         private ComputeBuffer m_primitiveBuffer;
         private SortedList<ISIdx, ComputeBuffer> m_geometryInstanceBuffers;
@@ -36,6 +35,11 @@ namespace OpenRT {
             m_mainShader = mainShader;
             m_allConfig = allConfig;
 
+            if (m_mainShader == null) {
+                Debug.LogError("Main Shader is gone");
+                return;
+            }
+
             commands = new CommandBuffer { name = s_bufferName };
 
             m_geometryInstanceBuffers = new SortedList<ISIdx, ComputeBuffer>();
@@ -43,15 +47,19 @@ namespace OpenRT {
             kIndex = mainShader.FindKernel("CSMain");
 
             m_config = m_allConfig[0];
-            InitSceneParsing();
         }
 
         protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras) // This is the function called every frame to draw on the screen
         {
+            if (m_mainShader == null) {
+                return;
+            } 
+
             RunParseScene();
             RunLoadGeometryToBuffer(sceneParseResult, ref m_bvhBuffer, ref m_mainShader, ref m_primitiveBuffer, ref m_geometryInstanceBuffers);
-            RunLoadLightToBuffer(m_sceneParser, ref m_lightInfoBuffer);
+            RunLoadLightToBuffer(SceneParser.Instance, ref m_lightInfoBuffer);
             RunSetAmbientToMainShader(m_config);
+            RunSetMissShader(m_mainShader, m_config);
             RunSetRayGenerationShader(m_config.rayGenId);
             RunSetGeometryInstanceToMainShader(ref m_bvhBuffer, ref m_primitiveBuffer, ref m_geometryInstanceBuffers, sceneParseResult.Primitives.Count);
             RunSetLightsToMainShader(sceneParseResult.Lights.Count, ref m_lightInfoBuffer);
@@ -66,14 +74,14 @@ namespace OpenRT {
             RunBufferCleanUp();
         }
 
-        private void InitSceneParsing() {
-            m_sceneParser = SceneParser.Instance;
-        }
-
         private void RunParseScene() {
             var scene = SceneManager.GetActiveScene();
 
-            sceneParseResult = m_sceneParser.ParseScene(scene);
+            sceneParseResult = SceneParser.Instance.ParseScene(scene);
+        }
+
+        private void RunSetMissShader(ComputeShader shader, RenderPipelineConfigObject m_config) {
+            shader.SetTexture(kIndex, "_SkyboxTexture", m_config.skybox);
         }
 
         private void RunTargetTextureInit(ref RenderTexture targetTexture) {
@@ -122,11 +130,6 @@ namespace OpenRT {
             ref ComputeBuffer primitiveBuffer,
             ref SortedList<ISIdx, ComputeBuffer> gemoetryInstanceBuffers) {
 
-            int primitiveCount = sceneParseResult.Primitives.Count;
-
-            primitiveBuffer = new ComputeBuffer(primitiveCount, Primitive.GetStride());
-            primitiveBuffer.SetData(sceneParseResult.Primitives);
-
             foreach (var item in gemoetryInstanceBuffers) {
                 item.Value?.Release();
             }
@@ -140,9 +143,16 @@ namespace OpenRT {
                 gemoetryInstanceBuffers.Add(geoInsIter.Current.Key, buffer);
             }
 
-            var flattenBVH = sceneParseResult.TopLevelBVH.Flatten();
+            List<RTBoundingBox> flattenBVH;
+            List<Primitive> reorderedPrimitives;
+            sceneParseResult.TopLevelBVH.Flatten(
+                scenePrimitives: sceneParseResult.Primitives,
+                flatten: out flattenBVH,
+                reorderedPrimitives: out reorderedPrimitives);
             bvhBuffer = new ComputeBuffer(flattenBVH.Count, RTBoundingBox.stride);
             bvhBuffer.SetData(flattenBVH);
+            primitiveBuffer = new ComputeBuffer(reorderedPrimitives.Count, Primitive.GetStride());
+            primitiveBuffer.SetData(reorderedPrimitives);
         }
 
         private void RunLoadLightToBuffer(SceneParser sceneParser, ref ComputeBuffer lightInfoBuffer) {

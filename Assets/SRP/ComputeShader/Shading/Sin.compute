@@ -4,10 +4,20 @@
 float SinMat_sin;
 
 // [shader(SinShader)]
+
+void SinShader_SecRays(
+    inout Ray ray,
+    RayHit hit,
+    inout SecRaysAtHit secRaysAtHit
+) 
+{
+}
+
 float3 SinShader(
    inout Ray ray,
    RayHit hit,
-   float3 ambientLightUpper
+   float3 ambientLightUpper,
+   float3 secondaryRayColor
 )
 {
    return float3(SinMat_sin, SinMat_sin, SinMat_sin);

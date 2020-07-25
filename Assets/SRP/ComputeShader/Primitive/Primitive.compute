@@ -4,7 +4,8 @@
 struct Primitive
 {
     int geometryIndex;
-    int geometryInstanceIndex;
+    int geometryInstanceBegin;
+    int geometryInstanceCount;
     int materialIndex;
     int transformIndex;
 };
