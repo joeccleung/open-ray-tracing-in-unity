@@ -21,19 +21,39 @@ namespace OpenRT {
             var fields = material.GetType().GetFields(); // TODO: Later we may want to decide to include both public fields and private fields
 
             foreach (var field in fields) {
-                string fieldName = $"{matName}_{field.Name}";
-                var fieldValue = field.GetValue(material);
-                if (fieldValue is Texture2D tex) {
-                    RegisterTexture(fieldName, tex, ref sceneTexture);
-                } else {
-                    AssignFieldToMainShader(fieldName, fieldValue, ref mainShader);
-                }
+                string fieldName = GetFieldName(matName, field);
+
+                var fieldValue = GetFieldValue(material, field);
+
+                ProcessField(ref mainShader, ref sceneTexture, fieldName, fieldValue);
             }
         }
 
-        private static void AssignFieldToMainShader(string fieldName,
-                                                    in object fieldValue,
-                                                    ref ComputeShader mainShader) {
+        private static void ProcessField(ref ComputeShader mainShader,
+                                         ref SceneTextureCollection sceneTexture,
+                                         string fieldName,
+                                         object fieldValue) {
+            if (fieldValue == null) {
+                return;
+            }
+            
+            if (fieldValue is Texture2D tex) {
+                RegisterTexture(fieldName, tex, ref sceneTexture);
+            } else {
+                AssignFieldToMainShader(fieldName, fieldValue, ref mainShader);
+            }
+        }
+
+        private static string GetFieldName(string matName, FieldInfo field) {
+            return $"{matName}_{field.Name}";
+        }
+
+        private static object GetFieldValue(RTMaterial material, FieldInfo field) {
+            return field.GetValue(material);
+        }
+
+        private static void AssignFieldToMainShader(string fieldName, in object fieldValue,
+            ref ComputeShader mainShader) {
             switch (fieldValue) {
                 case Color c:
                     mainShader.SetVector(name: fieldName, val: c);
