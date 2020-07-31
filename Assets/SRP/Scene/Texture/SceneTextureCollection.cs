@@ -16,7 +16,7 @@ namespace OpenRT {
             textures.Clear();
         }
 
-        public Dictionary<string, Texture2D> Textures {
+        public SortedDictionary<string, Texture2D> Textures {
             get {
                 return textures;
             }
