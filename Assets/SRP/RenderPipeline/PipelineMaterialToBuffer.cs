@@ -13,42 +13,56 @@ namespace OpenRT {
         }
 
         public static void MaterialToBuffer(in RTMaterial material, ref ComputeShader mainShader) {
+
+            SceneTextureCollection sceneTexture = new SceneTextureCollection();
+
             string matName = material.GetType().Name;
 
             var fields = material.GetType().GetFields(); // TODO: Later we may want to decide to include both public fields and private fields
 
             foreach (var field in fields) {
                 string fieldName = $"{matName}_{field.Name}";
-                switch (field.GetValue(material)) {
-                    case Color c:
-                        mainShader.SetVector(name: fieldName, val: c);
-                        break;
-
-                    case int i:
-                        mainShader.SetInt(name: fieldName, val: i);
-                        break;
-
-                    case float f:
-                        mainShader.SetFloat(name: fieldName, val: f);
-                        break;
-
-                    case Texture2D t:
-                        // TODO: Support Texture2D
-                        break;
-
-                    case Vector2 v2:
-                        mainShader.SetVector(name: fieldName, val: v2);
-                        break;
-
-                    case Vector3 v3:
-                        mainShader.SetVector(name: fieldName, val: v3);
-                        break;
-
-                    case Vector4 v4:
-                        mainShader.SetVector(name: fieldName, val: v4);
-                        break;
+                var fieldValue = field.GetValue(material);
+                if (fieldValue is Texture2D tex) {
+                    RegisterTexture(fieldName, tex, ref sceneTexture);
+                } else {
+                    AssignFieldToMainShader(fieldName, fieldValue, ref mainShader);
                 }
             }
+        }
+
+        private static void AssignFieldToMainShader(string fieldName,
+                                                    in object fieldValue,
+                                                    ref ComputeShader mainShader) {
+            switch (fieldValue) {
+                case Color c:
+                    mainShader.SetVector(name: fieldName, val: c);
+                    break;
+
+                case int i:
+                    mainShader.SetInt(name: fieldName, val: i);
+                    break;
+
+                case float f:
+                    mainShader.SetFloat(name: fieldName, val: f);
+                    break;
+
+                case Vector2 v2:
+                    mainShader.SetVector(name: fieldName, val: v2);
+                    break;
+
+                case Vector3 v3:
+                    mainShader.SetVector(name: fieldName, val: v3);
+                    break;
+
+                case Vector4 v4:
+                    mainShader.SetVector(name: fieldName, val: v4);
+                    break;
+            }
+        }
+
+        private static void RegisterTexture(string fieldName, Texture2D texture, ref SceneTextureCollection texturesCol) {
+            texturesCol.AddTexture(fieldName, texture);
         }
     }
 }

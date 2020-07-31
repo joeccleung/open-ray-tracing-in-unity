@@ -121,7 +121,7 @@ namespace OpenRT {
                 gemoetryInstanceBuffers : ref gemoetryInstanceBuffers);
 
             PipelineMaterialToBuffer.MaterialsToBuffer(sceneParseResult.Materials,
-                ref mainShader);
+                                                       ref mainShader);
         }
 
         private void LoadBufferWithGeometryInstances(
