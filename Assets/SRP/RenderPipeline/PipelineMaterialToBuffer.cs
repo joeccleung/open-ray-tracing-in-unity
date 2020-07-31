@@ -16,17 +16,24 @@ namespace OpenRT {
 
             SceneTextureCollection sceneTexture = new SceneTextureCollection();
 
-            string matName = material.GetType().Name;
+            FieldInfo[] fieldsInMat = GetFieldsInMaterial(material); // TODO: Later we may want to decide to include both public fields and private fields
 
-            var fields = material.GetType().GetFields(); // TODO: Later we may want to decide to include both public fields and private fields
-
-            foreach (var field in fields) {
-                string fieldName = GetFieldName(matName, field);
+            foreach (var field in fieldsInMat) {
+                string fieldName = GetFieldName(matName: GetMatName(material), field);
 
                 var fieldValue = GetFieldValue(material, field);
 
                 ProcessField(ref mainShader, ref sceneTexture, fieldName, fieldValue);
             }
+
+        }
+
+        private static FieldInfo[] GetFieldsInMaterial(RTMaterial material) {
+            return material.GetType().GetFields();
+        }
+
+        private static string GetMatName(RTMaterial material) {
+            return material.GetType().Name;
         }
 
         private static void ProcessField(ref ComputeShader mainShader,
@@ -36,7 +43,7 @@ namespace OpenRT {
             if (fieldValue == null) {
                 return;
             }
-            
+
             if (fieldValue is Texture2D tex) {
                 RegisterTexture(fieldName, tex, ref sceneTexture);
             } else {
