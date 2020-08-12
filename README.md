@@ -1,4 +1,8 @@
 # A user programmable ray-tracing framework for Unity
+
+![Image of multiple reflection between spheres]
+(https://firebasestorage.googleapis.com/v0/b/squawker-ee149.appspot.com/o/Screen%20Shot%202020-08-07%20at%2012.40.17%20AM.png?alt=media&token=619249c9-07df-4956-835c-f832a41df1e3)
+
 In this project, we will design and implement a ray-trace framework based on programming models presented by modern commodity GPUs. The framework will define and support replaceable processing modules in ray-tracing, such as ray generation, ray-object intersections, and illumination. The framework will be designed and implemented targeting general-purpose commodity GPUs and does not require special-purpose hardware. This feature will enable platform portability. 
 
 ## Objectives
