@@ -15,7 +15,8 @@ void Reflective_SecRays(
 
     secRaysAtHit.srays[0].origin = hit.position;
     // secRaysAtHit.srays[0].direction = hit.normal;
-    secRaysAtHit.srays[0].direction = reflect(ray.direction, hit.normal);
+    secRaysAtHit.srays[0].direction = normalize(reflect(ray.direction, hit.normal));
+    secRaysAtHit.srays[0].color = float3(0, 0, 0);
     secRaysAtHit.srays[0].gen = ray.gen - 1;
     secRaysAtHit.srays[0].tmin = 0.01f;
     secRaysAtHit.srays[0].weight = 1;

@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4605827575479576597}
   - component: {fileID: 4605827575479576682}
-  - component: {fileID: 4605827575479576593}
   - component: {fileID: 4605827575479576598}
+  - component: {fileID: 6998947897017234638}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
@@ -49,20 +49,6 @@ MonoBehaviour:
   sphereData:
     center: {x: 10.67, y: 0.87, z: -1.35}
     radius: 2
---- !u!114 &4605827575479576593
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4605827575479576592}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a7800ffd5c0434da496b54da595de4a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  shaderIndex: 2
-  color: {r: 0.8679245, g: 0.6126372, b: 0.50356, a: 1}
 --- !u!114 &4605827575479576598
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -76,4 +62,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   geometry: {fileID: 4605827575479576682}
-  material: {fileID: 4605827575479576593}
+  material: {fileID: 0}
+--- !u!114 &6998947897017234638
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4605827575479576592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea96ed76e213049adba741950d817711, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shaderIndex: 2
+  sin: 0

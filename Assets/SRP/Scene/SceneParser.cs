@@ -48,7 +48,7 @@ namespace OpenRT {
 
             sceneParseResult.AddLight(new RTLightInfo(
                 instance: 0,
-                position: new Vector3(0, 0, -3),
+                position: new Vector3(0, 0, 0),
                 rotation : new Vector3(0, 0, 0),
                 type : 1
             ));
@@ -93,12 +93,14 @@ namespace OpenRT {
                             intersectIndex: intersectShaderIndex
                         );
 
+                        sceneParseResult.AddWorldToPrimitive(renderer.gameObject.transform.worldToLocalMatrix);
+                        
                         sceneParseResult.AddPrimitive(new Primitive(
                             geometryIndex: intersectShaderIndex,
                             geometryInstanceBegin: startIndex,
                             geometryInstanceCount: renderer.geometry.GetCount(),
                             materialIndex: material.shaderIndex,
-                            transformIndex: 0
+                            transformIndex: sceneParseResult.WorldToPrimitive.Count - 1
                         ));
 
                         var boxOfThisObject = renderer.geometry.GetBoundingBox();
