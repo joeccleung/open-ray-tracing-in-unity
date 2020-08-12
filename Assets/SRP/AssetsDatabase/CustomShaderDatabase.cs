@@ -34,6 +34,20 @@ namespace OpenRT {
             intersectDataTable.Populate(databaseFile.intersect);
         }
 
+        public bool IsShaderTableDirty(EShaderType shaderType) {
+            switch (shaderType) {
+                case EShaderType.CloestHit:
+                    return closestHitDataTable.IsDirty();
+
+                case EShaderType.Intersect:
+                    return intersectDataTable.IsDirty();
+
+                default:
+                    Debug.LogWarning($"TODO: Support adding shaders of type {shaderType}");
+                    return false;
+            }
+        }
+
         public string[] ShaderNameList(EShaderType shaderType) {
             switch (shaderType) {
                 case EShaderType.CloestHit:
@@ -140,6 +154,22 @@ namespace OpenRT {
 
         private void _Remove(CustomShaderMeta meta, ICustomShaderDatabaseDataTable table) {
             table.RemoveShader(meta, databaseFile, fileIO);
+        }
+
+        public void SetShaderTableClean(EShaderType shaderType) {
+            switch (shaderType) {
+                case EShaderType.CloestHit:
+                    closestHitDataTable.Clean();
+                    break;
+
+                case EShaderType.Intersect:
+                    intersectDataTable.Clean();
+                    break;
+
+                default:
+                    Debug.LogWarning($"TODO: Support adding shaders of type {shaderType}");
+                    break;
+            }
         }
 
         public string ShaderNameToGUID(string shaderName, EShaderType shaderType) {

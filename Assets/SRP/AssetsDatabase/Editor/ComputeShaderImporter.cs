@@ -52,7 +52,7 @@ namespace OpenRT {
                 }
             }
 
-            ExportAllShadersToGPUProgram();
+            ExportChangedShadersToGPUProgram(CustomShaderDatabase.Instance);
         }
 
         private static bool shouldProcess(string path) {
@@ -85,9 +85,16 @@ namespace OpenRT {
             }
         }
 
-        private static void ExportAllShadersToGPUProgram() {
-            closetHitShaderCollectionGPUProgramGenerator.ExportShaderCollection(CustomShaderDatabase.Instance.ShaderMetaList(EShaderType.CloestHit));
-            intersectShaderCollectionGPUProgramGenerator.ExportShaderCollection(CustomShaderDatabase.Instance.ShaderMetaList(EShaderType.Intersect));
+        private static void ExportChangedShadersToGPUProgram(CustomShaderDatabase db) {
+            if (db.IsShaderTableDirty(EShaderType.CloestHit)) {
+                closetHitShaderCollectionGPUProgramGenerator.ExportShaderCollection(db.ShaderMetaList(EShaderType.CloestHit));
+                db.SetShaderTableClean(EShaderType.CloestHit);
+            }
+            if (db.IsShaderTableDirty(EShaderType.Intersect)) {
+                // TODO: Fix intersection shader collection
+                // intersectShaderCollectionGPUProgramGenerator.ExportShaderCollection(CustomShaderDatabase.Instance.ShaderMetaList(EShaderType.Intersect));
+                db.SetShaderTableClean(EShaderType.Intersect);
+            }
         }
     }
 }

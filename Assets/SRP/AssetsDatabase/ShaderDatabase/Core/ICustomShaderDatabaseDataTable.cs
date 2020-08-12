@@ -13,11 +13,15 @@ namespace OpenRT {
     public interface ICustomShaderDatabaseDataTable {
         GUID AddShader(CustomShaderMeta shaderMeta, CustomShaderDatabaseFile database, IShaderDatabaseFileIO fileIOHandler);
 
+        void Clean();
+
         bool Contains(string shaderName);
 
         int GUIDToShaderIndex(GUID guid);
 
         string GUIDToShaderName(GUID guid);
+
+        bool IsDirty();
 
         GUID MoveShader(CustomShaderMeta shaderMeta, CustomShaderMeta previousShaderMeta, CustomShaderDatabaseFile database, IShaderDatabaseFileIO fileIOHandler);
 
