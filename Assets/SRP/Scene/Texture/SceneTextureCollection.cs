@@ -7,13 +7,9 @@ namespace OpenRT {
         private SortedDictionary<string, Texture2D> textures = new SortedDictionary<string, Texture2D>();
 
         public void AddTexture(string textureName, Texture2D tex) {
-            if (textures.ContainsKey(textureName)) {
+            if (!textures.ContainsKey(textureName)) {
                 textures.Add(textureName, tex);
             }
-        }
-
-        public void Reset() {
-            textures.Clear();
         }
 
         public SortedDictionary<string, Texture2D> Textures {

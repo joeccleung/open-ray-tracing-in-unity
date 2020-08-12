@@ -74,6 +74,18 @@ namespace OpenRT {
             RunBufferCleanUp();
         }
 
+        private void RunLoadMaterialToBuffer(SceneParseResult sceneParseResult,
+            ref ComputeShader mainShader) {
+
+            SceneTextureCollection sceneTexture = new SceneTextureCollection();
+
+            PipelineMaterialToBuffer.MaterialsToBuffer(sceneParseResult.Materials,
+                ref mainShader,
+                ref sceneTexture);
+
+            PipelineMaterialToBuffer.LoadTextureToBuffer(sceneTexture, ref mainShader);
+        }
+
         private void RunParseScene() {
             var scene = SceneManager.GetActiveScene();
 
