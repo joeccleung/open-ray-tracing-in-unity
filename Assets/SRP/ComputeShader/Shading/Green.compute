@@ -2,6 +2,7 @@
 #define GREEN_COMPUTE
 
 float4 DemoMat_color;
+Texture2D<float4> DemoMat_main;
 
 // [shader(Green)]
 
@@ -11,7 +12,19 @@ void Green_SecRays(
     inout SecRaysAtHit secRaysAtHit
 ) 
 {
+    if (ray.gen <= 1) {
+        return;
+    }
+
+    secRaysAtHit.srays[0].origin = hit.position;
+    // secRaysAtHit.srays[0].direction = hit.normal;
+    secRaysAtHit.srays[0].direction = reflect(ray.direction, hit.normal);
+    secRaysAtHit.srays[0].gen = ray.gen - 1;
+    secRaysAtHit.srays[0].tmin = 0.01f;
+    secRaysAtHit.srays[0].weight = 1;
 }
+
+static const float PI = 3.14159265f;
 
 float3 Green(
    inout Ray ray,
@@ -20,7 +33,26 @@ float3 Green(
    float3 secondaryRayColor
 )
 {
-   return DemoMat_color.rgb;
+   float4x4 w2p = _WorldToPrimitives[_Primitives[hit.primitiveId].transformIndex];
+   float4x1 worldPos = float4x1(hit.position.x, hit.position.y, hit.position.z, 1);
+//    if (abs(w2p._14 - -5) > 0.1f) {
+//        return float3(1, 0, 0);
+//    } else {
+//        return float3(0, 1, 0);
+//    }
+   float4x1 localPosMat = mul(w2p, worldPos);
+   float3 localPos = localPosMat._11_21_31;  // Matrix is column-major by default
+   float3 norLocalPos = normalize(localPos);
+   float lat = PI/2 - acos(dot(norLocalPos, float3(0, 1, 0)));
+   float lon = acos(dot(norLocalPos, float3(0, 0, 1)));
+   
+   int w = 0;
+   int h = 0;
+   int l = 0;
+   DemoMat_main.GetDimensions(0, w, h, l);
+    float3 color = DemoMat_main[uint2(floor((lon + PI)/(2*PI) * w), floor((lat/PI + 0.5f) * h))];
+
+    return color;
 }
 
 #endif // GREEN_COMPUTE 

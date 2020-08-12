@@ -3,6 +3,8 @@
 
 // [shader(Red)]
 
+Texture2D<float4> MarsMat_main;
+
 void Red_SecRays(
     inout Ray ray,
     RayHit hit,
@@ -28,7 +30,21 @@ float3 Red(
    float3 secondaryRayColor
 )
 {
-   return float3(1, 0, 0);
+   float4x4 w2p = _WorldToPrimitives[_Primitives[hit.primitiveId].transformIndex];
+   float4x1 worldPos = float4x1(hit.position.x, hit.position.y, hit.position.z, 1);
+   float4x1 localPosMat = mul(w2p, worldPos);
+   float3 localPos = localPosMat._11_21_31;  // Matrix is column-major by default
+   float3 norLocalPos = normalize(localPos);
+   float lat = PI/2 - acos(dot(norLocalPos, float3(0, 1, 0)));
+   float lon = acos(dot(norLocalPos, float3(0, 0, 1)));
+   
+   int w = 0;
+   int h = 0;
+   int l = 0;
+   MarsMat_main.GetDimensions(0, w, h, l);
+    float3 color = MarsMat_main[uint2(floor((lon + PI)/(2*PI) * w), floor((lat/PI + 0.5f) * h))];
+
+    return 0.98f * color + 0.02f * secondaryRayColor;
 }
 
 #endif // Red_COMPUTE 

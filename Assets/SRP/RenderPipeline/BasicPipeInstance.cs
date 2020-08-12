@@ -26,6 +26,7 @@ namespace OpenRT {
 
         private ComputeBuffer m_bvhBuffer;
         private ComputeBuffer m_primitiveBuffer;
+        private ComputeBuffer m_worldToPrimitiveBuffer;
         private SortedList<ISIdx, ComputeBuffer> m_geometryInstanceBuffers;
 
         private ComputeBuffer m_lightInfoBuffer;
@@ -53,15 +54,16 @@ namespace OpenRT {
         {
             if (m_mainShader == null) {
                 return;
-            } 
+            }
 
             RunParseScene();
-            RunLoadGeometryToBuffer(sceneParseResult, ref m_bvhBuffer, ref m_mainShader, ref m_primitiveBuffer, ref m_geometryInstanceBuffers);
+            RunLoadGeometryToBuffer(sceneParseResult, ref m_bvhBuffer, ref m_mainShader, ref m_primitiveBuffer, ref m_worldToPrimitiveBuffer, ref m_geometryInstanceBuffers);
+            RunLoadMaterialToBuffer(sceneParseResult, ref m_mainShader);
             RunLoadLightToBuffer(SceneParser.Instance, ref m_lightInfoBuffer);
             RunSetAmbientToMainShader(m_config);
             RunSetMissShader(m_mainShader, m_config);
             RunSetRayGenerationShader(m_config.rayGenId);
-            RunSetGeometryInstanceToMainShader(ref m_bvhBuffer, ref m_primitiveBuffer, ref m_geometryInstanceBuffers, sceneParseResult.Primitives.Count);
+            RunSetGeometryInstanceToMainShader(ref m_bvhBuffer, ref m_primitiveBuffer, ref m_worldToPrimitiveBuffer, ref m_geometryInstanceBuffers, sceneParseResult.Primitives.Count);
             RunSetLightsToMainShader(sceneParseResult.Lights.Count, ref m_lightInfoBuffer);
 
             foreach (var camera in cameras) {
@@ -124,22 +126,22 @@ namespace OpenRT {
             ref ComputeBuffer bvhBuffer,
             ref ComputeShader mainShader,
             ref ComputeBuffer primitiveBuffer,
+            ref ComputeBuffer worldToPrimitiveBuffer,
             ref SortedList<ISIdx, ComputeBuffer> gemoetryInstanceBuffers) {
 
             LoadBufferWithGeometryInstances(
                 sceneParseResult,
                 bvhBuffer : ref bvhBuffer,
                 primitiveBuffer : ref primitiveBuffer,
+                worldToPrimitiveBuffer: ref worldToPrimitiveBuffer,
                 gemoetryInstanceBuffers : ref gemoetryInstanceBuffers);
-
-            PipelineMaterialToBuffer.MaterialsToBuffer(sceneParseResult.Materials,
-                                                       ref mainShader);
         }
 
         private void LoadBufferWithGeometryInstances(
             SceneParseResult sceneParseResult,
             ref ComputeBuffer bvhBuffer,
             ref ComputeBuffer primitiveBuffer,
+            ref ComputeBuffer worldToPrimitiveBuffer,
             ref SortedList<ISIdx, ComputeBuffer> gemoetryInstanceBuffers) {
 
             foreach (var item in gemoetryInstanceBuffers) {
@@ -165,6 +167,8 @@ namespace OpenRT {
             bvhBuffer.SetData(flattenBVH);
             primitiveBuffer = new ComputeBuffer(reorderedPrimitives.Count, Primitive.GetStride());
             primitiveBuffer.SetData(reorderedPrimitives);
+            worldToPrimitiveBuffer = new ComputeBuffer(reorderedPrimitives.Count, sizeof(float) * 16);
+            worldToPrimitiveBuffer.SetData(sceneParseResult.WorldToPrimitive);
         }
 
         private void RunLoadLightToBuffer(SceneParser sceneParser, ref ComputeBuffer lightInfoBuffer) {
@@ -191,11 +195,13 @@ namespace OpenRT {
         private void RunSetGeometryInstanceToMainShader(
             ref ComputeBuffer bvhBuffer,
             ref ComputeBuffer primitiveBuffer,
+            ref ComputeBuffer worldToPrimitiveBuffer,
             ref SortedList<ISIdx, ComputeBuffer> geoInsBuffers,
             int count) {
 
             m_mainShader.SetInt("_NumOfPrimitive", count);
             m_mainShader.SetBuffer(kIndex, "_Primitives", primitiveBuffer);
+            m_mainShader.SetBuffer(kIndex, "_WorldToPrimitives", worldToPrimitiveBuffer);
 
             m_mainShader.SetBuffer(kIndex, "_BVHTree", bvhBuffer);
 
@@ -237,6 +243,7 @@ namespace OpenRT {
         private void RunBufferCleanUp() {
             m_bvhBuffer.Release();
             m_primitiveBuffer.Release();
+            m_worldToPrimitiveBuffer.Release();
             foreach (var item in m_geometryInstanceBuffers) {
                 item.Value?.Release();
             }

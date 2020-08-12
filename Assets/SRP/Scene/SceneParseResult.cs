@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace OpenRT {
     using ISIdx = System.Int32; // IntersectShaderIndex
@@ -9,6 +10,7 @@ namespace OpenRT {
         private List<RTLightInfo> m_lightInfos;
         private List<RTMaterial> m_materials;
         private List<Primitive> m_primitives;
+        private List<Matrix4x4> m_worldToPrimitives;
         private TopLevelBVH topLevelBVH;
 
         public SceneParseResult() {
@@ -18,6 +20,7 @@ namespace OpenRT {
             m_lightInfos = new List<RTLightInfo>();
             m_materials = new List<RTMaterial>();
             m_primitives = new List<Primitive>();
+            m_worldToPrimitives = new List<Matrix4x4>();
             topLevelBVH = new TopLevelBVH();
         }
 
@@ -57,6 +60,10 @@ namespace OpenRT {
             m_primitives.Add(primitive);
         }
 
+        public void AddWorldToPrimitive(Matrix4x4 worldToPrimitive){
+            m_worldToPrimitives.Add(worldToPrimitive);
+        }
+
         public void ClearTopLevelBVH() {
             topLevelBVH.Clear();
         }
@@ -77,6 +84,7 @@ namespace OpenRT {
 
         public void ClearAllPrimitives() {
             m_primitives.Clear();
+            m_worldToPrimitives.Clear();
         }
 
         public Dictionary<ISIdx, int> GeometryCount {
@@ -128,6 +136,12 @@ namespace OpenRT {
         public List<Primitive> Primitives {
             get {
                 return m_primitives;
+            }
+        }
+
+        public List<Matrix4x4> WorldToPrimitive {
+            get {
+                return m_worldToPrimitives;
             }
         }
 
