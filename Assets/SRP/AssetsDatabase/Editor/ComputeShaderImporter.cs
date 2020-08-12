@@ -18,7 +18,8 @@ namespace OpenRT {
         private static OpenRT.IShaderMetaReader intersectReader = new OpenRT.IntersectShaderMetaReader();
 
         private static OpenRT.ClosetHitShaderCollectionGPUProgramGenerator closetHitShaderCollectionGPUProgramGenerator = new OpenRT.ClosetHitShaderCollectionGPUProgramGenerator();
-        private static OpenRT.IntersectShaderCollectionGPUProgramGenerator intersectShaderCollectionGPUProgramGenerator = new OpenRT.IntersectShaderCollectionGPUProgramGenerator();
+        // FIXME: IntersectShaderCollectionGPUProgramGenerator is generating the wrong shader file
+        // private static OpenRT.IntersectShaderCollectionGPUProgramGenerator intersectShaderCollectionGPUProgramGenerator = new OpenRT.IntersectShaderCollectionGPUProgramGenerator();
 
         public static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
 
@@ -78,8 +79,8 @@ namespace OpenRT {
             string shaderName = null;
             if (closetHitReader.CanHandle(fileContent, out shaderName)) {
                 return new CustomShaderMeta(name: shaderName, absPath: absPath, shaderType: OpenRT.EShaderType.CloestHit);
-            } else if (intersectReader.CanHandle(fileContent, out shaderName)) {
-                return new CustomShaderMeta(name: shaderName, absPath: absPath, shaderType: OpenRT.EShaderType.Intersect);
+                // } else if (intersectReader.CanHandle(fileContent, out shaderName)) {
+                //     return new CustomShaderMeta(name: shaderName, absPath: absPath, shaderType: OpenRT.EShaderType.Intersect);
             } else {
                 return null;
             }
