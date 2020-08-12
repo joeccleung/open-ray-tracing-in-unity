@@ -5,6 +5,8 @@
 
 LightHit GetIlluminate_CustomPointLight(LightInfo lightInfo, Ray ray)   // TODO: Argument include the initiate object ID
 {
+    ray.tmax = distance(ray.origin, lightInfo.position);
+
     if (ShadowTrace(ray))
     {
         return CreateLightHit(float3(0, 0, 0), -1 * ray.direction);

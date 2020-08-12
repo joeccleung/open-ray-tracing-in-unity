@@ -24,6 +24,7 @@ Ray CreateRay(float3 origin, float3 direction, int gen)
     ray.origin = origin;
     ray.direction = normalize(direction);
     ray.gen = gen;
+    ray.tmin = 0.001f;
     return ray;
 }
 

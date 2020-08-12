@@ -5,6 +5,8 @@
 
 LightHit GetIlluminate_CustomDirectionalLight(LightInfo lightInfo, Ray ray)
 {
+    ray.tmax = distance(ray.origin, lightInfo.position);
+    
     if (ShadowTrace(ray))
     {
         return CreateLightHit(float3(0, 0, 0), float3(0, 0, 0));
