@@ -11,6 +11,7 @@ struct Ray
     float3 origin;
     float3 direction;
     float tmin;
+    float tmax;
     float weight;
     uint gen;
 };
@@ -33,6 +34,7 @@ Ray EmptyRay()
     ray.origin = float3(0, 0, 0);
     ray.direction = float3(0, 0, 0);
     ray.tmin = -1 * 1.#INF;
+    ray.tmax = 1.#INF;
     ray.weight = 0;
     ray.gen = 1;
     return ray;
