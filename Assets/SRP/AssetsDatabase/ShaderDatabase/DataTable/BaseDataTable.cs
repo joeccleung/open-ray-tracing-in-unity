@@ -11,8 +11,10 @@ namespace OpenRT {
     public abstract class BaseDataTable : ICustomShaderDatabaseDataTable {
         protected SortedList<ShaderName, GUID> shaderList;
         protected SortedList<GUID, CustomShaderMeta> shaderMetaList;
+        protected bool isDirty = false;
 
         public virtual GUID AddShader(CustomShaderMeta shaderMeta, CustomShaderDatabaseFile database, IShaderDatabaseFileIO fileIOHandler) {
+            isDirty = true;
             return AddShaderHelper(shaderMeta);
         }
 
@@ -20,6 +22,10 @@ namespace OpenRT {
             return shaderMetaList.Any((kvp) => {
                 return kvp.Value.name == shaderName;
             });
+        }
+
+        public virtual void Clean() {
+            isDirty = false;
         }
 
         public virtual int GUIDToShaderIndex(string guid) {
@@ -35,7 +41,14 @@ namespace OpenRT {
             }
         }
 
+        public bool IsDirty() {
+            return isDirty;
+        }
+
         public virtual GUID MoveShader(CustomShaderMeta shaderMeta, CustomShaderMeta previousShaderMeta, CustomShaderDatabaseFile database, IShaderDatabaseFileIO fileIOHandler) {
+
+            isDirty = true;
+
             var guid = shaderList[previousShaderMeta.name];
             shaderList.Remove(previousShaderMeta.name);
             shaderMetaList.Remove(previousShaderMeta.name);
@@ -58,6 +71,9 @@ namespace OpenRT {
         }
 
         public virtual GUID RemoveShader(CustomShaderMeta shaderMeta, CustomShaderDatabaseFile database, IShaderDatabaseFileIO fileIOHandler) {
+
+            isDirty = true;
+
             var guid = shaderList[shaderMeta.name];
             shaderList.Remove(shaderMeta.name);
             shaderMetaList.Remove(shaderMeta.name);
@@ -90,6 +106,5 @@ namespace OpenRT {
 
             return guid;
         }
-
     }
 }
