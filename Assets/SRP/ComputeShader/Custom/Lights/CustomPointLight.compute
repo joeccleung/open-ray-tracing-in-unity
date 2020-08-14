@@ -1,11 +1,15 @@
 ﻿#ifndef Custom_PointLight_COMPUTE
 #define Custom_PointLight_COMPUTE
 
-LightHit GetIlluminate_CustomPointLight(LightInfo lightInfo, Ray ray)
+#include "../../RayCasting/Trace.compute"
+
+LightHit GetIlluminate_CustomPointLight(LightInfo lightInfo, Ray ray)   // TODO: Argument include the initiate object ID
 {
-    if (ray.direction.x > 0)
+    ray.tmax = distance(ray.origin, lightInfo.position);
+
+    if (ShadowTrace(ray))
     {
-        return CreateLightHit(float3(0, 0, 0.2), -1 * ray.direction);
+        return CreateLightHit(float3(0, 0, 0), -1 * ray.direction);
     }
     else
     {

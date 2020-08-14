@@ -51,7 +51,7 @@ void RTTriangleIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int
         // calculate t, ray intersects triangle
         float dis = dot(edge2, qvec) * inv_det;
 
-        if (dis > 0 && dis < bestHit.distance)
+        if (ray.tmin < dis && dis < ray.tmax && dis < bestHit.distance)
         {
             bestHit.distance = dis;
             bestHit.position = ray.origin + dis * ray.direction;
