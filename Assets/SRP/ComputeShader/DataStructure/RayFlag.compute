@@ -1,0 +1,7 @@
+﻿#ifndef RT_RAY_FLAG
+#define RT_RAY_FLAG
+
+static const uint RAY_FLAG_RENDER = 0x01;
+static const uint RAY_FLAG_LIGHT = 0x02;
+
+#endif //RT_RAY_FLAG

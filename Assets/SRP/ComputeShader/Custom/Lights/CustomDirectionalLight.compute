@@ -11,6 +11,7 @@ LightHit GetIlluminate_CustomDirectionalLight(LightInfo lightInfo, float3 hitPos
     ray.gen = 1;
     ray.tmin = 0.0001f;
     ray.tmax = 1.#INF;
+    ray.type = RAY_FLAG_LIGHT;
     
     if (ShadowTrace(ray, primitiveId))
     {

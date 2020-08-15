@@ -12,6 +12,7 @@ struct Ray
     float3 direction;
     float tmin;
     float tmax;
+    float type;
     float weight;
     uint gen;
 };
@@ -21,10 +22,12 @@ Ray EmptyRay();
 Ray CreateRay(float3 origin, float3 direction, int gen)
 {
     Ray ray = EmptyRay();
+    ray.gen = gen;
     ray.origin = origin;
     ray.direction = normalize(direction);
-    ray.gen = gen;
+    ray.tmax = 1.#INF;
     ray.tmin = 0.001f;
+    ray.type = RAY_FLAG_RENDER;
     return ray;
 }
 
@@ -32,12 +35,13 @@ Ray EmptyRay()
 {
     Ray ray;
     ray.color = float3(0, 0, 0);
+    ray.gen = 1;
     ray.origin = float3(0, 0, 0);
     ray.direction = float3(0, 0, 0);
     ray.tmin = -1 * 1.#INF;
     ray.tmax = 1.#INF;
     ray.weight = 0;
-    ray.gen = 1;
+    ray.type = RAY_FLAG_RENDER;
     return ray;
 }
 
