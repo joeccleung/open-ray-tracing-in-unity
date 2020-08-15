@@ -48,7 +48,7 @@ RayHit Trace(Ray ray, int _NumOfPrimitive)
     return bestHit;
 }
 
-bool ShadowTrace(Ray ray)
+bool ShadowTrace(Ray ray, int originPrimitiveId)
 {
     RayHit bestHit = CreateRayHit();
         
@@ -71,7 +71,8 @@ bool ShadowTrace(Ray ray)
                 for(int p = 0; p < _BVHTree[nodeIdx].primitiveCount; p++)
                 {
                     IntersectByGeometry(ray, bestHit, _BVHTree[nodeIdx].primitiveBegin + p);
-                    if (bestHit.primitiveId != -1) {
+                    // It hit something and it is not the origin primitive, the light is blocked
+                    if (bestHit.primitiveId != -1 && bestHit.primitiveId != originPrimitiveId) {
                         return true;
                     }
                 }

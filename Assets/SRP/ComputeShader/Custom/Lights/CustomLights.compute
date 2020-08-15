@@ -4,16 +4,16 @@
 #include "CustomDirectionalLight.compute"
 #include "CustomPointLight.compute"
 
-LightHit GetIlluminate(Ray ray, int lightID)
+LightHit GetIlluminate(float3 hitPos, int primitiveID, int lightID)
 {
 
     switch(_Lights[lightID].type)
     {
         case 0:
-            return GetIlluminate_CustomDirectionalLight(_Lights[lightID], ray);
+            return GetIlluminate_CustomDirectionalLight(_Lights[lightID], hitPos, primitiveID);
         
         case 1:
-            return GetIlluminate_CustomPointLight(_Lights[lightID], ray);
+            return GetIlluminate_CustomPointLight(_Lights[lightID], hitPos, primitiveID);
 
         default:
             return CreateLightHit(float3(0, 0, 0), float3(0, 0, 0));
