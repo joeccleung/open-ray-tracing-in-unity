@@ -12,7 +12,7 @@ struct Ray
     float3 direction;
     float tmin;
     float tmax;
-    float type;
+    uint type;
     float weight;
     uint gen;
 };
