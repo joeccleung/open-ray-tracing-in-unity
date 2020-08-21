@@ -36,7 +36,7 @@ namespace OpenRT {
 
         public bool IsShaderTableDirty(EShaderType shaderType) {
             switch (shaderType) {
-                case EShaderType.CloestHit:
+                case EShaderType.ClosestHit:
                     return closestHitDataTable.IsDirty();
 
                 case EShaderType.Intersect:
@@ -50,7 +50,7 @@ namespace OpenRT {
 
         public string[] ShaderNameList(EShaderType shaderType) {
             switch (shaderType) {
-                case EShaderType.CloestHit:
+                case EShaderType.ClosestHit:
                     return closestHitDataTable.ShaderNameList;
 
                 case EShaderType.Intersect:
@@ -63,7 +63,7 @@ namespace OpenRT {
 
         public SortedList<GUID, CustomShaderMeta> ShaderMetaList(EShaderType shaderType) {
             switch (shaderType) {
-                case EShaderType.CloestHit:
+                case EShaderType.ClosestHit:
                     return closestHitDataTable.ShaderMetaList;
 
                 case EShaderType.Intersect:
@@ -77,7 +77,7 @@ namespace OpenRT {
         public void Add(CustomShaderMeta meta) {
 
             switch (meta.shaderType) {
-                case OpenRT.EShaderType.CloestHit:
+                case OpenRT.EShaderType.ClosestHit:
                     _Add(meta, closestHitDataTable);
                     break;
 
@@ -103,7 +103,7 @@ namespace OpenRT {
 
         public int GUIDToShaderIndex(GUID guid, EShaderType shaderType) {
             switch (shaderType) {
-                case EShaderType.CloestHit:
+                case EShaderType.ClosestHit:
                     return closestHitDataTable.GUIDToShaderIndex(guid);
 
                 case EShaderType.Intersect:
@@ -116,7 +116,7 @@ namespace OpenRT {
 
         public void Move(CustomShaderMeta meta, CustomShaderMeta previous) {
             switch (meta.shaderType) {
-                case OpenRT.EShaderType.CloestHit:
+                case OpenRT.EShaderType.ClosestHit:
                     _Move(meta, previous, closestHitDataTable);
                     break;
 
@@ -137,7 +137,7 @@ namespace OpenRT {
 
         public void Remove(CustomShaderMeta meta) {
             switch (meta.shaderType) {
-                case OpenRT.EShaderType.CloestHit:
+                case OpenRT.EShaderType.ClosestHit:
                     _Remove(meta, closestHitDataTable);
                     break;
 
@@ -158,7 +158,7 @@ namespace OpenRT {
 
         public void SetShaderTableClean(EShaderType shaderType) {
             switch (shaderType) {
-                case EShaderType.CloestHit:
+                case EShaderType.ClosestHit:
                     closestHitDataTable.Clean();
                     break;
 
@@ -174,7 +174,7 @@ namespace OpenRT {
 
         public string ShaderNameToGUID(string shaderName, EShaderType shaderType) {
             switch (shaderType) {
-                case EShaderType.CloestHit:
+                case EShaderType.ClosestHit:
                     return closestHitDataTable.ShaderNameToGUID(shaderName);
 
                 case EShaderType.Intersect:

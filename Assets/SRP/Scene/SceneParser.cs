@@ -70,6 +70,8 @@ namespace OpenRT {
                 foreach (var renderer in renderers) {
                     if (renderer.gameObject.activeSelf) {
                         List<float> geoInsData = renderer.geometry.GetGeometryInstanceData();
+                        var closestShaderGUID = renderer.material.GetClosestHitGUID();
+                        int closestShaderIndex = CustomShaderDatabase.Instance.GUIDToShaderIndex(closestShaderGUID, EShaderType.ClosestHit);
                         var intersectShaderGUID = renderer.geometry.GetIntersectShaderGUID();
                         int intersectShaderIndex = CustomShaderDatabase.Instance.GUIDToShaderIndex(intersectShaderGUID, EShaderType.Intersect);
 
@@ -99,7 +101,7 @@ namespace OpenRT {
                             geometryIndex: intersectShaderIndex,
                             geometryInstanceBegin: startIndex,
                             geometryInstanceCount: renderer.geometry.GetCount(),
-                            materialIndex: material.shaderIndex,
+                            materialIndex: closestShaderIndex,
                             transformIndex: sceneParseResult.WorldToPrimitive.Count - 1
                         ));
 

@@ -4,7 +4,10 @@ using UnityEngine;
 
 namespace OpenRT {
     public class RTMaterial : MonoBehaviour {
-        [HideInInspector, SerializeField] public int shaderIndex = 0; // Close hit shader
+        [HideInInspector, SerializeField] private string closestHitGUID = string.Empty;
 
+        public string GetClosestHitGUID() {
+            return closestHitGUID;
+        }
     }
 }

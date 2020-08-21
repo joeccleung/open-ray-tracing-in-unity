@@ -27,6 +27,7 @@ namespace OpenRT {
                 if (shouldProcess(absPath)) {
 
                     var meta = ReadShaderMeta(absPath: absPath);
+                    Debug.Log($"[ComputeShaderImporter] Add assert meta = {meta.Value.absPath}");
 
                     if (meta != null) {
                         CustomShaderDatabase.Instance.Add(meta.Value);
@@ -78,7 +79,7 @@ namespace OpenRT {
 
             string shaderName = null;
             if (closetHitReader.CanHandle(fileContent, out shaderName)) {
-                return new CustomShaderMeta(name: shaderName, absPath: absPath, shaderType: OpenRT.EShaderType.CloestHit);
+                return new CustomShaderMeta(name: shaderName, absPath: absPath, shaderType: OpenRT.EShaderType.ClosestHit);
                 // } else if (intersectReader.CanHandle(fileContent, out shaderName)) {
                 //     return new CustomShaderMeta(name: shaderName, absPath: absPath, shaderType: OpenRT.EShaderType.Intersect);
             } else {
@@ -87,9 +88,10 @@ namespace OpenRT {
         }
 
         private static void ExportChangedShadersToGPUProgram(CustomShaderDatabase db) {
-            if (db.IsShaderTableDirty(EShaderType.CloestHit)) {
-                closetHitShaderCollectionGPUProgramGenerator.ExportShaderCollection(db.ShaderMetaList(EShaderType.CloestHit));
-                db.SetShaderTableClean(EShaderType.CloestHit);
+            Debug.Log("[ShaderImporter] ExportChangedShadersToGPUProgram");
+            if (db.IsShaderTableDirty(EShaderType.ClosestHit)) {
+                closetHitShaderCollectionGPUProgramGenerator.ExportShaderCollection(db.ShaderMetaList(EShaderType.ClosestHit));
+                db.SetShaderTableClean(EShaderType.ClosestHit);
             }
             if (db.IsShaderTableDirty(EShaderType.Intersect)) {
                 // TODO: Fix intersection shader collection

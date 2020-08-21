@@ -13,6 +13,9 @@ namespace OpenRT {
         }
 
         public string GenerateShaderCollectionFileContent(SortedList<GUID, CustomShaderMeta> shadersImportMetaList) {
+            
+            Debug.Log("[ClosestHit] GenerateShaderCollectionFileContent");
+            
             StringBuilder sb = new StringBuilder();
             // Order is reverse
             sb.AppendLine("// =============================================");
