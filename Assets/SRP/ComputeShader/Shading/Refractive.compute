@@ -1,6 +1,8 @@
 ﻿#ifndef Refractive_COMPUTE
 #define Refractive_COMPUTE
 
+float RefractiveMat_refractiveIndex;
+
 // [shader(Refractive)]
 
 void Refractive_SecRays(
@@ -13,13 +15,36 @@ void Refractive_SecRays(
         return;
     }
 
+    if (RefractiveMat_refractiveIndex == 0)
+    {
+        RefractiveMat_refractiveIndex = 0.00001f;
+    }
+
+    float refIdx = 1;
+
+    if (ray.type == RAY_FLAG_CULL_BACK_FACING_TRIANGLES)
+    {
+        refIdx = 1 / RefractiveMat_refractiveIndex;
+        secRaysAtHit.srays[0].type = RAY_FLAG_CULL_FRONT_FACING_TRIANGLES;  // Next ray cull forward facing
+    }
+    else
+    {
+        refIdx = RefractiveMat_refractiveIndex;
+        secRaysAtHit.srays[0].type = RAY_FLAG_CULL_BACK_FACING_TRIANGLES;   // Next ray cull backward facing
+    }
+
     secRaysAtHit.srays[0].origin = hit.position;
     // secRaysAtHit.srays[0].direction = hit.normal;
-    secRaysAtHit.srays[0].direction = normalize(reflect(ray.direction, hit.normal));
+    float inAngle = acos(dot(-ray.direction, hit.normal));
+    float outAngle = asin(sin(inAngle) / refIdx);
+    float3 a = -ray.direction/refIdx;
+    float b = cos(outAngle) - cos(inAngle)/refIdx;
+    secRaysAtHit.srays[0].direction = normalize(-1 * (a + (b * hit.normal)));
     secRaysAtHit.srays[0].color = float3(0, 0, 0);
     secRaysAtHit.srays[0].gen = ray.gen - 1;
     secRaysAtHit.srays[0].tmin = 0.01f;
     secRaysAtHit.srays[0].weight = 1;
+    
 }
 
 float3 Refractive(
