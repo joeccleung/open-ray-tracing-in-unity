@@ -1,0 +1,49 @@
+﻿#ifndef Refractive_COMPUTE
+#define Refractive_COMPUTE
+
+// [shader(Refractive)]
+
+void Refractive_SecRays(
+    inout Ray ray,
+    RayHit hit,
+    inout SecRaysAtHit secRaysAtHit
+) 
+{
+    if (ray.gen <= 1) {
+        return;
+    }
+
+    secRaysAtHit.srays[0].origin = hit.position;
+    // secRaysAtHit.srays[0].direction = hit.normal;
+    secRaysAtHit.srays[0].direction = normalize(reflect(ray.direction, hit.normal));
+    secRaysAtHit.srays[0].color = float3(0, 0, 0);
+    secRaysAtHit.srays[0].gen = ray.gen - 1;
+    secRaysAtHit.srays[0].tmin = 0.01f;
+    secRaysAtHit.srays[0].weight = 1;
+}
+
+float3 Refractive(
+   inout Ray ray,
+   RayHit hit,
+   float3 ambientLightUpper,
+   float3 secondaryRayColor
+)
+{
+    float3 color = float3(0, 0, 0);
+
+    for(int l = 0; l < _NumOfLights; l++)
+    {
+        LightHit light0 = GetIlluminate(hit.position, hit.primitiveId, l);
+
+        float nDotL = dot(hit.normal, -1 * light0.direction);
+        if (nDotL >= 0)
+        {
+            color += light0.color * nDotL;
+        }
+    }
+
+    
+    return 0.2f * color + 0.8f * secondaryRayColor;
+}
+
+#endif // Refractive_COMPUTE 

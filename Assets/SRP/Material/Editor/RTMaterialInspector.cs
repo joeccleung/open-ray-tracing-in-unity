@@ -7,11 +7,28 @@ namespace OpenRT {
     [CustomEditor(typeof(RTMaterial), true)]
     public class RTMaterialInspector : Editor {
         public override void OnInspectorGUI() {
+            
+            serializedObject.Update();
+
             DrawDefaultInspector();
 
-            var m_shaderIndexProp = serializedObject.FindProperty("shaderIndex");
+            var shaderGUIDProp = serializedObject.FindProperty("closestHitGUID");
 
-            m_shaderIndexProp.intValue = EditorGUILayout.Popup("Shader", m_shaderIndexProp.intValue, CustomShaderDatabase.Instance.ShaderNameList(EShaderType.CloestHit));
+            var shaderIndex = CustomShaderDatabase.Instance.GUIDToShaderIndex(shaderGUIDProp.stringValue, EShaderType.ClosestHit);
+
+            EditorGUILayout.HelpBox($"Shader Index:{shaderIndex} GUID:{shaderGUIDProp.stringValue}", MessageType.None);
+
+            if (shaderIndex == -1) {
+                shaderIndex = 0;
+            }
+
+            var selectedShaderIndex = EditorGUILayout.Popup(
+                "Closest Hit",
+                shaderIndex,
+                CustomShaderDatabase.Instance.ShaderNameList(EShaderType.ClosestHit));
+
+            var selectedShaderName = CustomShaderDatabase.Instance.ShaderNameList(EShaderType.ClosestHit) [selectedShaderIndex];
+            shaderGUIDProp.stringValue = CustomShaderDatabase.Instance.ShaderNameToGUID(selectedShaderName, EShaderType.ClosestHit);
 
             serializedObject.ApplyModifiedProperties();
         }

@@ -7,9 +7,9 @@ namespace OpenRT {
         /// <summary>
         /// Short-hand for GenerateShaderCollectionFileContent then WriteToCustomShaderCollection
         /// </summary>
-        bool ExportShaderCollection(SortedList<GUID, CustomShaderMeta> shadersImportMetaList);
+        bool ExportShaderCollection(SortedList<string, GUID> sortedByName, SortedList<GUID, CustomShaderMeta> shadersImportMetaList);
 
-        string GenerateShaderCollectionFileContent(SortedList<GUID, CustomShaderMeta> shadersImportMetaList);
+        string GenerateShaderCollectionFileContent(SortedList<string, GUID> sortedByName, SortedList<GUID, CustomShaderMeta> shadersImportMetaList);
 
         bool WriteToCustomShaderCollection(string content);
     }

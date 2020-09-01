@@ -36,6 +36,16 @@
       "name": "Reflective",
       "absPath": "Assets/SRP/ComputeShader/Shading/Reflective.compute",
       "shaderType": 1
+    },
+    "fc7d9fc5-fa59-47b1-9910-cae29a9c787e": {
+      "name": "Translucent",
+      "absPath": "Assets/SRP/ComputeShader/Shading/Translucent.compute",
+      "shaderType": 1
+    },
+    "ce985be6-9c4f-4fa0-92e9-a6ccf763e5db": {
+      "name": "Refractive",
+      "absPath": "Assets/SRP/ComputeShader/Shading/Refractive.compute",
+      "shaderType": 1
     }
   },
   "lights": {}

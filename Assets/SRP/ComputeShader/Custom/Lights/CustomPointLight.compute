@@ -6,12 +6,14 @@
 LightHit GetIlluminate_CustomPointLight(LightInfo lightInfo, float3 hitPos, int primitiveId)
 {
     Ray ray;
+    ray.color = float3(0, 0.4, 0);
     ray.origin = lightInfo.position;
     ray.direction = normalize(hitPos - ray.origin);
     ray.gen = 1;
     ray.tmin = 0.0001f;
     ray.tmax = distance(ray.origin, hitPos);
     ray.type = RAY_FLAG_LIGHT;
+    ray.weight = 1;
 
     if (ShadowTrace(ray, primitiveId))
     {
@@ -19,7 +21,7 @@ LightHit GetIlluminate_CustomPointLight(LightInfo lightInfo, float3 hitPos, int 
     }
     else
     {
-        return CreateLightHit(float3(0, 0.4, 0), ray.direction);
+        return CreateLightHit(ray.color, ray.direction);
     }
     
 }

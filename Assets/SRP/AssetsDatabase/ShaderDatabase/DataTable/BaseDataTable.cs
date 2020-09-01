@@ -81,11 +81,18 @@ namespace OpenRT {
             return guid;
         }
 
-        public virtual SortedList<string, CustomShaderMeta> ShaderMetaList {
+        public virtual SortedList<GUID, CustomShaderMeta> ShaderMetaList {
             get {
                 return shaderMetaList;
             }
         }
+
+        public virtual SortedList<ShaderName, GUID> ShaderSortByName {
+            get {
+                return shaderList;
+            }
+        }
+
         public virtual string[] ShaderNameList {
             get {
                 return shaderList.Keys.ToArray();
