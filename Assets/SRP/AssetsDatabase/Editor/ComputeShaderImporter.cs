@@ -27,9 +27,10 @@ namespace OpenRT {
                 if (shouldProcess(absPath)) {
 
                     var meta = ReadShaderMeta(absPath: absPath);
-                    Debug.Log($"[ComputeShaderImporter] Add assert meta = {meta.Value.absPath}");
-
+                    
                     if (meta != null) {
+                        Debug.Log($"[ComputeShaderImporter] Add assert meta = {meta.Value.absPath}");
+
                         CustomShaderDatabase.Instance.Add(meta.Value);
                     }
 
@@ -90,7 +91,8 @@ namespace OpenRT {
         private static void ExportChangedShadersToGPUProgram(CustomShaderDatabase db) {
             Debug.Log("[ShaderImporter] ExportChangedShadersToGPUProgram");
             if (db.IsShaderTableDirty(EShaderType.ClosestHit)) {
-                closetHitShaderCollectionGPUProgramGenerator.ExportShaderCollection(db.ShaderMetaList(EShaderType.ClosestHit));
+                closetHitShaderCollectionGPUProgramGenerator.ExportShaderCollection(db.ShaderSortedByName(EShaderType.ClosestHit),
+                                                                                    db.ShaderMetaList(EShaderType.ClosestHit));
                 db.SetShaderTableClean(EShaderType.ClosestHit);
             }
             if (db.IsShaderTableDirty(EShaderType.Intersect)) {

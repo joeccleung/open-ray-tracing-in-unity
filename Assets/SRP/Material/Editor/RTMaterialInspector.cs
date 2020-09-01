@@ -16,6 +16,8 @@ namespace OpenRT {
 
             var shaderIndex = CustomShaderDatabase.Instance.GUIDToShaderIndex(shaderGUIDProp.stringValue, EShaderType.ClosestHit);
 
+            EditorGUILayout.HelpBox($"Shader Index:{shaderIndex} GUID:{shaderGUIDProp.stringValue}", MessageType.None);
+
             if (shaderIndex == -1) {
                 shaderIndex = 0;
             }

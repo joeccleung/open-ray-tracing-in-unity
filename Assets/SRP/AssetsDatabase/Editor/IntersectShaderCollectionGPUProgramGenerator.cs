@@ -10,17 +10,16 @@ namespace OpenRT {
         public const string CUSTOMER_SHADER_COLLECTION_DIR = "Assets/SRP/ComputeShader/Intersect/";
         public const string CUSTOMER_SHADER_COLLECTION_FILENAME = "IntersectShaderCollection";
 
-        public bool ExportShaderCollection(SortedList<GUID, CustomShaderMeta> shadersImportMetaList) {
-            return WriteToCustomShaderCollection(GenerateShaderCollectionFileContent(shadersImportMetaList));
+        public bool ExportShaderCollection(SortedList<string, GUID> sortedByName, SortedList<GUID, CustomShaderMeta> shadersImportMetaList) {
+            return WriteToCustomShaderCollection(GenerateShaderCollectionFileContent(sortedByName, shadersImportMetaList));
         }
 
-        public string GenerateShaderCollectionFileContent(SortedList<GUID, CustomShaderMeta> shadersImportMetaList) {
+        public string GenerateShaderCollectionFileContent(SortedList<string, GUID> sortedByName, SortedList<GUID, CustomShaderMeta> shadersImportMetaList) {
             StringBuilder sb = new StringBuilder();
             // Order is reverse
             sb.AppendLine("// =============================================");
             sb.AppendLine("// =         Intersect Shader Collection       =");
             sb.AppendLine("// = Auto-generated File. Do not edit manually =");
-            sb.AppendLine($"// = Time: {System.DateTime.Now.ToLongDateString()} {System.DateTime.Now.ToLongTimeString()} =");
             sb.AppendLine("// =============================================");
             sb.AppendLine();
             // sb.AppendLine("#pragma editor_sync_compilation");
