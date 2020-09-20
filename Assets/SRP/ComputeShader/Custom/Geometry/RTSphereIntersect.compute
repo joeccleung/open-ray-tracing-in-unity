@@ -4,72 +4,117 @@
 // [intersect(RTSphereIntersect)]
 void RTSphereIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int primitiveId)
 {
-    // The ray equation in from of (ray.origin) + (distance travelled, d) * (ray.direction) = (the contact point)   Equ(1)
-    // The sphere equation in form of [|(contact point) - (center; sphere.xyz)|]^2 = (radius; sphere.w)^2.0f          Equ(2)
+    // For every sphere in the primitive, we do:
 
     // Step 1: Define
-    // float3 oriToCtr = sphere.xyz - ray.origin;    
-    // float d = dot(ray.direction, oriToCtr); // Vector projection to get initial distance travelled
 
-    // Equ(1) --> Equ(2)
-    // [|(ray.origin) + (d)*(ray.direction)- (sphere.xyz)|]^2 - (sphere.w)^2 = 0
-    // (ray.direction)^2*(d)^2 + 2(ray.direction)*(ray.origin-sphere.xyz)*(d) + (ray.origin-sphere.xyz)^2  - (sphere.w)^2 = 0.0f    Equ(3)
+    // From origin to center
+    // float3 oriToCtr = sphere.xyz - ray.origin;
+    // float e = distance(oriToCtr);
+    
+    // Vector projection to get the distance the ray will travel in the direction until to the point that is perpendicular to the sphere center
+    // float a = dot(ray.direction, oriToCtr);
 
-    // Step 2: Discriminant
-    // We calculate discriminant to determine whether there is real roots, thus, intersection
-    // Check delta: b^2 - 4ac
-    // [2(ray.origin-sphere.xyz)*(ray.direction)]^2 - 4((ray.direction)^2)*((ray.origin - sphere.xyz)^2 - (sphere.w)^2)   Equ(4)
-    //
-    // Since (ray.direction) is a unit vector, (ray.direction)^2 = 1.0f     Equ(5)
-    // Equ(5) --> Equ(4)
-    //
-    // 4[(ray.origin-sphere.xyz)*(ray.direction)]^2 - 4((ray.origin - sphere.xyz)^2 - (sphere.w)^2)
-    // 4*dot(ray.direction, -oriToCtr)^2 - 4*dot(-oriToCtr, -oriToCtr)^2 + 4*(sphere.w)^2
-    // d * d - dot(oriToCtr, oriToCtr) + (sphere.w) * (sphere.w)    Note that the 4 is obmitted as it is taken out
-    //
-    // If discriminant < 0, then there is no intersection
-    //
+    // Distance from center to the perpendicular point.
+    // float b^2 = e^2 - a^2
 
-    // Step 3: Calculate hit distance
-    // If there is intersection(s), we calculate the actual distance travelled by solving d
-    // d = [-b +/- sqrt(b^2-4ac)] / 2a
-    //
-    // From Equ(5), we know that 2a = 2 * (ray.direction) ^ 2 = 2
-    //
-    // hitDis = -(ray.direction * (ray.origin - sphere.xyz)) +/- disSqrt
-    // hitDis = -dot(ray.direction, -oriToCtr) +/- disSqrt
-    // hitDis = d +/- disSqrt
-    //
-    // Because hitDis cannot be negative, and we want the closest hit, so we take the least positive value of d +/- disSqrt
+    // Step 2: Distinguish between point inside or outside the sphere
 
-    // Step 4: Update best hit distance
-    //
+    // If the sphere is outside: e > r
+    // Do Step 3a. Otherwise, do step 3b.
+
+    // Step 3a: Discriminant
+
+    // dat = r^2 - b^2
+    // If dat > 0, there are a hit
+    // If dat < 0, there is no hit, continue to next sphere
+
+    // Distance from hit point to the perpendicular point.
+    // float f^2 = r^2 - b^2 = dat
+    // f = sqrt(dat)
+
+    // Step 4a: Calculate t
+
+    // Distance from origin to hit point (our target)
+    // origin ---t--> hit point ---f--> perpendicular point
+    // float t = a - f
+    // t = a - f
+
+    // Step 3b:
+
+
+    // Step 5: Check if t is valid and best hit
+
 
     for(int s = 0; s < primitive.geometryInstanceCount; s++)
     {
-        // Step 1: Define
-        RTSphere sphere = _RTSpheres[primitive.geometryInstanceBegin + s];;
-        float3 oriToCtr = sphere.center - ray.origin;
-        float d = dot(ray.direction, oriToCtr);
+        RTSphere sphere = _RTSpheres[primitive.geometryInstanceBegin + s];
+        float t = -1;
 
-        // Step 2: Discriminant
-        float discriminant = d * d - dot(-oriToCtr, -oriToCtr) + sphere.radius * sphere.radius;
-        if(discriminant < 0)
+        // Step 1: Define
+
+        float3 oriToCtr = sphere.center - ray.origin;
+
+        float e = length(oriToCtr);
+
+        float a = dot(ray.direction, oriToCtr);
+
+        float b2 = e * e - a * a;
+
+        float3 hp = float3(0, 0, 0);
+        float3 n = float3(0, 0, 0);
+        uint mediumToEnter = 0;
+
+        float dat = sphere.radius * sphere.radius - b2;
+
+        // Step 2: Determine if the origin is outside the sphere
+        // Check the truth table for the selection of inside vs outside algorithm
+        // Currently, the prototype use a separated field "ray.inside" to replace the truth table
+        if (ray.inside == 0 || (ray.inside == -1 && e > sphere.radius))
         {
-            continue;
+            // Outside, do step 3a:
+            if (dat < 0)
+            {
+                continue; // No intersection, bypass
+            }
+
+            // Step 4a:
+            float f = sqrt(dat);
+
+            t = abs(a - f);
+            hp = ray.origin + t * ray.direction;
+
+            n = normalize(hp - sphere.center);
+
+            if (dot(ray.direction, n) >= 0)
+            {
+                // The hit normal is not "intercepting" the ray direction, we may intersecting behind the sphere surface due to origin placing just behind the surface due to floating point error
+                continue;
+            }
+
+            mediumToEnter = primitiveId;
+            
+        }
+        else
+        {
+            // On or inside, do step 3b
+            float f = sqrt(dat);
+
+            t = a + f;
+            hp = ray.origin + t * ray.direction;
+
+            mediumToEnter = 0;
+            n = normalize(sphere.center - hp);
         }
 
-        // Step 3: Calculate hit distance
-        float disSqrt = sqrt(discriminant);
-        float hitDis = d - disSqrt > 0 ? d - disSqrt : d + disSqrt;     // If d - disSqrt > 0, then d + disSqrt must be greater than d - disSqrt, we take the least positive value; Otherwise, we take d + disSqrt
-
         // Step 4: Update best hit distance
-        if (ray.tmin < hitDis && hitDis < ray.tmax && hitDis < bestHit.distance)
+        if (ray.tmin < t && t < ray.tmax && t < bestHit.distance)
         {
-            bestHit.distance = hitDis;
+            bestHit.distance = t;
             bestHit.primitiveId = primitiveId;
-            bestHit.position = ray.origin + hitDis * ray.direction;
-            bestHit.normal = normalize(bestHit.position - sphere.center);
+            bestHit.position = hp;
+            bestHit.mediumToEnter = mediumToEnter;
+            bestHit.normal = n;
             // bestHit.matIndex = sphere.matIndex;
         }
     }

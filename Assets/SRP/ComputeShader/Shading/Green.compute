@@ -12,16 +12,7 @@ void Green_SecRays(
     inout SecRaysAtHit secRaysAtHit
 ) 
 {
-    if (ray.gen <= 1) {
-        return;
-    }
 
-    secRaysAtHit.srays[0].origin = hit.position;
-    // secRaysAtHit.srays[0].direction = hit.normal;
-    secRaysAtHit.srays[0].direction = reflect(ray.direction, hit.normal);
-    secRaysAtHit.srays[0].gen = ray.gen - 1;
-    secRaysAtHit.srays[0].tmin = 0.01f;
-    secRaysAtHit.srays[0].weight = 1;
 }
 
 static const float PI = 3.14159265f;

@@ -46,6 +46,11 @@
       "name": "Refractive",
       "absPath": "Assets/SRP/ComputeShader/Shading/Refractive.compute",
       "shaderType": 1
+    },
+    "36329863-824d-46f3-97a5-914566f926a3": {
+      "name": "Volumetric",
+      "absPath": "Assets/SRP/ComputeShader/Shading/Volumetric.compute",
+      "shaderType": 1
     }
   },
   "lights": {}

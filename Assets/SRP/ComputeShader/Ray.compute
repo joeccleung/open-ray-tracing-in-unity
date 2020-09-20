@@ -3,6 +3,7 @@
 
 /*
 The Ray structure
+- The data fields has to match with RTRay.cs
 */
 
 struct Ray
@@ -10,9 +11,10 @@ struct Ray
     float3 color;
     float3 origin;
     float3 direction;
+    int inside;
     float tmin;
     float tmax;
-    uint type;
+    uint medium;
     float weight;
     uint gen;
 };
@@ -23,11 +25,12 @@ Ray CreateRay(float3 origin, float3 direction, int gen)
 {
     Ray ray = EmptyRay();
     ray.gen = gen;
+    ray.inside = -1;
     ray.origin = origin;
     ray.direction = normalize(direction);
     ray.tmax = 1.#INF;
-    ray.tmin = 0.001f;
-    ray.type = RAY_FLAG_RENDER;
+    ray.tmin = 0.00001f;
+    ray.medium = 0;
     return ray;
 }
 
@@ -36,12 +39,13 @@ Ray EmptyRay()
     Ray ray;
     ray.color = float3(0, 0, 0);
     ray.gen = 1;
+    ray.inside = -1;
     ray.origin = float3(0, 0, 0);
     ray.direction = float3(0, 0, 0);
     ray.tmin = -1 * 1.#INF;
     ray.tmax = 1.#INF;
     ray.weight = 0;
-    ray.type = RAY_FLAG_RENDER;
+    ray.medium = 0;
     return ray;
 }
 

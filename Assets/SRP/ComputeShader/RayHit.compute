@@ -7,6 +7,7 @@ struct RayHit
     float distance;
     int primitiveId;  // the unique id for each primitive
     float3 position;
+    uint mediumToEnter;    // The primitive ID of the medium the ray hit will enter
     float3 normal;
 };
 
@@ -16,6 +17,7 @@ RayHit CreateRayHit()
     hit.barycentric = float3(1.0f, 0.0f, 0.0f);
     hit.position = float3(0.0f, 0.0f, 0.0f);
     hit.distance = 1.#INF;
+    hit.mediumToEnter = 0;
     hit.normal = float3(0.0f, 0.0f, 0.0f);
     hit.primitiveId = -1;
     return hit;

@@ -1,12 +1,8 @@
-﻿#ifndef Translucent_COMPUTE
-#define Translucent_COMPUTE
+﻿#ifndef Volumetric_COMPUTE
+#define Volumetric_COMPUTE
 
-float TranslucentMat_reflectivity;
-float TranslucentMat_secondaryRayEffect;
-float TranslucentMat_transparency;
-
-// [shader(Translucent)]
-void Translucent_SecRays(
+// [shader(Volumetric)]
+void Volumetric_SecRays(
     inout Ray ray,
     RayHit hit,
     inout SecRaysAtHit secRaysAtHit
@@ -24,7 +20,7 @@ void Translucent_SecRays(
     secRaysAtHit.srays[0].inside = 0;   // Reflective ray is outside of the object
     secRaysAtHit.srays[0].medium = 0;   // Reflective ray did not enter the object, medium is air
     secRaysAtHit.srays[0].tmin = 0.01f;
-    secRaysAtHit.srays[0].weight = TranslucentMat_reflectivity;
+    secRaysAtHit.srays[0].weight = 0;
 
     // Translucent
     secRaysAtHit.srays[1].origin = hit.position;
@@ -34,30 +30,43 @@ void Translucent_SecRays(
     secRaysAtHit.srays[1].inside = 1;   // Reflective ray is inside of the object
     secRaysAtHit.srays[1].medium = hit.mediumToEnter;   // Translucent ray enter the object
     secRaysAtHit.srays[1].tmin = 0.01f;
-    secRaysAtHit.srays[1].weight = TranslucentMat_transparency;
+    secRaysAtHit.srays[1].weight = 1;
 }
 
-float3 Translucent(
+float3 Volumetric(
    inout Ray ray,
    RayHit hit,
    float3 ambientLightUpper,
    float3 secondaryRayColor
 )
 {
-    float3 color = float3(0, 0, 0);
-
-    for(int l = 0; l < _NumOfLights; l++)
+    if (ray.inside == 1)
     {
-        LightHit light0 = GetIlluminate(hit.position, hit.primitiveId, l);
+        float3 color = float3(1, 1, 1);
 
-        float nDotL = dot(hit.normal, -1 * light0.direction);
-        if (nDotL >= 0)
+        float travel = hit.distance;
+
+        while (travel > 0)
         {
-            color += light0.color * nDotL;
-        }
-    }
+            travel -= 0.2f;
 
-    return (1 - TranslucentMat_secondaryRayEffect) * color + TranslucentMat_secondaryRayEffect * secondaryRayColor;
+            float3 lightAmt = float3(0, 0, 0);
+
+            for(int l = 0; l < _NumOfLights; l++)
+            {
+                LightHit light0 = GetIlluminate(hit.position + -1 * ray.direction * travel, hit.primitiveId, l);
+
+                lightAmt += light0.color;
+            }
+
+            lightAmt = clamp(lightAmt, float3(0, 0, 0), float3(1, 1, 1));
+            
+            color = min(color, lightAmt);
+        }
+
+        return color * secondaryRayColor;
+    }
+    return secondaryRayColor;
 }
 
-#endif // Reflective_COMPUTE 
+#endif // Volumetric_COMPUTE 

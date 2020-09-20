@@ -20,11 +20,23 @@ void RTTriangleIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int
         // if determinant is near zero, ray lies in plane of triangle
         float det = dot(edge1, pvec);
 
-        // use backface culling
-        if (det < EPSILON)
+        if (ray.inside <= 0)
         {
-            continue;
+            // Outside: use backface culling
+            if (det < EPSILON)
+            {
+                continue;
+            }
         }
+        else
+        {
+            // Inside: use forward culling
+            if (det > -EPSILON)
+            {
+                continue;
+            }
+        }
+
 
         float inv_det = 1.0f / det;
         // calculate distance from vert0 to ray origin
