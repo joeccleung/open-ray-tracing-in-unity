@@ -15,36 +15,39 @@ void Refractive_SecRays(
         return;
     }
 
-    if (RefractiveMat_refractiveIndex == 0)
+    float refractiveIndex = RefractiveMat_refractiveIndex;
+    if (refractiveIndex == 0)
     {
-        RefractiveMat_refractiveIndex = 0.00001f;
+        refractiveIndex = 0.0001f;
     }
 
-    float refIdx = 1;
-
-    if (ray.type == RAY_FLAG_CULL_BACK_FACING_TRIANGLES)
+    if (hit.mediumToEnter == 0)
     {
-        refIdx = 1 / RefractiveMat_refractiveIndex;
-        secRaysAtHit.srays[0].type = RAY_FLAG_CULL_FRONT_FACING_TRIANGLES;  // Next ray cull forward facing
+        refractiveIndex = 1 / refractiveIndex;
     }
-    else
-    {
-        refIdx = RefractiveMat_refractiveIndex;
-        secRaysAtHit.srays[0].type = RAY_FLAG_CULL_BACK_FACING_TRIANGLES;   // Next ray cull backward facing
+
+
+    int inside = 1;
+    if (ray.inside == 1) {
+        // If my parent is an inside ray and hit the boundary of the geometry, then I should be leaving the geometry
+        inside = 0;
     }
 
     secRaysAtHit.srays[0].origin = hit.position;
     // secRaysAtHit.srays[0].direction = hit.normal;
-    float inAngle = acos(dot(-ray.direction, hit.normal));
-    float outAngle = asin(sin(inAngle) / refIdx);
-    float3 a = -ray.direction/refIdx;
-    float b = cos(outAngle) - cos(inAngle)/refIdx;
-    secRaysAtHit.srays[0].direction = normalize(-1 * (a + (b * hit.normal)));
+    // float inAngle = acos(dot(-ray.direction, hit.normal));
+    // float outAngle = asin(sin(inAngle) / RefractiveMat_refractiveIndex);
+    // float3 a = -ray.direction / RefractiveMat_refractiveIndex;
+    // float b = cos(outAngle) - cos(inAngle) / RefractiveMat_refractiveIndex;
+    // secRaysAtHit.srays[0].direction = normalize(-1 * (a + (b * hit.normal)));
+    secRaysAtHit.srays[0].direction = normalize(refract(ray.direction, hit.normal, refractiveIndex));
     secRaysAtHit.srays[0].color = float3(0, 0, 0);
     secRaysAtHit.srays[0].gen = ray.gen - 1;
-    secRaysAtHit.srays[0].tmin = 0.01f;
+    secRaysAtHit.srays[0].inside = inside; 
+    secRaysAtHit.srays[0].medium = hit.mediumToEnter;
+    secRaysAtHit.srays[0].tmin = 0; // Try to see if tmin set to 0 help the refraction
     secRaysAtHit.srays[0].weight = 1;
-    
+
 }
 
 float3 Refractive(
@@ -54,21 +57,7 @@ float3 Refractive(
    float3 secondaryRayColor
 )
 {
-    float3 color = float3(0, 0, 0);
-
-    for(int l = 0; l < _NumOfLights; l++)
-    {
-        LightHit light0 = GetIlluminate(hit.position, hit.primitiveId, l);
-
-        float nDotL = dot(hit.normal, -1 * light0.direction);
-        if (nDotL >= 0)
-        {
-            color += light0.color * nDotL;
-        }
-    }
-
-    
-    return 0.2f * color + 0.8f * secondaryRayColor;
+    return 0.25f * secondaryRayColor;
 }
 
 #endif // Refractive_COMPUTE 

@@ -16,21 +16,26 @@ void Translucent_SecRays(
         return;
     }
 
-    // Reflective
+    // Translucent
     secRaysAtHit.srays[0].origin = hit.position;
-    secRaysAtHit.srays[0].direction = normalize(reflect(ray.direction, hit.normal));
+    secRaysAtHit.srays[0].direction = ray.direction;
     secRaysAtHit.srays[0].color = float3(0, 0, 0);
     secRaysAtHit.srays[0].gen = ray.gen - 1;
+    secRaysAtHit.srays[0].inside =  (ray.inside <= 0) ? 1 : 0;   // Reflective ray is inside of the object
+    secRaysAtHit.srays[0].medium = (ray.inside <= 0) ? hit.mediumToEnter : 0 ;   // Translucent ray enter the object
     secRaysAtHit.srays[0].tmin = 0.01f;
-    secRaysAtHit.srays[0].weight = TranslucentMat_reflectivity;
+    secRaysAtHit.srays[0].weight = TranslucentMat_transparency;
 
-    // Translucent
+    // Reflective
     secRaysAtHit.srays[1].origin = hit.position;
-    secRaysAtHit.srays[1].direction = ray.direction;
+    secRaysAtHit.srays[1].direction = normalize(reflect(ray.direction, hit.normal));
     secRaysAtHit.srays[1].color = float3(0, 0, 0);
     secRaysAtHit.srays[1].gen = ray.gen - 1;
+    secRaysAtHit.srays[1].inside = 0;   // Reflective ray is outside of the object
+    secRaysAtHit.srays[1].medium = 0;   // Reflective ray did not enter the object, medium is air
     secRaysAtHit.srays[1].tmin = 0.01f;
-    secRaysAtHit.srays[1].weight = TranslucentMat_transparency;
+    secRaysAtHit.srays[1].weight = TranslucentMat_reflectivity;
+
 }
 
 float3 Translucent(

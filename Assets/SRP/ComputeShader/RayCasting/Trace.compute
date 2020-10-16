@@ -10,7 +10,8 @@ RayHit Trace(Ray ray, int _NumOfPrimitive)
 {
     RayHit bestHit = CreateRayHit();
 
-    if (ray.tmin <= 0) {
+    // Sometimes, tmin == 0 when people want to do refraction
+    if (ray.tmin < 0) {
         return bestHit;
     }
 

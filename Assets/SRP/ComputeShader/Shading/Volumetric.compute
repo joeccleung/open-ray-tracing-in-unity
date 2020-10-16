@@ -1,0 +1,74 @@
+﻿#ifndef Volumetric_COMPUTE
+#define Volumetric_COMPUTE
+
+float VolumetricMat_sigma;
+float VolumetricMat_luminanceLight;
+
+// [shader(Volumetric)]
+void Volumetric_SecRays(
+    inout Ray ray,
+    RayHit hit,
+    inout SecRaysAtHit secRaysAtHit
+) 
+{
+    if (ray.gen <= 1) {
+        return;
+    }
+
+    // Translucent
+    secRaysAtHit.srays[0].origin = hit.position;
+    secRaysAtHit.srays[0].direction = ray.direction;
+    secRaysAtHit.srays[0].color = float3(0, 0, 0);
+    secRaysAtHit.srays[0].gen = ray.gen - 1;
+    secRaysAtHit.srays[0].inside = (ray.inside <= 0) ? 1 : 0;   // Reflective ray is inside of the object
+    secRaysAtHit.srays[0].medium = (ray.inside <= 0) ? hit.mediumToEnter : 0 ;   // Translucent ray enter the object
+    secRaysAtHit.srays[0].tmin = 0.001f;
+    secRaysAtHit.srays[0].tmax = 1.#INF;
+    secRaysAtHit.srays[0].weight = 1;
+}
+
+float3 Volumetric(
+   inout Ray ray,
+   RayHit hit,
+   float3 ambientLightUpper,
+   float3 secondaryRayColor
+)
+{
+    if (ray.inside == 1)
+    {
+        // Integration bounds
+        float stepSize = 0.2f;
+        float travel = hit.distance;
+
+        // Integration Variables
+        float3 transmittance = 1;
+        float3 color = secondaryRayColor;
+
+        while (travel >= stepSize)
+        {
+            // Determine sample position
+            float3 p_i = hit.position + -1 * ray.direction * travel;
+
+            // Sample volume properties
+            float sigma_s = VolumetricMat_sigma;
+
+            // Compute Transmittance from previous to current
+            transmittance *= exp( -1 * sigma_s * stepSize); // T_i
+
+            // Sample each light source
+            for(int l = 0; l < _NumOfLights; l++)
+            {
+                LightHit lightHit = GetIlluminate(p_i, hit.primitiveId, l);
+                color += transmittance * sigma_s * VolumetricMat_luminanceLight * lightHit.color;
+            }
+
+            // Move to next position
+            travel -= stepSize;
+        }
+
+        return color;
+    }
+    return secondaryRayColor;
+}
+
+#endif // Volumetric_COMPUTE 

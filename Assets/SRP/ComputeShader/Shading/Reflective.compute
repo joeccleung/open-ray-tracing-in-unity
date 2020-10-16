@@ -17,6 +17,7 @@ void Reflective_SecRays(
     // secRaysAtHit.srays[0].direction = hit.normal;
     secRaysAtHit.srays[0].direction = normalize(reflect(ray.direction, hit.normal));
     secRaysAtHit.srays[0].color = float3(0, 0, 0);
+    secRaysAtHit.srays[0].inside = 0;   // outside
     secRaysAtHit.srays[0].gen = ray.gen - 1;
     secRaysAtHit.srays[0].tmin = 0.01f;
     secRaysAtHit.srays[0].weight = 1;
@@ -43,7 +44,7 @@ float3 Reflective(
     }
 
     
-    return 0.2f * color + 0.8f * secondaryRayColor;
+    return secondaryRayColor;
 }
 
 #endif // Reflective_COMPUTE 

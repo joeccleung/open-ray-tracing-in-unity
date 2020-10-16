@@ -5,7 +5,8 @@ using UnityEngine;
 using UnityEngine.Rendering; // Import this namespace for rendering supporting functions
 using UnityEngine.SceneManagement;
 
-namespace OpenRT {
+namespace OpenRT
+{
     using ISIdx = System.Int32;
 
     public class BasicPipeInstance : RenderPipeline // Our own renderer should subclass RenderPipeline
@@ -27,21 +28,32 @@ namespace OpenRT {
         private ComputeBuffer m_bvhBuffer;
         private ComputeBuffer m_primitiveBuffer;
         private ComputeBuffer m_worldToPrimitiveBuffer;
+        private ComputeBuffer m_secondaryRaysBuffer;
         private SortedList<ISIdx, ComputeBuffer> m_geometryInstanceBuffers;
 
         private ComputeBuffer m_lightInfoBuffer;
 
-        public BasicPipeInstance(Color clearColor, ComputeShader mainShader, List<RenderPipelineConfigObject> allConfig) {
+        public BasicPipeInstance(Color clearColor, ComputeShader mainShader, List<RenderPipelineConfigObject> allConfig)
+        {
             m_clearColor = clearColor;
             m_mainShader = mainShader;
             m_allConfig = allConfig;
 
-            if (m_mainShader == null) {
+            if (m_mainShader == null)
+            {
                 Debug.LogError("Main Shader is gone");
                 return;
             }
 
             commands = new CommandBuffer { name = s_bufferName };
+
+            m_secondaryRaysBuffer = new ComputeBuffer(16, RTRay.Stride);
+            List<RTRay> secondaryRayPlaceholder = new List<RTRay>();
+            for(int i = 0; i < 16; i++)
+            {
+                secondaryRayPlaceholder.Add(new RTRay());
+            }
+            m_secondaryRaysBuffer.SetData(secondaryRayPlaceholder);
 
             m_geometryInstanceBuffers = new SortedList<ISIdx, ComputeBuffer>();
 
@@ -52,21 +64,24 @@ namespace OpenRT {
 
         protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras) // This is the function called every frame to draw on the screen
         {
-            if (m_mainShader == null) {
+            if (m_mainShader == null)
+            {
                 return;
             }
 
             RunParseScene();
             RunLoadGeometryToBuffer(sceneParseResult, ref m_bvhBuffer, ref m_mainShader, ref m_primitiveBuffer, ref m_worldToPrimitiveBuffer, ref m_geometryInstanceBuffers);
             RunLoadMaterialToBuffer(sceneParseResult, ref m_mainShader);
-            RunLoadLightToBuffer(SceneParser.Instance, ref m_lightInfoBuffer);
+            RunLoadLightToBuffer(sceneParseResult, ref m_lightInfoBuffer);
             RunSetAmbientToMainShader(m_config);
             RunSetMissShader(m_mainShader, m_config);
             RunSetRayGenerationShader(m_config.rayGenId);
             RunSetGeometryInstanceToMainShader(ref m_bvhBuffer, ref m_primitiveBuffer, ref m_worldToPrimitiveBuffer, ref m_geometryInstanceBuffers, sceneParseResult.Primitives.Count);
             RunSetLightsToMainShader(sceneParseResult.Lights.Count, ref m_lightInfoBuffer);
+            // RunSecondaryRayStack(ref m_mainShader, m_secondaryRaysBuffer);
 
-            foreach (var camera in cameras) {
+            foreach (var camera in cameras)
+            {
                 RunTargetTextureInit(ref m_target);
                 RunClearCanvas(commands, camera);
                 RunSetCameraToMainShader(camera);
@@ -77,7 +92,8 @@ namespace OpenRT {
         }
 
         private void RunLoadMaterialToBuffer(SceneParseResult sceneParseResult,
-            ref ComputeShader mainShader) {
+            ref ComputeShader mainShader)
+        {
 
             SceneTextureCollection sceneTexture = new SceneTextureCollection();
 
@@ -88,20 +104,30 @@ namespace OpenRT {
             PipelineMaterialToBuffer.LoadTextureToBuffer(sceneTexture, ref mainShader);
         }
 
-        private void RunParseScene() {
+        private void RunParseScene()
+        {
             var scene = SceneManager.GetActiveScene();
 
             sceneParseResult = SceneParser.Instance.ParseScene(scene);
         }
 
-        private void RunSetMissShader(ComputeShader shader, RenderPipelineConfigObject m_config) {
+        private void RunSetMissShader(ComputeShader shader, RenderPipelineConfigObject m_config)
+        {
             shader.SetTexture(kIndex, "_SkyboxTexture", m_config.skybox);
         }
 
-        private void RunTargetTextureInit(ref RenderTexture targetTexture) {
-            if (targetTexture == null || targetTexture.width != Screen.width || targetTexture.height != Screen.height) {
+        private void RunSecondaryRayStack(ref ComputeShader shader, ComputeBuffer secondaryRayBuffer)
+        {
+            shader.SetBuffer(kIndex, "_secondaryRayStack", secondaryRayBuffer);
+        }
+
+        private void RunTargetTextureInit(ref RenderTexture targetTexture)
+        {
+            if (targetTexture == null || targetTexture.width != Screen.width || targetTexture.height != Screen.height)
+            {
                 // Release render texture if we already have one
-                if (targetTexture != null) {
+                if (targetTexture != null)
+                {
                     targetTexture.Release();
                 }
 
@@ -113,7 +139,8 @@ namespace OpenRT {
             }
         }
 
-        private void RunClearCanvas(CommandBuffer buffer, Camera camera) {
+        private void RunClearCanvas(CommandBuffer buffer, Camera camera)
+        {
             CameraClearFlags clearFlags = camera.clearFlags; // Each camera can config its clear flag to determine what should be shown if nothing can be seen by the camera
             buffer.ClearRenderTarget(
                 ((clearFlags & CameraClearFlags.Depth) != 0),
@@ -127,14 +154,15 @@ namespace OpenRT {
             ref ComputeShader mainShader,
             ref ComputeBuffer primitiveBuffer,
             ref ComputeBuffer worldToPrimitiveBuffer,
-            ref SortedList<ISIdx, ComputeBuffer> gemoetryInstanceBuffers) {
+            ref SortedList<ISIdx, ComputeBuffer> gemoetryInstanceBuffers)
+        {
 
             LoadBufferWithGeometryInstances(
                 sceneParseResult,
-                bvhBuffer : ref bvhBuffer,
-                primitiveBuffer : ref primitiveBuffer,
+                bvhBuffer: ref bvhBuffer,
+                primitiveBuffer: ref primitiveBuffer,
                 worldToPrimitiveBuffer: ref worldToPrimitiveBuffer,
-                gemoetryInstanceBuffers : ref gemoetryInstanceBuffers);
+                gemoetryInstanceBuffers: ref gemoetryInstanceBuffers);
         }
 
         private void LoadBufferWithGeometryInstances(
@@ -142,15 +170,18 @@ namespace OpenRT {
             ref ComputeBuffer bvhBuffer,
             ref ComputeBuffer primitiveBuffer,
             ref ComputeBuffer worldToPrimitiveBuffer,
-            ref SortedList<ISIdx, ComputeBuffer> gemoetryInstanceBuffers) {
+            ref SortedList<ISIdx, ComputeBuffer> gemoetryInstanceBuffers)
+        {
 
-            foreach (var item in gemoetryInstanceBuffers) {
+            foreach (var item in gemoetryInstanceBuffers)
+            {
                 item.Value?.Release();
             }
             gemoetryInstanceBuffers.Clear();
 
             var geoInsIter = sceneParseResult.GeometryInstances.GetEnumerator();
-            while (geoInsIter.MoveNext()) {
+            while (geoInsIter.MoveNext())
+            {
                 var buffer = new ComputeBuffer(sceneParseResult.GetGeometryInstancesCount(geoInsIter.Current.Key),
                     sceneParseResult.GetGeometryInstancesStride(geoInsIter.Current.Key));
                 buffer.SetData(geoInsIter.Current.Value);
@@ -171,24 +202,28 @@ namespace OpenRT {
             worldToPrimitiveBuffer.SetData(sceneParseResult.WorldToPrimitive);
         }
 
-        private void RunLoadLightToBuffer(SceneParser sceneParser, ref ComputeBuffer lightInfoBuffer) {
+        private void RunLoadLightToBuffer(SceneParseResult sceneParseResult, ref ComputeBuffer lightInfoBuffer)
+        {
             int numberOfLights = sceneParseResult.Lights.Count;
 
             lightInfoBuffer = new ComputeBuffer(numberOfLights, RTLightInfo.Stride);
             lightInfoBuffer.SetData(sceneParseResult.Lights);
         }
 
-        private void RunSetCameraToMainShader(Camera camera) {
+        private void RunSetCameraToMainShader(Camera camera)
+        {
             m_mainShader.SetMatrix("_CameraToWorld", camera.cameraToWorldMatrix);
             m_mainShader.SetVector("_CameraForward", camera.transform.forward);
             m_mainShader.SetMatrix("_CameraInverseProjection", camera.projectionMatrix.inverse);
         }
 
-        private void RunSetAmbientToMainShader(RenderPipelineConfigObject config) {
+        private void RunSetAmbientToMainShader(RenderPipelineConfigObject config)
+        {
             m_mainShader.SetVector("_AmbientLightUpper", config.upperAmbitent);
         }
 
-        private void RunSetRayGenerationShader(int rayGenId) {
+        private void RunSetRayGenerationShader(int rayGenId)
+        {
             m_mainShader.SetInt("_RayGenID", rayGenId);
         }
 
@@ -197,7 +232,8 @@ namespace OpenRT {
             ref ComputeBuffer primitiveBuffer,
             ref ComputeBuffer worldToPrimitiveBuffer,
             ref SortedList<ISIdx, ComputeBuffer> geoInsBuffers,
-            int count) {
+            int count)
+        {
 
             m_mainShader.SetInt("_NumOfPrimitive", count);
             m_mainShader.SetBuffer(kIndex, "_Primitives", primitiveBuffer);
@@ -206,10 +242,13 @@ namespace OpenRT {
             m_mainShader.SetBuffer(kIndex, "_BVHTree", bvhBuffer);
 
             //TODO: Temp solution for demo RT sphere. Make it dynamic
-            if (geoInsBuffers.Count > 1) {
+            if (geoInsBuffers.Count > 1)
+            {
                 m_mainShader.SetBuffer(kIndex, "_RTSpheres", geoInsBuffers[0]); // FIXME: Hardcoded 0 = Sphere
                 m_mainShader.SetBuffer(kIndex, "_Triangles", geoInsBuffers[1]); // FIXME: Hardcoded 1 = triangle
-            } else {
+            }
+            else
+            {
                 //TODO: Look for solution to avoid assigning empty Structured Buffer
                 ComputeBuffer empty = new ComputeBuffer(1, 1);
                 m_mainShader.SetBuffer(kIndex, "_Triangles", empty);
@@ -219,18 +258,21 @@ namespace OpenRT {
 
         }
 
-        private void RunSetLightsToMainShader(int count, ref ComputeBuffer lightInfoBuffer) {
+        private void RunSetLightsToMainShader(int count, ref ComputeBuffer lightInfoBuffer)
+        {
             m_mainShader.SetInt("_NumOfLights", count);
             m_mainShader.SetBuffer(kIndex, "_Lights", lightInfoBuffer);
         }
 
-        private void RunRayTracing(ref CommandBuffer commands, RenderTexture targetTexture) {
+        private void RunRayTracing(ref CommandBuffer commands, RenderTexture targetTexture)
+        {
             m_mainShader.SetTexture(kIndex, "Result", targetTexture);
             int threadGroupsX = Mathf.CeilToInt(Screen.width / 8.0f);
             int threadGroupsY = Mathf.CeilToInt(Screen.height / 8.0f);
 
             // Prevent dispatching 0 threads to GPU (when the editor is starting or there is no screen to render) 
-            if (threadGroupsX > 0 && threadGroupsY > 0) {
+            if (threadGroupsX > 0 && threadGroupsY > 0)
+            {
                 // m_mainShader.Dispatch(kIndex, threadGroupsX, threadGroupsY, 1);
                 commands.DispatchCompute(computeShader: m_mainShader,
                     kernelIndex: kIndex,
@@ -240,18 +282,21 @@ namespace OpenRT {
             }
         }
 
-        private void RunBufferCleanUp() {
+        private void RunBufferCleanUp()
+        {
             m_bvhBuffer.Release();
             m_primitiveBuffer.Release();
             m_worldToPrimitiveBuffer.Release();
-            foreach (var item in m_geometryInstanceBuffers) {
+            foreach (var item in m_geometryInstanceBuffers)
+            {
                 item.Value?.Release();
             }
             m_lightInfoBuffer?.Release();
         }
 
         private void RunSendTextureToUnity(CommandBuffer commands, RenderTexture targeTexture,
-            ScriptableRenderContext renderContext, Camera camera) {
+            ScriptableRenderContext renderContext, Camera camera)
+        {
             commands.Blit(targeTexture, camera.activeTexture); // This also mark dest as active render target
 
             // End Unity profiler sample for frame debugger
