@@ -1,6 +1,9 @@
 ﻿#ifndef Volumetric_COMPUTE
 #define Volumetric_COMPUTE
 
+float VolumetricMat_sigma;
+float VolumetricMat_luminanceLight;
+
 // [shader(Volumetric)]
 void Volumetric_SecRays(
     inout Ray ray,
@@ -12,25 +15,16 @@ void Volumetric_SecRays(
         return;
     }
 
-    // Reflective
+    // Translucent
     secRaysAtHit.srays[0].origin = hit.position;
-    secRaysAtHit.srays[0].direction = normalize(reflect(ray.direction, hit.normal));
+    secRaysAtHit.srays[0].direction = ray.direction;
     secRaysAtHit.srays[0].color = float3(0, 0, 0);
     secRaysAtHit.srays[0].gen = ray.gen - 1;
-    secRaysAtHit.srays[0].inside = 0;   // Reflective ray is outside of the object
-    secRaysAtHit.srays[0].medium = 0;   // Reflective ray did not enter the object, medium is air
-    secRaysAtHit.srays[0].tmin = 0.01f;
-    secRaysAtHit.srays[0].weight = 0;
-
-    // Translucent
-    secRaysAtHit.srays[1].origin = hit.position;
-    secRaysAtHit.srays[1].direction = ray.direction;
-    secRaysAtHit.srays[1].color = float3(0, 0, 0);
-    secRaysAtHit.srays[1].gen = ray.gen - 1;
-    secRaysAtHit.srays[1].inside = 1;   // Reflective ray is inside of the object
-    secRaysAtHit.srays[1].medium = hit.mediumToEnter;   // Translucent ray enter the object
-    secRaysAtHit.srays[1].tmin = 0.01f;
-    secRaysAtHit.srays[1].weight = 1;
+    secRaysAtHit.srays[0].inside = (ray.inside <= 0) ? 1 : 0;   // Reflective ray is inside of the object
+    secRaysAtHit.srays[0].medium = (ray.inside <= 0) ? hit.mediumToEnter : 0 ;   // Translucent ray enter the object
+    secRaysAtHit.srays[0].tmin = 0.001f;
+    secRaysAtHit.srays[0].tmax = 1.#INF;
+    secRaysAtHit.srays[0].weight = 1;
 }
 
 float3 Volumetric(
@@ -42,29 +36,37 @@ float3 Volumetric(
 {
     if (ray.inside == 1)
     {
-        float3 color = float3(1, 1, 1);
-
+        // Integration bounds
+        float stepSize = 0.2f;
         float travel = hit.distance;
 
-        while (travel > 0)
+        // Integration Variables
+        float3 transmittance = 1;
+        float3 color = secondaryRayColor;
+
+        while (travel >= stepSize)
         {
-            travel -= 0.2f;
+            // Determine sample position
+            float3 p_i = hit.position + -1 * ray.direction * travel;
 
-            float3 lightAmt = float3(0, 0, 0);
+            // Sample volume properties
+            float sigma_s = VolumetricMat_sigma;
 
+            // Compute Transmittance from previous to current
+            transmittance *= exp( -1 * sigma_s * stepSize); // T_i
+
+            // Sample each light source
             for(int l = 0; l < _NumOfLights; l++)
             {
-                LightHit light0 = GetIlluminate(hit.position + -1 * ray.direction * travel, hit.primitiveId, l);
-
-                lightAmt += light0.color;
+                LightHit lightHit = GetIlluminate(p_i, hit.primitiveId, l);
+                color += transmittance * sigma_s * VolumetricMat_luminanceLight * lightHit.color;
             }
 
-            lightAmt = clamp(lightAmt, float3(0, 0, 0), float3(1, 1, 1));
-            
-            color = min(color, lightAmt);
+            // Move to next position
+            travel -= stepSize;
         }
 
-        return color * secondaryRayColor;
+        return color;
     }
     return secondaryRayColor;
 }

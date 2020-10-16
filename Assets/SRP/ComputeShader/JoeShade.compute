@@ -84,8 +84,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float4 finalColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
     Ray _secondaryRayStack[MAX_RAY_GEN * MAX_RAY_PER_LEVEL];
-    int srElement[MAX_RAY_PER_LEVEL];
-    for (uint e = 0; e < numberOfRay; e++)
+    int srElement[MAX_RAY_GEN];
+    for (uint e = 0; e < MAX_RAY_GEN; e++)
     {
         srElement[e] = -1;
     }
@@ -112,8 +112,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             if (secRaysAtHit.srays[0].tmin > -1 * 1.#INF) {
                 srLevel = srLevel + 1;
                 srElement[0] = 0;
-                for (int i = 0; i < MAX_RAY_PER_LEVEL; i++) {
-                    _secondaryRayStack[srLevel * MAX_RAY_PER_LEVEL + i] = secRaysAtHit.srays[i];  // Copy to secondary rays stack
+                for (int j = 0; j < MAX_RAY_PER_LEVEL; j++) {
+                    _secondaryRayStack[srLevel * MAX_RAY_PER_LEVEL + j] = secRaysAtHit.srays[j];  // Copy to secondary rays stack
                 }
 
                 while (srLevel > -1)

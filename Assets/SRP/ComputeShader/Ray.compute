@@ -14,14 +14,14 @@ struct Ray
     int inside;
     float tmin;
     float tmax;
-    uint medium;
+    int medium;
     float weight;
     uint gen;
 };
 
 Ray EmptyRay();
 
-Ray CreateRay(float3 origin, float3 direction, int gen)
+Ray CreateRay(float3 origin, float3 direction, uint gen)
 {
     Ray ray = EmptyRay();
     ray.gen = gen;

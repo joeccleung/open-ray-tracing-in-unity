@@ -139,7 +139,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &108304072
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -183,7 +183,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   intersectShaderGUID: 75adbc1b-9bc6-424a-919d-0bb40827bc61
   sphereData:
-    center: {x: 19.1, y: -15.86, z: 1.34}
+    center: {x: 70.8, y: -4.3, z: -8.8}
     radius: 10
 --- !u!4 &108304075
 Transform:
@@ -192,13 +192,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 108304071}
-  m_LocalRotation: {x: -0.50037783, y: 0, z: 0, w: 0.8658072}
-  m_LocalPosition: {x: 19.1, y: -15.86, z: 1.34}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 70.8, y: -4.3, z: -8.8}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 5
-  m_LocalEulerAnglesHint: {x: -60.05, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &670392681
 GameObject:
   m_ObjectHideFlags: 0
@@ -210,6 +210,7 @@ GameObject:
   - component: {fileID: 670392685}
   - component: {fileID: 670392684}
   - component: {fileID: 670392683}
+  - component: {fileID: 670392686}
   - component: {fileID: 670392682}
   m_Layer: 0
   m_Name: Left Minor
@@ -217,7 +218,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &670392682
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -227,11 +228,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 670392681}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ea96ed76e213049adba741950d817711, type: 3}
+  m_Script: {fileID: 11500000, guid: ab0fbb3fe1c33404891d1bb5f1b8c067, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  closestHitGUID: 39feb2bd-5273-4001-be13-a9b18abc1368
-  sin: 0
+  intersectShaderGUID: 75adbc1b-9bc6-424a-919d-0bb40827bc61
+  sphereData:
+    center: {x: -3.11, y: -3.08, z: -5.1}
+    radius: 3
 --- !u!114 &670392683
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -244,8 +247,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66502c823bf4a4d5185569b16d96f26b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  geometry: {fileID: 670392684}
-  material: {fileID: 670392682}
+  geometry: {fileID: 670392682}
+  material: {fileID: 670392686}
 --- !u!114 &670392684
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -268,12 +271,26 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 670392681}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -17.9, y: -17.3, z: 0.7}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalPosition: {x: -3.11, y: -3.08, z: -5.1}
+  m_LocalScale: {x: 5, y: 5, z: 5}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &670392686
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 670392681}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1bc58d0403f7cf543854d5f41ac8e88d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  closestHitGUID: ce985be6-9c4f-4fa0-92e9-a6ccf763e5db
+  refractiveIndex: 1
 --- !u!1 &1337267168
 GameObject:
   m_ObjectHideFlags: 0
@@ -292,7 +309,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1337267169
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -307,7 +324,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   closestHitGUID: 39feb2bd-5273-4001-be13-a9b18abc1368
   color: {r: 0, g: 0, b: 0, a: 0}
-  main: {fileID: 0}
+  main: {fileID: 2800000, guid: b883a5f3b02fe4f08ad4ef201cae5e91, type: 3}
 --- !u!114 &1337267170
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -412,7 +429,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   intersectShaderGUID: 75adbc1b-9bc6-424a-919d-0bb40827bc61
   sphereData:
-    center: {x: -17.7, y: -4.3, z: 10.3}
+    center: {x: -14.9, y: -2.3, z: -5.94}
     radius: 6
 --- !u!4 &1407229525
 Transform:
@@ -422,7 +439,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1407229521}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -17.7, y: -4.3, z: 10.3}
+  m_LocalPosition: {x: -14.9, y: -2.3, z: -5.94}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -440,6 +457,7 @@ GameObject:
   - component: {fileID: 1514779304}
   - component: {fileID: 1514779303}
   - component: {fileID: 1514779302}
+  - component: {fileID: 1514779306}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -456,12 +474,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1514779301}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a7800ffd5c0434da496b54da595de4a0, type: 3}
+  m_Script: {fileID: 11500000, guid: 9943863bf14283d46b2afa263853aa7e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   closestHitGUID: 36329863-824d-46f3-97a5-914566f926a3
-  color: {r: 0, g: 0, b: 0, a: 0}
-  main: {fileID: 0}
+  luminanceLight: 0.25
+  sigma: 0.025
 --- !u!114 &1514779303
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -498,12 +516,28 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1514779301}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -50.5, y: -16.9, z: 7.2}
-  m_LocalScale: {x: 50, y: 50, z: 50}
+  m_LocalPosition: {x: -71.1, y: -4.3, z: 4.8}
+  m_LocalScale: {x: 100, y: 100, z: 100}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+--- !u!114 &1514779306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1514779301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab0fbb3fe1c33404891d1bb5f1b8c067, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  intersectShaderGUID: 75adbc1b-9bc6-424a-919d-0bb40827bc61
+  sphereData:
+    center: {x: -91.5, y: -36.7, z: -1.4}
+    radius: 50
 --- !u!1 &1592491179
 GameObject:
   m_ObjectHideFlags: 0
@@ -618,7 +652,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1713017126
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -749,6 +783,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Sphere
       objectReference: {fileID: 0}
+    - target: {fileID: 4605827575479576592, guid: 8e1e1371336134ca7a82df6002dc146b,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4605827575479576597, guid: 8e1e1371336134ca7a82df6002dc146b,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -762,7 +801,7 @@ PrefabInstance:
     - target: {fileID: 4605827575479576597, guid: 8e1e1371336134ca7a82df6002dc146b,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 23.09
+      value: 38.06
       objectReference: {fileID: 0}
     - target: {fileID: 4605827575479576597, guid: 8e1e1371336134ca7a82df6002dc146b,
         type: 3}
@@ -813,7 +852,7 @@ PrefabInstance:
         type: 3}
       propertyPath: material
       value: 
-      objectReference: {fileID: 4605827574288324525}
+      objectReference: {fileID: 4605827574288324524}
     - target: {fileID: 4605827575479576682, guid: 8e1e1371336134ca7a82df6002dc146b,
         type: 3}
       propertyPath: sphereData.center.x
@@ -842,6 +881,21 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 4605827574288324522}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4605827574288324524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4605827574288324523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9943863bf14283d46b2afa263853aa7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  closestHitGUID: 36329863-824d-46f3-97a5-914566f926a3
+  luminanceLight: 1
+  sigma: 1
 --- !u!114 &4605827574288324525
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -855,6 +909,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   closestHitGUID: fc7d9fc5-fa59-47b1-9910-cae29a9c787e
-  reflectivity: 0.25
+  reflectivity: 1
   secondaryRayEffect: 1
-  transparency: 0.75
+  transparency: 0

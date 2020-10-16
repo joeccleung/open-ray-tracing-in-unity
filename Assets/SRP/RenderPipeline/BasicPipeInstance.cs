@@ -72,7 +72,7 @@ namespace OpenRT
             RunParseScene();
             RunLoadGeometryToBuffer(sceneParseResult, ref m_bvhBuffer, ref m_mainShader, ref m_primitiveBuffer, ref m_worldToPrimitiveBuffer, ref m_geometryInstanceBuffers);
             RunLoadMaterialToBuffer(sceneParseResult, ref m_mainShader);
-            RunLoadLightToBuffer(SceneParser.Instance, ref m_lightInfoBuffer);
+            RunLoadLightToBuffer(sceneParseResult, ref m_lightInfoBuffer);
             RunSetAmbientToMainShader(m_config);
             RunSetMissShader(m_mainShader, m_config);
             RunSetRayGenerationShader(m_config.rayGenId);
@@ -202,7 +202,7 @@ namespace OpenRT
             worldToPrimitiveBuffer.SetData(sceneParseResult.WorldToPrimitive);
         }
 
-        private void RunLoadLightToBuffer(SceneParser sceneParser, ref ComputeBuffer lightInfoBuffer)
+        private void RunLoadLightToBuffer(SceneParseResult sceneParseResult, ref ComputeBuffer lightInfoBuffer)
         {
             int numberOfLights = sceneParseResult.Lights.Count;
 

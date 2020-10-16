@@ -63,7 +63,7 @@ void RTSphereIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int p
 
         float3 hp = float3(0, 0, 0);
         float3 n = float3(0, 0, 0);
-        uint mediumToEnter = 0;
+        int mediumToEnter = 0;
 
         float dat = sphere.radius * sphere.radius - b2;
 

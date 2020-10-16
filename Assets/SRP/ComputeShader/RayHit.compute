@@ -7,7 +7,7 @@ struct RayHit
     float distance;
     int primitiveId;  // the unique id for each primitive
     float3 position;
-    uint mediumToEnter;    // The primitive ID of the medium the ray hit will enter
+    int mediumToEnter;    // The primitive ID of the medium the ray hit will enter
     float3 normal;
 };
 
