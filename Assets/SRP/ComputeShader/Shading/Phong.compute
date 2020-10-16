@@ -7,7 +7,7 @@ void Phong_SecRays(
     inout Ray ray,
     RayHit hit,
     inout SecRaysAtHit secRaysAtHit
-) 
+)
 {
 }
 
