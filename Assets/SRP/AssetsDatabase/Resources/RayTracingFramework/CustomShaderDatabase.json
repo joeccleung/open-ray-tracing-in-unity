@@ -1,12 +1,12 @@
 {
   "intersect": {
-    "f7bd7caa-56c2-4494-8c6a-97240d594fa4": {
-      "name": "RTTriangleIntersect",
+    "a80486cd-fd8a-4056-8bec-262032205114": {
+      "name": "RTTriangle",
       "absPath": "Assets/SRP/ComputeShader/Custom/Geometry/RTTriangleIntersect.compute",
       "shaderType": 3
     },
-    "75adbc1b-9bc6-424a-919d-0bb40827bc61": {
-      "name": "RTSphereIntersect",
+    "47924f01-597c-4371-8442-d375d585e790": {
+      "name": "RTSphere",
       "absPath": "Assets/SRP/ComputeShader/Custom/Geometry/RTSphereIntersect.compute",
       "shaderType": 3
     }

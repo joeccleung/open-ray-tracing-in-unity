@@ -1,20 +1,32 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using UnityEngine;
 
-namespace OpenRT {
+namespace OpenRT
+{
     using GUID = System.String;
 
-    public class IntersectShaderCollectionGPUProgramGenerator : IShaderCollectionGPUProgramGenerator {
+    public class IntersectShaderCollectionGPUProgramGenerator : IShaderCollectionGPUProgramGenerator
+    {
 
-        public const string CUSTOMER_SHADER_COLLECTION_DIR = "Assets/SRP/ComputeShader/Intersect/";
-        public const string CUSTOMER_SHADER_COLLECTION_FILENAME = "IntersectShaderCollection";
+        public const string COLLECTION_ABS_DIR = "Assets/SRP/ComputeShader/Intersect/";
+        public const string COLLECTION_FILENAME = "IntersectShaderCollection";
+        public const string COLLECTION_RELATIVE_TO_MAIN_PROCESS = "../Intersect/";
+        public const string CUSTOM_SHADER_INDIVIDUAL_FILES_DIR = "Assets/SRP/ComputeShader/Custom/Geometry/";
+        public const string CUSTOM_SHADER_INDIVIDUAL_FILES_RELATIVE_TO_MAIN_PROCESS = "../Custom/Geometry/";
 
-        public bool ExportShaderCollection(SortedList<string, GUID> sortedByName, SortedList<GUID, CustomShaderMeta> shadersImportMetaList) {
+
+        public bool ExportShaderCollection(SortedList<string, GUID> sortedByName, SortedList<GUID, CustomShaderMeta> shadersImportMetaList)
+        {
             return WriteToCustomShaderCollection(GenerateShaderCollectionFileContent(sortedByName, shadersImportMetaList));
         }
 
-        public string GenerateShaderCollectionFileContent(SortedList<string, GUID> sortedByName, SortedList<GUID, CustomShaderMeta> shadersImportMetaList) {
+        public string GenerateShaderCollectionFileContent(SortedList<string, GUID> sortedByName, SortedList<GUID, CustomShaderMeta> shadersImportMetaList)
+        {
+
+            Debug.Log("[Intersect] GenerateShaderCollectionFileContent");
+
             StringBuilder sb = new StringBuilder();
             // Order is reverse
             sb.AppendLine("// =============================================");
@@ -24,35 +36,34 @@ namespace OpenRT {
             sb.AppendLine();
             // sb.AppendLine("#pragma editor_sync_compilation");
 
-            foreach (var kvp in shadersImportMetaList) {
-                var relPath = kvp.Value.absPath.Replace(CUSTOMER_SHADER_COLLECTION_DIR, "");
+            foreach (var kvp in shadersImportMetaList)
+            {
+                var relPath = kvp.Value.absPath.Replace(CUSTOM_SHADER_INDIVIDUAL_FILES_DIR, CUSTOM_SHADER_INDIVIDUAL_FILES_RELATIVE_TO_MAIN_PROCESS);
                 sb.AppendLine($"#include \"{relPath}\"");
             }
 
-            sb.AppendLine("RayHit Trace(inout Ray ray, int instanceId)");
-            sb.AppendLine("{");
-            sb.AppendLine("    RayHit bestHit = CreateRayHit();");
-            sb.AppendLine("    RayHit curHit;");
-            foreach (var kvp in shadersImportMetaList) {
-                sb.AppendLine($"    curHit = {kvp.Value.name}(ray);");
-                sb.AppendLine($"    if (curHit.distance < bestHit.distance)");
-                sb.AppendLine("    {");
-                sb.AppendLine($"        bestHit = curHit;");
-                sb.AppendLine("    }");
-            }
-            sb.AppendLine("    return bestHit;");
-            sb.AppendLine("}");
+
 
             return sb.ToString();
         }
 
-        public bool WriteToCustomShaderCollection(string content) {
-            try {
+        public bool WriteToCustomShaderCollection(string content)
+        {
+
+            if (!Directory.Exists(COLLECTION_ABS_DIR))
+            {
+                Directory.CreateDirectory(COLLECTION_ABS_DIR);
+            }
+
+            try
+            {
                 System.IO.File.WriteAllText(
-                    CUSTOMER_SHADER_COLLECTION_DIR + CUSTOMER_SHADER_COLLECTION_FILENAME + ".compute",
+                    COLLECTION_ABS_DIR + COLLECTION_FILENAME + ".compute",
                     content);
                 return true;
-            } catch (System.Exception ex) {
+            }
+            catch (System.Exception ex)
+            {
                 Debug.LogException(ex);
                 return false;
             }

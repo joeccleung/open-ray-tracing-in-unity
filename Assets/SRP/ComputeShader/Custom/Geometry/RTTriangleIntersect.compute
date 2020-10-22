@@ -3,7 +3,7 @@
 
 static const float EPSILON = 1.19e-07f;
 
-// [intersect(RTTriangleIntersect)]
+// [intersect(RTTriangle)]
 void RTTriangleIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int primitiveId)
 {
     for(int s = 0; s < primitive.geometryInstanceCount; s++)
