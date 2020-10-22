@@ -9,7 +9,7 @@ struct RTSphere
     float radius;
 };
 
-StructuredBuffer<RTSphere> _RTSpheres;
+StructuredBuffer<RTSphere> _RTSphere;
 
 void RTSphereIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int primitiveId)
 {
@@ -57,7 +57,7 @@ void RTSphereIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int p
 
     [fastopt] for(int s = 0; s < primitive.geometryInstanceCount; s++)
     {
-        RTSphere sphere = _RTSpheres[primitive.geometryInstanceBegin + s];
+        RTSphere sphere = _RTSphere[primitive.geometryInstanceBegin + s];
         float t = -1;
 
         // Step 1: Define

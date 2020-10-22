@@ -4,6 +4,7 @@ using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering; // Import this namespace for rendering supporting functions
 using UnityEngine.SceneManagement;
+using GUID = System.String;
 
 namespace OpenRT
 {
@@ -76,7 +77,7 @@ namespace OpenRT
             RunSetAmbientToMainShader(m_config);
             RunSetMissShader(m_mainShader, m_config);
             RunSetRayGenerationShader(m_config.rayGenId);
-            RunSetGeometryInstanceToMainShader(ref m_bvhBuffer, ref m_primitiveBuffer, ref m_worldToPrimitiveBuffer, ref m_geometryInstanceBuffers, sceneParseResult.Primitives.Count);
+            RunSetGeometryInstanceToMainShader(ref m_bvhBuffer, ref m_primitiveBuffer, ref m_worldToPrimitiveBuffer, CustomShaderDatabase.Instance.ShaderNameList(EShaderType.Intersect), ref m_geometryInstanceBuffers, sceneParseResult.Primitives.Count);
             RunSetLightsToMainShader(sceneParseResult.Lights.Count, ref m_lightInfoBuffer);
             // RunSecondaryRayStack(ref m_mainShader, m_secondaryRaysBuffer);
 
@@ -231,32 +232,30 @@ namespace OpenRT
             ref ComputeBuffer bvhBuffer,
             ref ComputeBuffer primitiveBuffer,
             ref ComputeBuffer worldToPrimitiveBuffer,
+            string[] intersectShaderNames,
             ref SortedList<ISIdx, ComputeBuffer> geoInsBuffers,
             int count)
         {
-
             m_mainShader.SetInt("_NumOfPrimitive", count);
             m_mainShader.SetBuffer(kIndex, "_Primitives", primitiveBuffer);
             m_mainShader.SetBuffer(kIndex, "_WorldToPrimitives", worldToPrimitiveBuffer);
-
             m_mainShader.SetBuffer(kIndex, "_BVHTree", bvhBuffer);
 
-            //TODO: Temp solution for demo RT sphere. Make it dynamic
-            
-            if (geoInsBuffers.Count > 1)
+            ComputeBuffer empty = new ComputeBuffer(1, 4);
+
+            for (int intersectIdx = 0; intersectIdx < intersectShaderNames.Length; intersectIdx++)
             {
-                m_mainShader.SetBuffer(kIndex, "_RTSpheres", geoInsBuffers[0]); // FIXME: Hardcoded 0 = Sphere
-                m_mainShader.SetBuffer(kIndex, "_Triangles", geoInsBuffers[1]); // FIXME: Hardcoded 1 = triangle
-            }
-            else
-            {
-                //TODO: Look for solution to avoid assigning empty Structured Buffer
-                ComputeBuffer empty = new ComputeBuffer(1, 1);
-                m_mainShader.SetBuffer(kIndex, "_Triangles", empty);
-                m_mainShader.SetBuffer(kIndex, "_RTSpheres", empty);
-                empty.Release();
+                if (geoInsBuffers.ContainsKey(intersectIdx))
+                {
+                    m_mainShader.SetBuffer(kIndex, $"_{intersectShaderNames[intersectIdx]}", geoInsBuffers[intersectIdx]);
+                }
+                else
+                {
+                    m_mainShader.SetBuffer(kIndex, $"_{intersectShaderNames[intersectIdx]}", empty);
+                }
             }
 
+            empty.Release();
         }
 
         private void RunSetLightsToMainShader(int count, ref ComputeBuffer lightInfoBuffer)

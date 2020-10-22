@@ -14,14 +14,14 @@ struct RTTriangle
     // int matIndex;
 };
 
-StructuredBuffer<RTTriangle> _Triangles;
+StructuredBuffer<RTTriangle> _RTTriangle;
 
 // [intersect(RTTriangle)]
 void RTTriangleIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int primitiveId)
 {
     [fastopt] for(int s = 0; s < primitive.geometryInstanceCount; s++)
     {
-        RTTriangle tri = _Triangles[primitive.geometryInstanceBegin + s];
+        RTTriangle tri = _RTTriangle[primitive.geometryInstanceBegin + s];
     
         // find vectors for two edges sharing vert0
         float3 edge1 = tri.vertices[1] - tri.vertices[0];
