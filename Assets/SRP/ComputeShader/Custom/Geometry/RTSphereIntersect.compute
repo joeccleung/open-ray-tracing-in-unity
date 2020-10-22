@@ -1,7 +1,7 @@
 ﻿#ifndef RTSphere_Intersect_Compute
 #define RTSphere_Intersect_Compute
 
-// [intersect(RTSphereIntersect)]
+// [intersect(RTSphere)]
 void RTSphereIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int primitiveId)
 {
     // For every sphere in the primitive, we do:
