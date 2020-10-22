@@ -1,19 +1,9 @@
 ﻿#ifndef Custom_Primitive_COMPUTE
 #define Custom_Primitive_COMPUTE
 
-#include "RTSphere.compute"
-#include "RTTriangle.compute"
 #include "../../Primitive/Primitive.compute"
-
-// RTTriangle
-StructuredBuffer<RTTriangle> _Triangles;
-
-// RTSphere
-StructuredBuffer<RTSphere> _RTSpheres;
-
 #include "RTSphereIntersect.compute"
 #include "RTTriangleIntersect.compute"
-
 
 void IntersectByGeometry(Ray ray, inout RayHit bestHit, int primitiveId)
 {
