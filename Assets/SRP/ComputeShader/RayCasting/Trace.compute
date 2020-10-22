@@ -3,7 +3,6 @@
 
 #include "../Ray.compute"
 #include "../RayHit.compute"
-#include "../Custom/Geometry/CustomGeometry.compute"
 #include "../BVH/RayBoxIntersect.compute"
 
 RayHit Trace(Ray ray, int _NumOfPrimitive)

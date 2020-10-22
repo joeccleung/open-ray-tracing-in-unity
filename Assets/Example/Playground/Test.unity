@@ -181,7 +181,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab0fbb3fe1c33404891d1bb5f1b8c067, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  intersectShaderGUID: 75adbc1b-9bc6-424a-919d-0bb40827bc61
+  intersectShaderGUID: 47924f01-597c-4371-8442-d375d585e790
   sphereData:
     center: {x: 70.8, y: -4.3, z: -8.8}
     radius: 10
@@ -259,7 +259,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a59217df5de35442b8ac4398308bc9c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  intersectShaderGUID: f7bd7caa-56c2-4494-8c6a-97240d594fa4
+  intersectShaderGUID: a80486cd-fd8a-4056-8bec-262032205114
   m_mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!4 &1337267173
 Transform:
@@ -335,7 +335,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab0fbb3fe1c33404891d1bb5f1b8c067, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  intersectShaderGUID: 75adbc1b-9bc6-424a-919d-0bb40827bc61
+  intersectShaderGUID: 47924f01-597c-4371-8442-d375d585e790
   sphereData:
     center: {x: -14.9, y: -2.3, z: -5.94}
     radius: 6
@@ -365,7 +365,6 @@ GameObject:
   - component: {fileID: 1514779304}
   - component: {fileID: 1514779303}
   - component: {fileID: 1514779302}
-  - component: {fileID: 1514779306}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -414,7 +413,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a59217df5de35442b8ac4398308bc9c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  intersectShaderGUID: f7bd7caa-56c2-4494-8c6a-97240d594fa4
+  intersectShaderGUID: a80486cd-fd8a-4056-8bec-262032205114
   m_mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!4 &1514779305
 Transform:
@@ -430,22 +429,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!114 &1514779306
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1514779301}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab0fbb3fe1c33404891d1bb5f1b8c067, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  intersectShaderGUID: 75adbc1b-9bc6-424a-919d-0bb40827bc61
-  sphereData:
-    center: {x: -91.5, y: -36.7, z: -1.4}
-    radius: 50
 --- !u!1 &1592491179
 GameObject:
   m_ObjectHideFlags: 0
@@ -601,7 +584,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a59217df5de35442b8ac4398308bc9c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  intersectShaderGUID: f7bd7caa-56c2-4494-8c6a-97240d594fa4
+  intersectShaderGUID: a80486cd-fd8a-4056-8bec-262032205114
   m_mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!4 &1713017129
 Transform:
@@ -694,7 +677,7 @@ PrefabInstance:
     - target: {fileID: 4605827575479576592, guid: 8e1e1371336134ca7a82df6002dc146b,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4605827575479576597, guid: 8e1e1371336134ca7a82df6002dc146b,
         type: 3}
@@ -780,6 +763,11 @@ PrefabInstance:
         type: 3}
       propertyPath: sphereData.radius
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4605827575479576682, guid: 8e1e1371336134ca7a82df6002dc146b,
+        type: 3}
+      propertyPath: intersectShaderGUID
+      value: 47924f01-597c-4371-8442-d375d585e790
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8e1e1371336134ca7a82df6002dc146b, type: 3}
