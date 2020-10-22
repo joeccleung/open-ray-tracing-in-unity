@@ -55,7 +55,7 @@ void RTSphereIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int p
     // Step 5: Check if t is valid and best hit
 
 
-    for(int s = 0; s < primitive.geometryInstanceCount; s++)
+    [fastopt] for(int s = 0; s < primitive.geometryInstanceCount; s++)
     {
         RTSphere sphere = _RTSpheres[primitive.geometryInstanceBegin + s];
         float t = -1;

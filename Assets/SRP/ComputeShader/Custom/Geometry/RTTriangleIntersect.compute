@@ -19,7 +19,7 @@ StructuredBuffer<RTTriangle> _Triangles;
 // [intersect(RTTriangle)]
 void RTTriangleIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int primitiveId)
 {
-    for(int s = 0; s < primitive.geometryInstanceCount; s++)
+    [fastopt] for(int s = 0; s < primitive.geometryInstanceCount; s++)
     {
         RTTriangle tri = _Triangles[primitive.geometryInstanceBegin + s];
     

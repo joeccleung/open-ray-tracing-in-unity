@@ -91,7 +91,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         srElement[e] = -1;
     }
 
-    for (uint i = 0; i < numberOfRay; i++) {
+    [fastopt] for (uint i = 0; i < numberOfRay; i++) {
         Ray ray = RayGeneration(width, height, id, _RayGenID, i);
 
         // Trace
@@ -117,7 +117,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                     _secondaryRayStack[srLevel * MAX_RAY_PER_LEVEL + j] = secRaysAtHit.srays[j];  // Copy to secondary rays stack
                 }
 
-                while (srLevel > -1)
+                [fastopt] while (srLevel > -1)
                 {
                     if (srElement[srLevel] < MAX_RAY_PER_LEVEL)
                     {

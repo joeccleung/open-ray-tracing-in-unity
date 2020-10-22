@@ -44,7 +44,7 @@ float3 Volumetric(
         float3 transmittance = 1;
         float3 color = secondaryRayColor;
 
-        while (travel >= stepSize)
+        [fastopt] while (travel >= stepSize)
         {
             // Determine sample position
             float3 p_i = hit.position + -1 * ray.direction * travel;
@@ -56,7 +56,7 @@ float3 Volumetric(
             transmittance *= exp( -1 * sigma_s * stepSize); // T_i
 
             // Sample each light source
-            for(int l = 0; l < _NumOfLights; l++)
+            [fastopt] for(int l = 0; l < _NumOfLights; l++)
             {
                 LightHit lightHit = GetIlluminate(p_i, hit.primitiveId, l);
                 color += transmittance * sigma_s * VolumetricMat_luminanceLight * lightHit.color;

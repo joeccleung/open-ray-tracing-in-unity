@@ -20,7 +20,7 @@ float3 Phong(
 {
     float3 color = float3(0, 0, 0);
 
-    for(int l = 0; l < _NumOfLights; l++)
+    [fastopt] for(int l = 0; l < _NumOfLights; l++)
     {
         LightHit light0 = GetIlluminate(hit.position, hit.primitiveId, l);
 
