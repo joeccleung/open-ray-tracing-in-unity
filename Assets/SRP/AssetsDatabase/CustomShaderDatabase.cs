@@ -30,14 +30,7 @@ namespace OpenRT
 
         public CustomShaderDatabase()
         {
-            closestHitDataTable = new ClosestHitDataTable();
-            intersectDataTable = new IntersectDataTable();
-
-            fileIO = new CustomShaderDatabaseFileIO();
-            databaseFile = fileIO.ReadDatabaseFromFile();
-
-            closestHitDataTable.Populate(databaseFile.closetHit);
-            intersectDataTable.Populate(databaseFile.intersect);
+            LoadShaderDatabase();
         }
 
         public bool IsShaderTableDirty(EShaderType shaderType)
@@ -55,6 +48,19 @@ namespace OpenRT
                     return false;
             }
         }
+
+        public void LoadShaderDatabase()
+        {
+            closestHitDataTable = new ClosestHitDataTable();
+            intersectDataTable = new IntersectDataTable();
+
+            fileIO = new CustomShaderDatabaseFileIO();
+            databaseFile = fileIO.ReadDatabaseFromFile();
+
+            closestHitDataTable.Populate(databaseFile.closetHit);
+            intersectDataTable.Populate(databaseFile.intersect);
+        }
+
 
         public string[] ShaderNameList(EShaderType shaderType)
         {
@@ -106,11 +112,11 @@ namespace OpenRT
 
             switch (meta.shaderType)
             {
-                case OpenRT.EShaderType.ClosestHit:
+                case EShaderType.ClosestHit:
                     _Add(meta, closestHitDataTable);
                     break;
 
-                case OpenRT.EShaderType.Intersect:
+                case EShaderType.Intersect:
                     _Add(meta, intersectDataTable);
                     break;
 
