@@ -49,7 +49,7 @@ namespace OpenRT
 
             m_secondaryRaysBuffer = new ComputeBuffer(16, RTRay.Stride);
             List<RTRay> secondaryRayPlaceholder = new List<RTRay>();
-            for(int i = 0; i < 16; i++)
+            for (int i = 0; i < 16; i++)
             {
                 secondaryRayPlaceholder.Add(new RTRay());
             }
@@ -242,6 +242,7 @@ namespace OpenRT
             m_mainShader.SetBuffer(kIndex, "_BVHTree", bvhBuffer);
 
             //TODO: Temp solution for demo RT sphere. Make it dynamic
+            
             if (geoInsBuffers.Count > 1)
             {
                 m_mainShader.SetBuffer(kIndex, "_RTSpheres", geoInsBuffers[0]); // FIXME: Hardcoded 0 = Sphere
