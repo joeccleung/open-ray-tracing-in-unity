@@ -42,7 +42,25 @@ namespace OpenRT
                 sb.AppendLine($"#include \"{relPath}\"");
             }
 
+            sb.AppendLine();
+            sb.AppendLine("void IntersectByGeometry(Ray ray, inout RayHit bestHit, int primitiveId)");
+            sb.AppendLine("{");
+            sb.AppendLine("   Primitive pri = _Primitives[primitiveId];");
+            sb.AppendLine();
+            sb.AppendLine("   switch(pri.geometryIndex)");
+            sb.AppendLine("   {");
+            int secRaysIndex = 0;
+            foreach (var shaderNameGUIDPair in sortedByName)
+            {
+                var guid = shaderNameGUIDPair.Value;
 
+                sb.AppendLine($"        case {secRaysIndex}:");
+                sb.AppendLine($"            {shadersImportMetaList[guid].name}Intersect(ray, bestHit, pri, primitiveId);");
+                sb.AppendLine($"        break;");
+                secRaysIndex++;
+            }
+            sb.AppendLine("   }");
+            sb.AppendLine("}");
 
             return sb.ToString();
         }

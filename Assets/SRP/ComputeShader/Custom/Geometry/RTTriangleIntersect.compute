@@ -3,12 +3,25 @@
 
 static const float EPSILON = 1.19e-07f;
 
+struct RTTriangle
+{
+    // int id;
+    float3 vertices[3];
+    float3 normal;
+    float planeD;
+    float area;
+    // int isDoubleSide;
+    // int matIndex;
+};
+
+StructuredBuffer<RTTriangle> _RTTriangle;
+
 // [intersect(RTTriangle)]
 void RTTriangleIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int primitiveId)
 {
-    for(int s = 0; s < primitive.geometryInstanceCount; s++)
+    [fastopt] for(int s = 0; s < primitive.geometryInstanceCount; s++)
     {
-        RTTriangle tri = _Triangles[primitive.geometryInstanceBegin + s];
+        RTTriangle tri = _RTTriangle[primitive.geometryInstanceBegin + s];
     
         // find vectors for two edges sharing vert0
         float3 edge1 = tri.vertices[1] - tri.vertices[0];
