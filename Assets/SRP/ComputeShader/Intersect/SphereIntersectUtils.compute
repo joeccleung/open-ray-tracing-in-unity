@@ -1,0 +1,117 @@
+﻿#ifndef Sphere_Intersect_Utils_Compute
+#define Sphere_Intersect_Utils_Compute
+
+float2 SphereIntersectUtils(Ray ray, inout RayHit bestHit, float3 center, float radius)
+{
+    // For every sphere in the primitive, we do:
+
+    // Step 1: Define
+
+    // From origin to center
+    // float3 oriToCtr = sphere.xyz - ray.origin;
+    // float e = distance(oriToCtr);
+    
+    // Vector projection to get the distance the ray will travel in the direction until to the point that is perpendicular to the sphere center
+    // float a = dot(ray.direction, oriToCtr);
+
+    // Distance from center to the perpendicular point.
+    // float b^2 = e^2 - a^2
+
+    // Step 2: Distinguish between point inside or outside the sphere
+
+    // If the sphere is outside: e > r
+    // Do Step 3a. Otherwise, do step 3b.
+
+    // Step 3a: Discriminant
+
+    // dat = r^2 - b^2
+    // If dat > 0, there are a hit
+    // If dat < 0, there is no hit, continue to next sphere
+
+    // Distance from hit point to the perpendicular point.
+    // float f^2 = r^2 - b^2 = dat
+    // f = sqrt(dat)
+
+    // Step 4a: Calculate t
+
+    // Distance from origin to hit point (our target)
+    // origin ---t--> hit point ---f--> perpendicular point
+    // float t = a - f
+    // t = a - f
+
+    // Step 3b:
+
+    // Step 5: Check if t is valid and best hit
+
+
+
+    float t = -1;
+    float inside = 1;   // 0 = Outside, 1 = Inside
+
+    // Step 1: Define
+
+    float3 oriToCtr = center - ray.origin;
+    float e = length(oriToCtr);
+    float a = dot(ray.direction, oriToCtr);
+    float b2 = e * e - a * a;
+
+    float3 hp = float3(0, 0, 0);
+    float3 n = float3(0, 0, 0);
+
+    float dat = radius * radius - b2;
+
+    // Step 2: Determine if the origin is outside the sphere
+    // Check the truth table for the selection of inside vs outside algorithm
+    // Currently, the prototype use a separated field "ray.inside" to replace the truth table
+
+    if (ray.inside == 0 || (ray.inside == -1 && e > radius))
+    {
+        inside = 0;
+
+        // Outside, do step 3a:
+        if (dat < 0)
+        {
+            return float2(-1, inside); // No intersection, bypass
+        }
+
+        // Step 4a:
+        float f = sqrt(dat);
+
+        t = abs(a - f);
+        hp = ray.origin + t * ray.direction;
+
+        n = normalize(hp - center);
+
+        if (dot(ray.direction, n) >= 0)
+        {
+            // The hit normal is not "intercepting" the ray direction, we may intersecting behind the sphere surface due to origin placing just behind the surface due to floating point error
+            return float2(-1, inside);
+        }
+    }
+    else
+    {
+        // On or inside, do step 3b
+        float f = sqrt(dat);
+
+        t = a + f;
+        hp = ray.origin + t * ray.direction;
+
+        n = normalize(center - hp);
+    }
+
+    // Step 4: Update best hit distance
+    if (ray.tmin < t && t < ray.tmax && t < bestHit.distance)
+    {
+        bestHit.distance = t;
+        bestHit.position = hp;
+        bestHit.normal = n;
+    }
+    else
+    {
+        t = -1;
+    }
+
+    return float2(t, inside);
+}
+
+#endif
