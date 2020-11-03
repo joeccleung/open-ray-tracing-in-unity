@@ -4,6 +4,7 @@
 #include "DataStructure/LightInfo.compute"
 #include "DataStructure/LightHit.compute"
 #include "DataStructure/SecRaysAtHit.compute"
+#include "Intersect/SphereIntersectUtils.compute"
 #include "Primitive/Primitive.compute"
 #include "BVH/RTBoundingBox.compute"
 
