@@ -1,0 +1,73 @@
+﻿#ifndef Triangle_Intersect_Utils_Compute
+#define Triangle_Intersect_Utils_Compute
+
+float2 TriangleIntersectUtils(Ray ray, float bestDistance, float3 vertices[3])
+{
+    float EPSILON = 1.19e-07f;
+    float outside = 1;   // Assume outside the geometry. Outside = 1, Inside = -1
+
+    // find vectors for two edges sharing vert0
+    float3 edge1 = vertices[1] - vertices[0];
+    float3 edge2 = vertices[2] - vertices[0];
+
+    // begin calculating determinant - also used to calculate U parameter
+    float3 pvec = cross(ray.direction, edge2);
+
+    // if determinant is near zero, ray lies in plane of triangle
+    float det = dot(edge1, pvec);
+
+    if (ray.inside <= 0)
+    {
+        // Outside: use backface culling
+        if (det < EPSILON)
+        {
+            return float2(-1, outside);
+        }
+    }
+    else
+    {
+        outside = -1;
+
+        // Inside: use forward culling
+        if (det > -EPSILON)
+        {
+            return float2(-1, outside);
+        }
+    }
+
+    float inv_det = 1.0f / det;
+    // calculate distance from vert0 to ray origin
+    float3 tvec = ray.origin - vertices[0];
+
+    // calculate U parameter and test bounds
+    float u = dot(tvec, pvec) * inv_det;
+
+    if (u < 0.0 || u > 1.0f)
+    {
+        return float2(-1, outside);
+    }
+
+    // prepare to test V parameter
+    float3 qvec = cross(tvec, edge1);
+
+    // calculate V parameter and test bounds
+    float v = dot(ray.direction, qvec) * inv_det;
+    if (v < 0.0 || u + v > 1.0f)
+    {
+        return float2(-1, outside);
+    }
+
+    // calculate t, ray intersects triangle
+    float dis = dot(edge2, qvec) * inv_det;
+
+    if (ray.tmin < dis && dis < ray.tmax && dis < bestDistance)
+    {
+        return float2(dis, outside);
+    }
+    else
+    {
+        return float2(-1, outside);
+    }
+}
+
+#endif

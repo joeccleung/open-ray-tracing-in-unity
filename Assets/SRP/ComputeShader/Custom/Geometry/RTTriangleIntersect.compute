@@ -22,66 +22,24 @@ void RTTriangleIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int
     [fastopt] for(int s = 0; s < primitive.geometryInstanceCount; s++)
     {
         RTTriangle tri = _RTTriangle[primitive.geometryInstanceBegin + s];
-    
-        // find vectors for two edges sharing vert0
-        float3 edge1 = tri.vertices[1] - tri.vertices[0];
-        float3 edge2 = tri.vertices[2] - tri.vertices[0];
 
-        // begin calculating determinant - also used to calculate U parameter
-        float3 pvec = cross(ray.direction, edge2);
+        float2 result = TriangleIntersectUtils(ray, bestHit.distance, tri.vertices);
 
-        // if determinant is near zero, ray lies in plane of triangle
-        float det = dot(edge1, pvec);
-
-        if (ray.inside <= 0)
+        if (result.x != -1) // Has intersect?
         {
-            // Outside: use backface culling
-            if (det < EPSILON)
-            {
-                continue;
-            }
-        }
-        else
-        {
-            // Inside: use forward culling
-            if (det > -EPSILON)
-            {
-                continue;
-            }
-        }
-
-
-        float inv_det = 1.0f / det;
-        // calculate distance from vert0 to ray origin
-        float3 tvec = ray.origin - tri.vertices[0];
-
-        // calculate U parameter and test bounds
-        float u = dot(tvec, pvec) * inv_det;
-
-        if (u < 0.0 || u > 1.0f)
-        {
-            continue;
-        }
-
-        // prepare to test V parameter
-        float3 qvec = cross(tvec, edge1);
-
-        // calculate V parameter and test bounds
-        float v = dot(ray.direction, qvec) * inv_det;
-        if (v < 0.0 || u + v > 1.0f)
-        {
-            continue;
-        }
-
-        // calculate t, ray intersects triangle
-        float dis = dot(edge2, qvec) * inv_det;
-
-        if (ray.tmin < dis && dis < ray.tmax && dis < bestHit.distance)
-        {
-            bestHit.distance = dis;
-            bestHit.position = ray.origin + dis * ray.direction;
-            bestHit.normal = tri.normal;
+            bestHit.distance = result.x;
+            bestHit.position = ray.origin + result.x * ray.direction;
+            bestHit.normal = result.y * tri.normal;
             bestHit.primitiveId = primitiveId;
+
+            if (result.y == 1)  // Ray is outside?
+            {
+                bestHit.mediumToEnter = 0;  // Ray is outside
+            }
+            else
+            {
+                bestHit.mediumToEnter = primitiveId;  // Ray is inside
+            }
         }
     }
 }
