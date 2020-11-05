@@ -1,0 +1,19 @@
+{
+    "name": "OpenRT.Scene.BVH.Visualizer",
+    "references": [
+        "GUID:5faab04c97bf39d49bccfe613536aeb5",
+        "GUID:d7723e3c8a854af47ac77d587e38f36f",
+        "GUID:cf5e4a1c002324843aeca706ce21efff",
+        "GUID:3777857fbc557774fa9db131d5f1e78c",
+        "GUID:a56e4fa90345ec04ead8b0408fe104a7"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

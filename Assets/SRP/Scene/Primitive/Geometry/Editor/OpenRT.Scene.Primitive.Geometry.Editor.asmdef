@@ -1,0 +1,19 @@
+{
+    "name": "OpenRT.Scene.Primitive.Geometry.Editor",
+    "references": [
+        "GUID:f65cbe7679c34604bbd9f38ee9eeb45b",
+        "GUID:b8a7001ed44d49f43b73c2e2f48bf148",
+        "GUID:cf5e4a1c002324843aeca706ce21efff"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

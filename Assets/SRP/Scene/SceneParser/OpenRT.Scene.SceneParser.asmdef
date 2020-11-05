@@ -1,0 +1,23 @@
+{
+    "name": "OpenRT.Scene.SceneParser",
+    "references": [
+        "GUID:f65cbe7679c34604bbd9f38ee9eeb45b",
+        "GUID:b8a7001ed44d49f43b73c2e2f48bf148",
+        "GUID:267cd86aa6cd19045b8e5fd5b4c1f3e6",
+        "GUID:e387d26e77ae0ec43979b10e37d3e58c",
+        "GUID:fcade10c8549ecb499b6ea86c84f8f63",
+        "GUID:5faab04c97bf39d49bccfe613536aeb5",
+        "GUID:d7723e3c8a854af47ac77d587e38f36f",
+        "GUID:d84d79dfb9fa86343b0adcfe193f1fff",
+        "GUID:cf5e4a1c002324843aeca706ce21efff"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
