@@ -2,29 +2,32 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace OpenRT {
-    public class RTMesh : RTGeometry {
-        // Start is called before the first frame update
+namespace OpenRT
+{
+    public class RTMesh : RTGeometry
+    {
+
         [SerializeField] Mesh m_mesh;
 
         private List<float> tris = new List<float>();
         private int numberOfTriangles = 0;
 
-        public override RTBoundingBox GetBoundingBox() {
+        public override RTBoundingBox GetBoundingBox()
+        {
             //TODO: Optimization. Does not need to rebuild the bounding box if the mesh did not deform or transform
             return boundingBox;
         }
 
-        public override List<float> GetGeometryInstanceData() {
-
+        public override List<float> GetGeometryInstanceData()
+        {
             //TODO: Cache the mesh if it does not deform
 
             int[] trianglesVertexOrder = m_mesh.GetTriangles(0);
             numberOfTriangles = trianglesVertexOrder.Length / 3;
             Vector3[] vertices = m_mesh.vertices;
 
-            boundingBox.min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-            boundingBox.max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+            ResetBoundingBox();
+            
             foreach (var vertex in vertices)
             {
                 AddVertices(ref boundingBox, vertex);
@@ -32,7 +35,8 @@ namespace OpenRT {
 
             tris.Clear();
 
-            for (int i = 0; i < trianglesVertexOrder.Length; i += 3) {
+            for (int i = 0; i < trianglesVertexOrder.Length; i += 3)
+            {
                 List<float> triangle = GenerateTriangle(vertices[trianglesVertexOrder[i]], vertices[trianglesVertexOrder[i + 1]], vertices[trianglesVertexOrder[i + 2]]);
                 tris.AddRange(triangle);
             }
@@ -40,14 +44,15 @@ namespace OpenRT {
             return tris;
         }
 
-        public override int GetStride() {
+        public override int GetStride()
+        {
             return sizeof(float) * 14;
         }
 
-        public override int GetCount() {
+        public override int GetCount()
+        {
             return numberOfTriangles;
         }
-
 
         private void AddVertices(ref RTBoundingBox boundingBox, Vector3 vertex)
         {
@@ -56,7 +61,8 @@ namespace OpenRT {
             boundingBox.max = Vector3.Max(boundingBox.max, worldVex);
         }
 
-        private List<float> GenerateTriangle(Vector3 v0, Vector3 v1, Vector3 v2) {
+        private List<float> GenerateTriangle(Vector3 v0, Vector3 v1, Vector3 v2)
+        {
             v0 = transform.localToWorldMatrix.MultiplyPoint(v0);
             v1 = transform.localToWorldMatrix.MultiplyPoint(v1);
             v2 = transform.localToWorldMatrix.MultiplyPoint(v2);
@@ -83,6 +89,5 @@ namespace OpenRT {
                     area
             };
         }
-
     }
 }
