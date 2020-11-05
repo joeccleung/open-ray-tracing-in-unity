@@ -37,7 +37,7 @@ namespace OpenRT {
         }
 
         public int GetStride() {
-            return Vector3Extension.SizeOf() * 4 + sizeof(float) * 2;
+            return sizeof(float) * 3 * 4 + sizeof(float) * 2;
         }
 
         public int GetCount() {

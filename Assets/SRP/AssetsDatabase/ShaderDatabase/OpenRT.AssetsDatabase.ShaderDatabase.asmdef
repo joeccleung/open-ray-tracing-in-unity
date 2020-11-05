@@ -1,0 +1,15 @@
+{
+    "name": "OpenRT.AssetsDatabase.ShaderDatabase",
+    "references": [
+        "GUID:f65cbe7679c34604bbd9f38ee9eeb45b"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

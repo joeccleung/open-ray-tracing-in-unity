@@ -1,0 +1,15 @@
+{
+    "name": "OpenRT.Scene.Primitive.Geometry",
+    "references": [
+        "GUID:d7723e3c8a854af47ac77d587e38f36f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

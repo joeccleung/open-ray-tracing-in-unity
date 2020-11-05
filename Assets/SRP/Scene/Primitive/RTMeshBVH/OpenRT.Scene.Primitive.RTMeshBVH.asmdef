@@ -1,0 +1,17 @@
+{
+    "name": "OpenRT.Scene.Primitive.RTMeshBVH",
+    "references": [
+        "OpenRT.Scene.BVH",
+        "OpenRT.Scene.Primitive.BoundingBox",
+        "OpenRT.Scene.Primitive.Geometry"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
