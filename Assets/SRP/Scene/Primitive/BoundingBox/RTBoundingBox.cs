@@ -79,6 +79,21 @@ namespace OpenRT {
             }
         }
 
+        public List<float> Serialize() {
+            return new List<float>(){
+                leftID,
+                rightID,
+                max.x,
+                max.y,
+                max.z,
+                min.x,
+                min.y,
+                min.z,
+                primitiveBegin,
+                primitiveCount
+            };
+        }
+
         public RTBoundingBox SetLeftRight(int left, int right) {
             return new RTBoundingBox(
                 leftID: left,
