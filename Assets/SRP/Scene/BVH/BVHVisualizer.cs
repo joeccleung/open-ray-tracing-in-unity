@@ -2,30 +2,52 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace OpenRT {
-    public class BVHVisualizer : MonoBehaviour {
-        public void OnDrawGizmos() {
+namespace OpenRT
+{
+    public class BVHVisualizer : MonoBehaviour
+    {
+        [SerializeField] private bool allLevel = true;
+        [SerializeField] private int level;
+        [SerializeField] private RTMeshBVH meshBVH;
+        [SerializeField] private bool showTopLevelBVH = true;
 
-            if (SceneParser.Instance.sceneParseResult.TopLevelBVH.Root == null)
+        public void OnDrawGizmos()
+        {
+            if (meshBVH != null)
+            {
+                meshBVH.BuildBVHAndTriangleList(meshBVH.GetTrianglesVertexOrder(), meshBVH.GetVertices());
+            }
+
+            BVHNode root = Root();
+            if (root == null)
             {
                 return;
             }
-
             Queue<BVHNode> bfs = new Queue<BVHNode>();
             Queue<int> depthQ = new Queue<int>();
-            bfs.Enqueue(SceneParser.Instance.sceneParseResult.TopLevelBVH.Root);
+            bfs.Enqueue(root);
             depthQ.Enqueue(0);
 
-            while (bfs.Count > 0) {
+            while (bfs.Count > 0)
+            {
                 var node = bfs.Dequeue();
                 var depth = depthQ.Dequeue();
-                Gizmos.color = Rainbow(depth);
-                Gizmos.DrawWireCube(node.bounding.center, node.bounding.size);
-                if (node.left != null) {
+                if (!allLevel && depth > level)
+                {
+                    break;
+                }
+                if (allLevel || depth == level)
+                {
+                    Gizmos.color = Rainbow(depth);
+                    Gizmos.DrawWireCube(node.bounding.center, node.bounding.size);
+                }
+                if (node.left != null)
+                {
                     bfs.Enqueue(node.left);
                     depthQ.Enqueue(depth + 1);
                 }
-                if (node.right != null) {
+                if (node.right != null)
+                {
                     bfs.Enqueue(node.right);
                     depthQ.Enqueue(depth + 1);
                 }
@@ -33,8 +55,10 @@ namespace OpenRT {
 
         }
 
-        private Color Rainbow(int depth) {
-            switch (depth % 7) {
+        private Color Rainbow(int depth)
+        {
+            switch (depth % 7)
+            {
                 case 0:
                     return Color.red;
 
@@ -58,6 +82,18 @@ namespace OpenRT {
 
                 default:
                     return Color.white;
+            }
+        }
+
+        private BVHNode Root()
+        {
+            if (showTopLevelBVH)
+            {
+                return SceneParser.Instance.sceneParseResult.TopLevelBVH.Root;
+            }
+            else
+            {
+                return meshBVH.GetRoot();
             }
         }
     }
