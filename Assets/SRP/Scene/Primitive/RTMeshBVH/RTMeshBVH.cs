@@ -9,7 +9,10 @@ namespace OpenRT
     /// (2) - Build BVH out from the list of RTBoundingBox
     /// (3) - Flatten BVH
     /// (4) - Serialize BVH with the triangles to list of floats
-    /// </summary>\    
+    /// 
+    /// | Stride of the BVH | Stride of all triangles | < Bounding Boxes > | < Triangles > |
+    /// 
+    /// </summary>    
     public class RTMeshBVH : RTGeometry
     {
         private RTMeshBVHBuilder builder = new RTMeshBVHBuilder();
@@ -28,10 +31,11 @@ namespace OpenRT
 
         public override List<float> GetGeometryInstanceData()
         {
-            int[] trianglesVertexOrder = GetTrianglesVertexOrder();
+            return GetGeometryInstanceData(trianglesVertexOrder: GetTrianglesVertexOrder(), vertices: GetVertices());
+        }
 
-            Vector3[] vertices = GetVertices();
-
+        public List<float> GetGeometryInstanceData(in int[] trianglesVertexOrder, Vector3[] vertices)
+        {
             List<List<float>> triangles = BuildBVHAndTriangleList(trianglesVertexOrder, vertices);
 
             RTMeshBVHBuilder.Flatten(triangles,
@@ -42,13 +46,6 @@ namespace OpenRT
             return SerializeRTMeshBVH(flattenBVH, reorderedPrimitives);
         }
 
-        private void AddVerticesToBox(ref RTBoundingBox boundingBox, Vector3 vertex)
-        {
-            Vector3 worldVex = transform.localToWorldMatrix.MultiplyPoint(vertex);
-            boundingBox.min = Vector3.Min(boundingBox.min, worldVex);
-            boundingBox.max = Vector3.Max(boundingBox.max, worldVex);
-        }
-
         public List<List<float>> BuildBVHAndTriangleList(int[] trianglesVertexOrder, Vector3[] vertices)
         {
             int primitiveCounter = 0;
@@ -57,10 +54,10 @@ namespace OpenRT
 
             for (int i = 0; i < trianglesVertexOrder.Length; i += 3)
             {
-                RTBoundingBox box = RTBoundingBoxFromTriangle(primitiveCounter,
-                                                              vertices[trianglesVertexOrder[i]],
-                                                              vertices[trianglesVertexOrder[i + 1]],
-                                                              vertices[trianglesVertexOrder[i + 2]]);
+                RTBoundingBox box = RTBoundingBox.RTBoundingBoxFromTriangle(primitiveCounter,
+                                                                            transform.localToWorldMatrix.MultiplyPoint(vertices[trianglesVertexOrder[i]]),
+                                                                            transform.localToWorldMatrix.MultiplyPoint(vertices[trianglesVertexOrder[i + 1]]),
+                                                                            transform.localToWorldMatrix.MultiplyPoint(vertices[trianglesVertexOrder[i + 2]]));
                 builder.AddBoundingBox(box);
 
                 triangles.Add(GenerateTriangle(vertices[trianglesVertexOrder[i]],
@@ -128,17 +125,6 @@ namespace OpenRT
         public override bool IsUnevenStride()
         {
             return true;
-        }
-
-        private RTBoundingBox RTBoundingBoxFromTriangle(int primitiveCounter, Vector3 v0, Vector3 v1, Vector3 v2)
-        {
-            RTBoundingBox box = new RTBoundingBox();
-            AddVerticesToBox(ref box, v0);
-            AddVerticesToBox(ref box, v1);
-            AddVerticesToBox(ref box, v2);
-            box.primitiveBegin = primitiveCounter;
-            box.primitiveCount = 1;
-            return box;
         }
 
         private static List<float> SerializeRTMeshBVH(List<List<float>> flattenBVH, List<List<float>> reorderedPrimitives)

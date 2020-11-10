@@ -212,7 +212,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1109385109949186, guid: 483d33199da67654283d5795ec8a20fe, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4812002822647660, guid: 483d33199da67654283d5795ec8a20fe, type: 3}
       propertyPath: m_LocalPosition.x
@@ -290,7 +290,8 @@ PrefabInstance:
       propertyPath: m_mesh
       value: 
       objectReference: {fileID: 4300000, guid: 10f4e51254da985418a112d2dfe124f0, type: 3}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 3633872939945302331, guid: 483d33199da67654283d5795ec8a20fe, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 483d33199da67654283d5795ec8a20fe, type: 3}
 --- !u!1 &376489582 stripped
 GameObject:
@@ -483,7 +484,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   intersectShaderGUID: 47924f01-597c-4371-8442-d375d585e790
   sphereData:
-    center: {x: -10.5, y: -2.3, z: -5.94}
+    center: {x: -10.5, y: -2.3, z: 2.7}
     radius: 6
 --- !u!4 &1407229525
 Transform:
@@ -493,7 +494,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1407229521}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -10.5, y: -2.3, z: -5.94}
+  m_LocalPosition: {x: -10.5, y: -2.3, z: 2.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -586,7 +587,6 @@ GameObject:
   - component: {fileID: 1592491182}
   - component: {fileID: 1592491181}
   - component: {fileID: 1592491180}
-  - component: {fileID: 1592491183}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -659,22 +659,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
---- !u!114 &1592491183
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1592491179}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 937fa3192eb034489ae58bf4a7baba4f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  allLevel: 0
-  level: 5
-  meshBVH: {fileID: 0}
-  showTopLevelBVH: 1
 --- !u!1 &1713017125
 GameObject:
   m_ObjectHideFlags: 0

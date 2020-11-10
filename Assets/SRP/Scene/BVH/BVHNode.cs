@@ -9,9 +9,9 @@ namespace OpenRT {
         public RTBoundingBox bounding;
 
         public BVHNode left;
-        public int leftID; // For referrencing in flatten array
+        public int leftID = -1; // For referrencing in flatten array
         public BVHNode right;
-        public int rightID; // For referrencing in flatten array
+        public int rightID = -1; // For referrencing in flatten array
         public List<RTBoundingBox> children;
 
         public static BVHNode CombineAllBoxesAndPrimitives(List<RTBoundingBox> boxes) {
@@ -29,8 +29,8 @@ namespace OpenRT {
             return new RTBoundingBox(-1, -1,
                 max,
                 min,
-                0,
-                0);
+                Mathf.Min(a.primitiveBegin, b.primitiveBegin),
+                a.primitiveCount + b.primitiveCount);
         }
 
         private static RTBoundingBox CombineAllBox(List<RTBoundingBox> boxes) {

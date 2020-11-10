@@ -1,6 +1,7 @@
 {
     "name": "UnitTests",
     "references": [
+        "OpenRT.Scene.BVH",
         "OpenRT.Scene.Primitive.BoundingBox",
         "OpenRT.Scene.Primitive.RTMeshBVH",
         "UnityEngine.TestRunner",

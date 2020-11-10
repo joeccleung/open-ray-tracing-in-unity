@@ -189,12 +189,10 @@ namespace OpenRT
                 gemoetryInstanceBuffers.Add(geoInsIter.Current.Key, buffer);
             }
 
-            List<RTBoundingBox> flattenBVH;
-            List<Primitive> reorderedPrimitives;
             sceneParseResult.TopLevelBVH.Flatten(
                 scenePrimitives: sceneParseResult.Primitives,
-                flatten: out flattenBVH,
-                reorderedPrimitives: out reorderedPrimitives);
+                flatten: out List<RTBoundingBox> flattenBVH,
+                reorderedPrimitives: out List<Primitive> reorderedPrimitives);
             bvhBuffer = new ComputeBuffer(flattenBVH.Count, RTBoundingBox.stride);
             bvhBuffer.SetData(flattenBVH);
             primitiveBuffer = new ComputeBuffer(reorderedPrimitives.Count, Primitive.GetStride());

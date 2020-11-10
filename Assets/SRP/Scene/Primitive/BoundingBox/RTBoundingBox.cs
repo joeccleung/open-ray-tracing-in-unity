@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace OpenRT {
+namespace OpenRT
+{
     /// <summary>
     /// Reference: https://github.com/CRCS-Graphics/2020.4.Kaihua.Hu.RealTime-RayTracer
     /// 
     /// </summary>
-    public struct RTBoundingBox {
+    public struct RTBoundingBox
+    {
 
         public const int stride = 2 * 4 * 3 + 4 * 4; // 2 Vector3 + 4 int
 
@@ -18,20 +20,23 @@ namespace OpenRT {
         public int primitiveBegin;
         public int primitiveCount;
 
-        public static RTBoundingBox Empty {
-            get {
+        public static RTBoundingBox Empty
+        {
+            get
+            {
                 return new RTBoundingBox(
                     leftID: -1,
                     rightID: -1,
-                    max : new Vector3(float.MinValue, float.MinValue, float.MinValue),
-                    min : new Vector3(float.MaxValue, float.MaxValue, float.MaxValue),
-                    primitiveBegin : 0,
-                    primitiveCount : 0
+                    max: new Vector3(float.MinValue, float.MinValue, float.MinValue),
+                    min: new Vector3(float.MaxValue, float.MaxValue, float.MaxValue),
+                    primitiveBegin: 0,
+                    primitiveCount: 0
                 );
             }
         }
 
-        public RTBoundingBox(int leftID, int rightID, Vector3 max, Vector3 min, int primitiveBegin, int primitiveCount) {
+        public RTBoundingBox(int leftID, int rightID, Vector3 max, Vector3 min, int primitiveBegin, int primitiveCount)
+        {
             this.leftID = leftID;
             this.rightID = rightID;
             this.max = max;
@@ -43,7 +48,8 @@ namespace OpenRT {
         public RTBoundingBox(
             Vector3 max,
             Vector3 min,
-            int primitive) {
+            int primitive)
+        {
 
             this.leftID = -1;
             this.rightID = -1;
@@ -53,24 +59,39 @@ namespace OpenRT {
             this.primitiveCount = 1;
         }
 
-        public Vector3 center {
-            get {
+        public static void AddVerticesToBox(ref RTBoundingBox boundingBox, Vector3 vertex)
+        {
+            boundingBox.min = Vector3.Min(boundingBox.min, vertex);
+            boundingBox.max = Vector3.Max(boundingBox.max, vertex);
+        }
+
+        public Vector3 center
+        {
+            get
+            {
                 return (max + min) / 2f;
             }
         }
 
-        public char longestAxis {
-            get {
+        public char longestAxis
+        {
+            get
+            {
                 char res;
 
-                if (size.x >= size.y) {
+                if (size.x >= size.y)
+                {
                     res = 'x';
-                    if (size.x < size.z) {
+                    if (size.x < size.z)
+                    {
                         res = 'z';
                     }
-                } else {
+                }
+                else
+                {
                     res = 'y';
-                    if (size.y < size.z) {
+                    if (size.y < size.z)
+                    {
                         res = 'z';
                     }
                 }
@@ -79,7 +100,8 @@ namespace OpenRT {
             }
         }
 
-        public List<float> Serialize() {
+        public List<float> Serialize()
+        {
             return new List<float>(){
                 leftID,
                 rightID,
@@ -94,7 +116,19 @@ namespace OpenRT {
             };
         }
 
-        public RTBoundingBox SetLeftRight(int left, int right) {
+        public static RTBoundingBox RTBoundingBoxFromTriangle(int primitiveCounter, Vector3 v0, Vector3 v1, Vector3 v2)
+        {
+            RTBoundingBox box = new RTBoundingBox();
+            AddVerticesToBox(ref box, v0);
+            AddVerticesToBox(ref box, v1);
+            AddVerticesToBox(ref box, v2);
+            box.primitiveBegin = primitiveCounter;
+            box.primitiveCount = 1;
+            return box;
+        }
+
+        public RTBoundingBox SetLeftRight(int left, int right)
+        {
             return new RTBoundingBox(
                 leftID: left,
                 rightID: right,
@@ -105,8 +139,10 @@ namespace OpenRT {
             );
         }
 
-        public Vector3 size {
-            get {
+        public Vector3 size
+        {
+            get
+            {
                 return (max - min);
             }
         }
