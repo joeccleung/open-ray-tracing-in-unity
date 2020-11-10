@@ -34,7 +34,7 @@ namespace OpenRT {
         }
 
         private static RTBoundingBox CombineAllBox(List<RTBoundingBox> boxes) {
-            RTBoundingBox root = boxes[0];
+            RTBoundingBox root = new RTBoundingBox();
             foreach (var box in boxes) {
                 root = Combine2Box(root, box);
             }
