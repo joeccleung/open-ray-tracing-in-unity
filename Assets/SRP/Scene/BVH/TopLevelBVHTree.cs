@@ -132,7 +132,7 @@ namespace OpenRT {
                     right: node.rightID
                 );
 
-                if (node.leftID == 0 && node.rightID == 0) {
+                if (node.leftID == -1 && node.rightID == -1) {
                     // Leaf Node
                     box.primitiveBegin = reorderedPrimitives.Count;
                     box.primitiveCount = node.children.Count;

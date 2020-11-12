@@ -7,6 +7,8 @@
 
 RayHit Trace(Ray ray, int _NumOfPrimitive)
 {
+    int NO_CHILD = -1;
+
     RayHit bestHit = CreateRayHit();
 
     // Sometimes, tmin == 0 when people want to do refraction
@@ -28,7 +30,7 @@ RayHit Trace(Ray ray, int _NumOfPrimitive)
         bvhHead--;
 
         if (RayBoxIntersection(ray, _BVHTree[nodeIdx].min, _BVHTree[nodeIdx].max)) {
-            if (_BVHTree[nodeIdx].leftIdx == 0 && _BVHTree[nodeIdx].rightIdx == 0) {
+            if (_BVHTree[nodeIdx].leftIdx == NO_CHILD && _BVHTree[nodeIdx].rightIdx == NO_CHILD) {
                 // Leaf node
                 [fastopt] for(int p = 0; p < _BVHTree[nodeIdx].primitiveCount; p++)
                 {
@@ -50,6 +52,8 @@ RayHit Trace(Ray ray, int _NumOfPrimitive)
 
 bool ShadowTrace(Ray ray, int originPrimitiveId)
 {
+    int NO_CHILD = -1;
+    
     RayHit bestHit = CreateRayHit();
         
     int bvhStack[32];
@@ -66,7 +70,7 @@ bool ShadowTrace(Ray ray, int originPrimitiveId)
         bvhHead--;
 
         if (RayBoxIntersection(ray, _BVHTree[nodeIdx].min, _BVHTree[nodeIdx].max)) {
-            if (_BVHTree[nodeIdx].leftIdx == 0 && _BVHTree[nodeIdx].rightIdx == 0) {
+            if (_BVHTree[nodeIdx].leftIdx == NO_CHILD && _BVHTree[nodeIdx].rightIdx == NO_CHILD) {
                 // Leaf node
                 [fastopt] for(int p = 0; p < _BVHTree[nodeIdx].primitiveCount; p++)
                 {
