@@ -20,6 +20,11 @@ namespace OpenRT
         public int primitiveBegin;
         public int primitiveCount;
 
+        /// <summary>
+        /// Initialize the RTBoundingBox as empty content box.
+        /// Calling empty constructor does not achieve this result.
+        /// </summary>
+        /// <value></value>
         public static RTBoundingBox Empty
         {
             get
@@ -118,7 +123,7 @@ namespace OpenRT
 
         public static RTBoundingBox RTBoundingBoxFromTriangle(int primitiveCounter, Vector3 v0, Vector3 v1, Vector3 v2)
         {
-            RTBoundingBox box = new RTBoundingBox();
+            RTBoundingBox box = Empty;
             AddVerticesToBox(ref box, v0);
             AddVerticesToBox(ref box, v1);
             AddVerticesToBox(ref box, v2);

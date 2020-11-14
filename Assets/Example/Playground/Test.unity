@@ -272,26 +272,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3633872939945302331, guid: 483d33199da67654283d5795ec8a20fe,
         type: 3}
-      propertyPath: level
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3633872939945302331, guid: 483d33199da67654283d5795ec8a20fe,
-        type: 3}
       propertyPath: allLevel
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3633872939945302331, guid: 483d33199da67654283d5795ec8a20fe,
         type: 3}
-      propertyPath: showTopLevelBVH
-      value: 0
+      propertyPath: level
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6453797448537165940, guid: 483d33199da67654283d5795ec8a20fe,
         type: 3}
       propertyPath: m_mesh
       value: 
       objectReference: {fileID: 4300000, guid: 10f4e51254da985418a112d2dfe124f0, type: 3}
-    m_RemovedComponents:
-    - {fileID: 3633872939945302331, guid: 483d33199da67654283d5795ec8a20fe, type: 3}
+    m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 483d33199da67654283d5795ec8a20fe, type: 3}
 --- !u!1 &376489582 stripped
 GameObject:

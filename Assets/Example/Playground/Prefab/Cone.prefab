@@ -58,5 +58,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 937fa3192eb034489ae58bf4a7baba4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  allLevel: 1
+  level: 0
   meshBVH: {fileID: 6453797448537165940}
   showTopLevelBVH: 0
