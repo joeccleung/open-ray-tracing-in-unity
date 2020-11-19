@@ -65,19 +65,19 @@ namespace OpenRT
 
             return new List<float>() {
                 v0.x,
-                    v0.y,
-                    v0.z,
-                    v1.x,
-                    v1.y,
-                    v1.z,
-                    v2.x,
-                    v2.y,
-                    v2.z,
-                    normal.x,
-                    normal.y,
-                    normal.z,
-                    planeD,
-                    area
+                v0.y,
+                v0.z,
+                v1.x,
+                v1.y,
+                v1.z,
+                v2.x,
+                v2.y,
+                v2.z,
+                normal.x,
+                normal.y,
+                normal.z,
+                planeD,
+                area
             };
         }
 
