@@ -15,7 +15,7 @@ namespace OpenRT
         {
             if (meshBVH != null)
             {
-                meshBVH.BuildBVHAndTriangleList(meshBVH.GetTrianglesVertexOrder(), meshBVH.GetVertices());
+                meshBVH.BuildBVHAndTriangleList(meshBVH.GetTrianglesVertexOrder(0), meshBVH.GetVertices());
             }
 
             BVHNode root = Root();
