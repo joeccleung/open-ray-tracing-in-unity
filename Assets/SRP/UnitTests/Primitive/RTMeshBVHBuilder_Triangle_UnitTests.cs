@@ -82,7 +82,7 @@ namespace OpenRT.UnitTests.Primitive
             var leftNode = builder.Root.left;
             Assert.AreEqual(new Vector3(0, 0, 0), leftNode.bounding.min);
             Assert.AreEqual(new Vector3(5, 5, 0), leftNode.bounding.max);
-            Assert.AreEqual(0, leftNode.bounding.primitiveBegin);
+            Assert.AreEqual(0, leftNode.bounding.primitiveBegin);   // Constructing BVH does not set primitiveBegin. It is set in Flatting.
             Assert.AreEqual(1, leftNode.bounding.primitiveCount);
             Assert.AreEqual(1, leftNode.children.Count);
 
@@ -90,7 +90,7 @@ namespace OpenRT.UnitTests.Primitive
             var rightNode = builder.Root.right;
             Assert.AreEqual(new Vector3(10, 0, 0), rightNode.bounding.min);
             Assert.AreEqual(new Vector3(15, 5, 0), rightNode.bounding.max);
-            Assert.AreEqual(1, rightNode.bounding.primitiveBegin);
+            Assert.AreEqual(0, rightNode.bounding.primitiveBegin);  // Constructing BVH does not set primitiveBegin. It is set in Flatting.
             Assert.AreEqual(1, rightNode.bounding.primitiveCount);
             Assert.AreEqual(1, rightNode.children.Count);
 

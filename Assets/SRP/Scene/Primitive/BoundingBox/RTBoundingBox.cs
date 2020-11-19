@@ -10,7 +10,7 @@ namespace OpenRT
     /// </summary>
     public struct RTBoundingBox
     {
-
+        public const int NUMBER_OF_FLOAT = 2 * 3 + 4;
         public const int stride = 2 * 4 * 3 + 4 * 4; // 2 Vector3 + 4 int
 
         public int leftID; // For referrencing in flatten array
