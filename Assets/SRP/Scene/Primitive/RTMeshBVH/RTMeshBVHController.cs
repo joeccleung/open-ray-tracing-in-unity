@@ -7,6 +7,8 @@ namespace OpenRT
 {
     public class RTMeshBVHController
     {
+        public const int FLOAT_PER_TRIANGLE = 14;
+
         public interface IActuator
         {
             int[] GetTrianglesVertexOrder(int bitmap);
@@ -106,11 +108,11 @@ namespace OpenRT
             return triangles;
         }
 
-        private static List<float> SerializeRTMeshBVH(List<List<float>> flattenBVH, List<List<float>> reorderedPrimitives)
+        public static List<float> SerializeRTMeshBVH(List<List<float>> flattenBVH, List<List<float>> reorderedPrimitives)
         {
             var result = new List<float>(){
-                flattenBVH.Count,
-                reorderedPrimitives.Count
+                flattenBVH.Count * RTBoundingBox.NUMBER_OF_FLOAT,
+                reorderedPrimitives.Count * FLOAT_PER_TRIANGLE
             };
             flattenBVH.ForEach(v =>
             {
