@@ -18,6 +18,11 @@ namespace OpenRT.UnitTests.Primitive
             vertices[1] = new Vector3(0, 5, 0);
             vertices[2] = new Vector3(5, 0, 0);
 
+            Vector3[] normals = new Vector3[3];
+            normals[0] = new Vector3(0, 0, -1);
+            normals[1] = new Vector3(0, 0, -1);
+            normals[2] = new Vector3(0, 0, -1);
+
             int[] trianglesVertexOrder = new int[3];
             trianglesVertexOrder[0] = 0;
             trianglesVertexOrder[1] = 1;
@@ -30,7 +35,7 @@ namespace OpenRT.UnitTests.Primitive
             RTMeshBVHController controller = new RTMeshBVHController(actuator: actuator.Object);
 
             // Act
-            List<List<float>> triangles = controller.BuildBVHAndTriangleList(trianglesVertexOrder, vertices);
+            List<List<float>> triangles = controller.BuildBVHAndTriangleList(normals, trianglesVertexOrder, vertices);
             RTMeshBVHBuilder.Flatten(triangles, out List<List<float>> flatten, out List<List<float>> reorderedPrimitives, controller.GetRoot());
             List<float> serialized = RTMeshBVHController.SerializeRTMeshBVH(flatten, reorderedPrimitives);
 
@@ -51,7 +56,7 @@ namespace OpenRT.UnitTests.Primitive
 
             Assert.AreEqual(1, reorderedPrimitives.Count);  // There is only 1 triangles
             var triangle = reorderedPrimitives[0];
-            Assert.AreEqual(14, triangle.Count);    // There are 14 fields per triangles
+            Assert.AreEqual(14, triangle.Count);    // There are 20 fields per triangles
             Assert.AreEqual(0, triangle[0]);    // First vertex
             Assert.AreEqual(0, triangle[1]);    // First vertex
             Assert.AreEqual(0, triangle[2]);    // First vertex
@@ -63,8 +68,8 @@ namespace OpenRT.UnitTests.Primitive
             Assert.AreEqual(0, triangle[8]);    // Third vertex
 
             Assert.AreEqual(1 + 1 + 10 + 14, serialized.Count);   // Size of the BVH + Size of the primitive list + BVH + Primitive List
-            Assert.AreEqual(10, serialized[0]); // #1 = the size of the BVH
-            Assert.AreEqual(14, serialized[1]); // #2 = the size of the primitive list
+            Assert.AreEqual(12, serialized[0]); // #1 = the end + 1 of the BVH
+            Assert.AreEqual(26, serialized[1]); // #2 = the size of the primitive list
         }
     }
 }

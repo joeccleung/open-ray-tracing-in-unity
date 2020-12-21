@@ -1,0 +1,106 @@
+﻿#ifndef RTMeshBVH_Intersect_Compute
+#define RTMeshBVH_Intersect_Compute
+
+#include "../../BVH/RayBoxIntersect.compute"
+
+// [intersect(RTMeshBVH)]
+
+StructuredBuffer<float> _RTMeshBVH;
+
+void RTMeshBVHIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int primitiveId)
+{
+    int NO_CHILD = -1;
+
+    int BVH_START_OFFSET = 2;
+
+    int BOX_LEFT = 0;
+    int BOX_RIGHT = 1;
+    int BOX_MAX_X = 2;
+    int BOX_MAX_Y = 3;
+    int BOX_MAX_Z = 4;
+    int BOX_MIN_X = 5;
+    int BOX_MIN_Y = 6;
+    int BOX_MIN_Z = 7;
+    int BOX_P_BEGIN = 8;
+    int BOX_P_COUNT = 9;
+
+    int BOX_STRIDE = 10;
+    int TRIANGLE_STRIDE = 20;
+
+    // First, we have to jump to the start of our BVH
+    int bvhStart = BVH_START_OFFSET;   // It always start with 2 (the first 2 are the ending)
+    [fastopt] for(int s = 0; s < primitive.geometryInstanceBegin; s++)
+    {
+        bvhStart += _RTMeshBVH[bvhStart-2] + _RTMeshBVH[bvhStart-1] + 2;
+    }
+    int triStart = bvhStart + _RTMeshBVH[bvhStart-2];  // The end of BVH is the start of the triangle list
+
+    int bvhStack[32];
+    bvhStack[0] = bvhStart;
+    int bvhHead = 0;
+
+    [fastopt] while (true)
+    {
+        if (bvhHead <= -1) {
+            // No more node to traverse
+            break;
+        }
+
+        int nodeIdx = bvhStack[bvhHead];
+        bvhHead--;
+
+        if (RayBoxIntersection(ray, 
+                               float3(_RTMeshBVH[nodeIdx + BOX_MIN_X], _RTMeshBVH[nodeIdx + BOX_MIN_Y], _RTMeshBVH[nodeIdx + BOX_MIN_Z]), 
+                               float3(_RTMeshBVH[nodeIdx + BOX_MAX_X], _RTMeshBVH[nodeIdx + BOX_MAX_Y], _RTMeshBVH[nodeIdx + BOX_MAX_Z]))) {
+            if (_RTMeshBVH[nodeIdx + BOX_LEFT] == NO_CHILD && _RTMeshBVH[nodeIdx + BOX_RIGHT] == NO_CHILD) {
+                
+                // Leaf node, ray-triangle intersection
+
+                int bo = (int)_RTMeshBVH[nodeIdx + BOX_P_BEGIN] * TRIANGLE_STRIDE;  // bo: The triangle list begin offset
+
+                [fastopt] for(int cfb = 0; cfb < _RTMeshBVH[nodeIdx + BOX_P_COUNT]; cfb++)  // cfb: Count from the triangle list begin offset
+                {
+                    // We start simply first
+                    // Let's intersect the triangle one by one (without BVH) to verify the triangles are correctly passed to GPU
+
+                    float3 vertices1[3];
+                    vertices1[0] = float3(_RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 0], _RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 1], _RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 2]);
+                    vertices1[1] = float3(_RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 3], _RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 4], _RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 5]);
+                    vertices1[2] = float3(_RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 6], _RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 7], _RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 8]);
+
+                    float4 result = TriangleIntersectUtils(ray, bestHit.distance, vertices1);
+
+                    if (result.x != -1) // Has intersect?
+                    {
+                        bestHit.barycentric = float3(result.z, result.w, 1-result.z-result.w);
+                        bestHit.distance = result.x;
+                        bestHit.position = ray.origin + result.x * ray.direction;
+                        float3 normal0 = float3(_RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE +  9], _RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 10], _RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 11]);
+                        float3 normal1 = float3(_RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 12], _RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 13], _RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 14]);
+                        float3 normal2 = float3(_RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 15], _RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 16], _RTMeshBVH[triStart + bo + cfb * TRIANGLE_STRIDE + 17]);
+                        bestHit.normal = bestHit.barycentric.x * result.y * normal1 + bestHit.barycentric.y * result.y * normal2 + bestHit.barycentric.z * result.y * normal0;
+                        bestHit.primitiveId = primitiveId;
+
+                        if (result.y == 1)  // Ray is outside?
+                        {
+                            bestHit.mediumToEnter = 0;  // Ray is outside
+                        }
+                        else
+                        {
+                            bestHit.mediumToEnter = primitiveId;  // Ray is inside
+                        }
+                    }
+                }
+            }
+            else
+            {
+                bvhHead++;
+                bvhStack[bvhHead] = bvhStart + _RTMeshBVH[nodeIdx + BOX_RIGHT] * BOX_STRIDE;
+                bvhHead++;
+                bvhStack[bvhHead] = bvhStart + _RTMeshBVH[nodeIdx + BOX_LEFT] * BOX_STRIDE;
+            }
+        }
+    }
+}
+
+#endif

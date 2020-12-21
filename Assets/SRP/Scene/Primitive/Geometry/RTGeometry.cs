@@ -17,6 +17,7 @@ namespace OpenRT
         {
             return intersectShaderGUID;
         }
+        public abstract Vector3[] GetNormals();
         public abstract int GetStride();
 
         public virtual bool IsUnevenStride()

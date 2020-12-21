@@ -18,9 +18,12 @@ namespace OpenRT.UnitTests.Primitive
             vertices[1] = new Vector3(0, 5, 0);
             vertices[2] = new Vector3(5, 0, 0);
 
-            var normal = new Vector3(0, 0, -1); // Facing user
-            var planeD = -1 * Vector3.Dot(normal, vertices[0]);
-            var area = Vector3.Dot(normal, Vector3.Cross(vertices[1] - vertices[0], vertices[2] - vertices[0]));
+            Vector3[] normals = new Vector3[3];
+            normals[0] = new Vector3(0, 0, -1); // Facing user
+            normals[1] = new Vector3(0, 0, -1); // Facing user
+            normals[2] = new Vector3(0, 0, -1); // Facing user
+            var planeD = -1 * Vector3.Dot(normals[0], vertices[0]);
+            var area = Vector3.Dot(normals[0], Vector3.Cross(vertices[1] - vertices[0], vertices[2] - vertices[0]));
 
             int[] trianglesVertexOrder = new int[3];
             trianglesVertexOrder[0] = 0;
@@ -34,7 +37,7 @@ namespace OpenRT.UnitTests.Primitive
             RTMeshBVHController controller = new RTMeshBVHController(actuator: actuator.Object);
 
             // Act
-            List<List<float>> triangles = controller.BuildBVHAndTriangleList(trianglesVertexOrder, vertices);
+            List<List<float>> triangles = controller.BuildBVHAndTriangleList(normals, trianglesVertexOrder, vertices);
 
             // Assert
             Assert.AreEqual(1, triangles.Count);    // There is only 1 triangle
@@ -49,11 +52,17 @@ namespace OpenRT.UnitTests.Primitive
             Assert.AreEqual(vertices[2].x, firstTriangle[6]);   // Thrid vertex
             Assert.AreEqual(vertices[2].y, firstTriangle[7]);
             Assert.AreEqual(vertices[2].z, firstTriangle[8]);
-            Assert.AreEqual(normal.x, firstTriangle[9]);    // Normal
-            Assert.AreEqual(normal.y, firstTriangle[10]);
-            Assert.AreEqual(normal.z, firstTriangle[11]);
-            Assert.AreEqual(planeD, firstTriangle[12]);     // Plane D
-            Assert.AreEqual(area, firstTriangle[13]);       // Area
+            Assert.AreEqual(normals[0].x, firstTriangle[9]);    // Normal
+            Assert.AreEqual(normals[0].y, firstTriangle[10]);
+            Assert.AreEqual(normals[0].z, firstTriangle[11]);
+            Assert.AreEqual(normals[1].x, firstTriangle[12]);    // Normal
+            Assert.AreEqual(normals[1].y, firstTriangle[13]);
+            Assert.AreEqual(normals[1].z, firstTriangle[14]);
+            Assert.AreEqual(normals[2].x, firstTriangle[15]);    // Normal
+            Assert.AreEqual(normals[2].y, firstTriangle[16]);
+            Assert.AreEqual(normals[2].z, firstTriangle[17]);
+            Assert.AreEqual(planeD, firstTriangle[18]);     // Plane D
+            Assert.AreEqual(area, firstTriangle[19]);       // Area
         }
 
         [Test]
@@ -66,13 +75,15 @@ namespace OpenRT.UnitTests.Primitive
             vert[2] = new Vector3(5, 0, 0);
             vert[3] = new Vector3(5, 5, 0);
 
-            var normal1 = new Vector3(0, 0, -1); // Facing user
-            var planeD1 = -1 * Vector3.Dot(normal1, vert[0]);
-            var area1 = Vector3.Dot(normal1, Vector3.Cross(vert[1] - vert[0], vert[2] - vert[0]));
+            Vector3[] normals = new Vector3[3];
+            normals[0] = new Vector3(0, 0, -1); // Facing user
+            normals[1] = new Vector3(0, 0, -1); // Facing user
+            normals[2] = new Vector3(0, 0, -1); // Facing user
+            var planeD1 = -1 * Vector3.Dot(normals[0], vert[0]);
+            var area1 = Vector3.Dot(normals[0], Vector3.Cross(vert[1] - vert[0], vert[2] - vert[0]));
 
-            var normal2 = new Vector3(0, 0, -1); // Facing user
-            var planeD2 = -1 * Vector3.Dot(normal2, vert[1]);
-            var area2 = Vector3.Dot(normal2, Vector3.Cross(vert[3] - vert[1], vert[2] - vert[1]));
+            var planeD2 = -1 * Vector3.Dot(normals[0], vert[1]);
+            var area2 = Vector3.Dot(normals[0], Vector3.Cross(vert[3] - vert[1], vert[2] - vert[1]));
 
             int[] trianglesVertexOrder = new int[6];
             trianglesVertexOrder[0] = 0;
@@ -89,7 +100,7 @@ namespace OpenRT.UnitTests.Primitive
             RTMeshBVHController controller = new RTMeshBVHController(actuator: actuator.Object);
 
             // Act
-            List<List<float>> triangles = controller.BuildBVHAndTriangleList(trianglesVertexOrder, vert);
+            List<List<float>> triangles = controller.BuildBVHAndTriangleList(normals, trianglesVertexOrder, vert);
 
             // Assert
             Assert.AreEqual(2, triangles.Count);    // There are 2 triangle
@@ -104,11 +115,17 @@ namespace OpenRT.UnitTests.Primitive
             Assert.AreEqual(vert[2].x, firstTriangle[6]);   // Thrid vertex
             Assert.AreEqual(vert[2].y, firstTriangle[7]);
             Assert.AreEqual(vert[2].z, firstTriangle[8]);
-            Assert.AreEqual(normal1.x, firstTriangle[9]);    // Normal
-            Assert.AreEqual(normal1.y, firstTriangle[10]);
-            Assert.AreEqual(normal1.z, firstTriangle[11]);
-            Assert.AreEqual(planeD1, firstTriangle[12]);     // Plane D
-            Assert.AreEqual(area1, firstTriangle[13]);       // Area
+            Assert.AreEqual(normals[0].x, firstTriangle[9]);    // Normal
+            Assert.AreEqual(normals[0].y, firstTriangle[10]);
+            Assert.AreEqual(normals[0].z, firstTriangle[11]);
+            Assert.AreEqual(normals[1].x, firstTriangle[12]);    // Normal
+            Assert.AreEqual(normals[1].y, firstTriangle[13]);
+            Assert.AreEqual(normals[1].z, firstTriangle[14]);
+            Assert.AreEqual(normals[2].x, firstTriangle[15]);    // Normal
+            Assert.AreEqual(normals[2].y, firstTriangle[16]);
+            Assert.AreEqual(normals[2].z, firstTriangle[17]);
+            Assert.AreEqual(planeD1, firstTriangle[18]);     // Plane D
+            Assert.AreEqual(area1, firstTriangle[19]);       // Area
 
             var secondTriangle = triangles[0];
             Assert.AreEqual(14, secondTriangle.Count);   // There are 14 number of floats in one triangle
@@ -121,11 +138,17 @@ namespace OpenRT.UnitTests.Primitive
             Assert.AreEqual(vert[2].x, secondTriangle[6]);   // Thrid vertex
             Assert.AreEqual(vert[2].y, secondTriangle[7]);
             Assert.AreEqual(vert[2].z, secondTriangle[8]);
-            Assert.AreEqual(normal1.x, secondTriangle[9]);    // Normal
-            Assert.AreEqual(normal1.y, secondTriangle[10]);
-            Assert.AreEqual(normal1.z, secondTriangle[11]);
-            Assert.AreEqual(planeD1, secondTriangle[12]);     // Plane D
-            Assert.AreEqual(area1, secondTriangle[13]);       // Area
+            Assert.AreEqual(normals[0].x, firstTriangle[9]);    // Normal
+            Assert.AreEqual(normals[0].y, firstTriangle[10]);
+            Assert.AreEqual(normals[0].z, firstTriangle[11]);
+            Assert.AreEqual(normals[1].x, firstTriangle[12]);    // Normal
+            Assert.AreEqual(normals[1].y, firstTriangle[13]);
+            Assert.AreEqual(normals[1].z, firstTriangle[14]);
+            Assert.AreEqual(normals[2].x, firstTriangle[15]);    // Normal
+            Assert.AreEqual(normals[2].y, firstTriangle[16]);
+            Assert.AreEqual(normals[2].z, firstTriangle[17]);
+            Assert.AreEqual(planeD1, secondTriangle[18]);     // Plane D
+            Assert.AreEqual(area1, secondTriangle[19]);       // Area
         }
     }
 }

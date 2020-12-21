@@ -15,18 +15,25 @@ namespace OpenRT
     /// </summary>    
     public class RTMeshBVH : RTGeometry, RTMeshBVHController.IActuator
     {
-
         private RTMeshBVHController m_controller;
+        private RTMeshBVHController controller
+        {
+            get
+            {
+                m_controller = m_controller ?? new RTMeshBVHController(this);
+                return m_controller;
+            }
+        }
         [SerializeField] Mesh m_mesh;
 
-        public List<List<float>> BuildBVHAndTriangleList(int[] trianglesVertexOrder, Vector3[] vertices)
+        public List<List<float>> BuildBVHAndTriangleList(Vector3[] normals, int[] trianglesVertexOrder, Vector3[] vertices)
         {
-            return m_controller.BuildBVHAndTriangleList(trianglesVertexOrder, vertices);
+            return controller.BuildBVHAndTriangleList(normals, trianglesVertexOrder, vertices);
         }
 
         public override RTBoundingBox GetBoundingBox()
         {
-            return m_controller.GetBoundingBox();
+            return controller.GetBoundingBox();
         }
 
         public override int GetCount()
@@ -36,17 +43,22 @@ namespace OpenRT
 
         public override List<float> GetGeometryInstanceData()
         {
-            return m_controller.GetGeometryInstanceData();
+            return controller.GetGeometryInstanceData();
+        }
+
+        public override Vector3[] GetNormals()
+        {
+            return m_mesh.normals;
         }
 
         public BVHNode GetRoot()
         {
-            return m_controller.GetRoot();
+            return controller.GetRoot();
         }
 
         public override int GetStride()
         {
-            return sizeof(float) * 14;
+            return sizeof(float);
         }
 
         public int[] GetTrianglesVertexOrder(int mipmap)
@@ -68,11 +80,6 @@ namespace OpenRT
         public Vector3 LocalToWorld(Vector3 local)
         {
             return transform.localToWorldMatrix.MultiplyPoint(local);
-        }
-
-        public void Awake()
-        {
-            m_controller = new RTMeshBVHController(this);
         }
     }
 
