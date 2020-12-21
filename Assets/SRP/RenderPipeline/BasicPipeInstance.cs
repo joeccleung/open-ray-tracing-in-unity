@@ -189,6 +189,15 @@ namespace OpenRT
                 gemoetryInstanceBuffers.Add(geoInsIter.Current.Key, buffer);
             }
 
+            var varyingSizeGeoInsIter = sceneParseResult.VaryingGeometry.GetEnumerator();
+            while (varyingSizeGeoInsIter.MoveNext())
+            {
+                var buffer = new ComputeBuffer(varyingSizeGeoInsIter.Current.Value.Count,
+                                               sizeof(float));
+                buffer.SetData(varyingSizeGeoInsIter.Current.Value);
+                gemoetryInstanceBuffers.Add(varyingSizeGeoInsIter.Current.Key, buffer);
+            }
+
             sceneParseResult.TopLevelBVH.Flatten(
                 scenePrimitives: sceneParseResult.Primitives,
                 flatten: out List<RTBoundingBox> flattenBVH,

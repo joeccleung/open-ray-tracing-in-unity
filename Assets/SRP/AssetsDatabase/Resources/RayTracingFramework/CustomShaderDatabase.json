@@ -9,6 +9,11 @@
       "name": "RTSphere",
       "absPath": "Assets/SRP/ComputeShader/Custom/Geometry/RTSphereIntersect.compute",
       "shaderType": 3
+    },
+    "cb19bb8d-3ecf-42fc-8e0e-2efc3dabeadb": {
+      "name": "RTMeshBVH",
+      "absPath": "Assets/SRP/ComputeShader/Custom/Geometry/RTMeshBVHIntersect.compute",
+      "shaderType": 3
     }
   },
   "closetHit": {

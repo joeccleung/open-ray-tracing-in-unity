@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 4812002822647660}
   - component: {fileID: 6453797448537165940}
   - component: {fileID: 3633872939945302331}
+  - component: {fileID: 5073630684321478776}
+  - component: {fileID: 5884601124541619183}
   m_Layer: 0
   m_Name: Cone
   m_TagString: Untagged
@@ -45,7 +47,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   intersectShaderGUID: 47924f01-597c-4371-8442-d375d585e790
-  m_mesh: {fileID: 4300000, guid: 10f4e51254da985418a112d2dfe124f0, type: 3}
+  m_mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!114 &3633872939945302331
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62,3 +64,32 @@ MonoBehaviour:
   level: 0
   meshBVH: {fileID: 6453797448537165940}
   showTopLevelBVH: 0
+--- !u!114 &5073630684321478776
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1109385109949186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7800ffd5c0434da496b54da595de4a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  closestHitGUID: 39feb2bd-5273-4001-be13-a9b18abc1368
+  color: {r: 0, g: 0, b: 0, a: 0}
+  main: {fileID: 0}
+--- !u!114 &5884601124541619183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1109385109949186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66502c823bf4a4d5185569b16d96f26b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  geometry: {fileID: 0}
+  material: {fileID: 5073630684321478776}

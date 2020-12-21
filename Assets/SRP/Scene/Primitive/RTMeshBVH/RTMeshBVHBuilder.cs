@@ -15,6 +15,7 @@ namespace OpenRT
     {
         public const int HARD_LIMIT_MAX_DEPTH = 31;
         public const int MIN_NUMBER_OF_GEO_IN_BOX = 0;
+        public const int NO_MORE_CHILD_NODE = -1;
 
         private List<RTBoundingBox> m_boxes = new List<RTBoundingBox>();
         private BVHNode m_root;
@@ -131,8 +132,9 @@ namespace OpenRT
         }
 
         public static void Flatten(in List<List<float>> sceneTriangles,
-            out List<List<float>> flatten,
-            out List<List<float>> reorderedPrimitives, in BVHNode root)
+                                   out List<List<float>> flatten,
+                                   out List<List<float>> reorderedPrimitives,
+                                   in BVHNode root)
         {
 
             int id = 0;
@@ -165,7 +167,7 @@ namespace OpenRT
                     right: node.rightID
                 );
 
-                if (node.leftID == -1 && node.rightID == -1)
+                if (node.leftID == NO_MORE_CHILD_NODE && node.rightID == NO_MORE_CHILD_NODE)
                 {
                     // Leaf Node
                     box.primitiveBegin = reorderedPrimitives.Count;

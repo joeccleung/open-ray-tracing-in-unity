@@ -7,7 +7,7 @@ struct RTTriangle
 {
     // int id;
     float3 vertices[3];
-    float3 normal;
+    float3 normal[3];
     float planeD;
     float area;
     // int isDoubleSide;
@@ -23,13 +23,15 @@ void RTTriangleIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int
     {
         RTTriangle tri = _RTTriangle[primitive.geometryInstanceBegin + s];
 
-        float2 result = TriangleIntersectUtils(ray, bestHit.distance, tri.vertices);
+        float4 result = TriangleIntersectUtils(ray, bestHit.distance, tri.vertices);
 
         if (result.x != -1) // Has intersect?
         {
+            //TODO: Optimization. Calculate best hit after the for loop
+            bestHit.barycentric = float3(result.z, result.w, 1-result.z-result.w);
             bestHit.distance = result.x;
             bestHit.position = ray.origin + result.x * ray.direction;
-            bestHit.normal = result.y * tri.normal;
+            bestHit.normal = bestHit.barycentric.x * result.y * tri.normal[0] + bestHit.barycentric.y * result.y * tri.normal[1] + bestHit.barycentric.z * result.y * tri.normal[2];
             bestHit.primitiveId = primitiveId;
 
             if (result.y == 1)  // Ray is outside?

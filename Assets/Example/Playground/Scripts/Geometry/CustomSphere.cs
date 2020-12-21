@@ -27,6 +27,10 @@ namespace Example {
             return sphereData.GetGeometryInstanceData();
         }
 
+        public override Vector3[] GetNormals() {
+            return null;
+        }
+
         public override int GetStride() {
             return sphereData.GetStride();
         }

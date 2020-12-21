@@ -7,10 +7,11 @@ namespace OpenRT
 {
     public class RTMeshBVHController
     {
-        public const int FLOAT_PER_TRIANGLE = 14;
+        public const int FLOAT_PER_TRIANGLE = 20;
 
         public interface IActuator
         {
+            Vector3[] GetNormals();
             int[] GetTrianglesVertexOrder(int bitmap);
             Vector3[] GetVertices();
             Vector3 LocalToWorld(Vector3 local);
@@ -26,7 +27,8 @@ namespace OpenRT
 
         public List<float> GetGeometryInstanceData()
         {
-            return GetGeometryInstanceData(trianglesVertexOrder: m_actuator.GetTrianglesVertexOrder(0),
+            return GetGeometryInstanceData(normals: m_actuator.GetNormals(),
+                                           trianglesVertexOrder: m_actuator.GetTrianglesVertexOrder(0),
                                            vertices: m_actuator.GetVertices());
         }
 
@@ -36,9 +38,9 @@ namespace OpenRT
             return builder.Root.bounding;
         }
 
-        public List<float> GetGeometryInstanceData(in int[] trianglesVertexOrder, Vector3[] vertices)
+        public List<float> GetGeometryInstanceData(Vector3[] normals, in int[] trianglesVertexOrder, Vector3[] vertices)
         {
-            List<List<float>> triangles = BuildBVHAndTriangleList(trianglesVertexOrder, vertices);
+            List<List<float>> triangles = BuildBVHAndTriangleList(normals, trianglesVertexOrder, vertices);
 
             RTMeshBVHBuilder.Flatten(triangles,
                                      out List<List<float>> flattenBVH,
@@ -54,7 +56,12 @@ namespace OpenRT
         }
 
 
-        private List<float> GenerateTriangle(Vector3 v0, Vector3 v1, Vector3 v2)
+        private List<float> GenerateTriangle(Vector3 v0,
+                                             Vector3 v1,
+                                             Vector3 v2,
+                                             Vector3 n0,
+                                             Vector3 n1,
+                                             Vector3 n2)
         {
             v0 = m_actuator.LocalToWorld(v0);
             v1 = m_actuator.LocalToWorld(v1);
@@ -75,15 +82,21 @@ namespace OpenRT
                 v2.x,
                 v2.y,
                 v2.z,
-                normal.x,
-                normal.y,
-                normal.z,
+                n0.x,
+                n0.y,
+                n0.z,
+                n1.x,
+                n1.y,
+                n1.z,
+                n2.x,
+                n2.y,
+                n2.z,
                 planeD,
                 area
             };
         }
 
-        public List<List<float>> BuildBVHAndTriangleList(int[] trianglesVertexOrder, Vector3[] vertices)
+        public List<List<float>> BuildBVHAndTriangleList(Vector3[] normals, int[] trianglesVertexOrder, Vector3[] vertices)
         {
             int primitiveCounter = 0;
             List<List<float>> triangles = new List<List<float>>();
@@ -99,7 +112,10 @@ namespace OpenRT
 
                 triangles.Add(GenerateTriangle(vertices[trianglesVertexOrder[i]],
                                                vertices[trianglesVertexOrder[i + 1]],
-                                               vertices[trianglesVertexOrder[i + 2]]));
+                                               vertices[trianglesVertexOrder[i + 2]],
+                                               normals[trianglesVertexOrder[i]],
+                                               normals[trianglesVertexOrder[i + 1]],
+                                               normals[trianglesVertexOrder[i + 2]]));
 
                 primitiveCounter++;
             }
@@ -110,9 +126,11 @@ namespace OpenRT
 
         public static List<float> SerializeRTMeshBVH(List<List<float>> flattenBVH, List<List<float>> reorderedPrimitives)
         {
+            var bvhLen = flattenBVH.Count * RTBoundingBox.NUMBER_OF_FLOAT;
+            var triLen = reorderedPrimitives.Count * FLOAT_PER_TRIANGLE;
             var result = new List<float>(){
-                flattenBVH.Count * RTBoundingBox.NUMBER_OF_FLOAT,
-                reorderedPrimitives.Count * FLOAT_PER_TRIANGLE
+                bvhLen,
+                triLen
             };
             flattenBVH.ForEach(v =>
             {

@@ -1,7 +1,7 @@
 ﻿#ifndef Triangle_Intersect_Utils_Compute
 #define Triangle_Intersect_Utils_Compute
 
-float2 TriangleIntersectUtils(Ray ray, float bestDistance, float3 vertices[3])
+float4 TriangleIntersectUtils(Ray ray, float bestDistance, float3 vertices[3])
 {
     float EPSILON = 1.19e-07f;
     float outside = 1;   // Assume outside the geometry. Outside = 1, Inside = -1
@@ -21,7 +21,7 @@ float2 TriangleIntersectUtils(Ray ray, float bestDistance, float3 vertices[3])
         // Outside: use backface culling
         if (det < EPSILON)
         {
-            return float2(-1, outside);
+            return float4(-1, outside, 0, 0);
         }
     }
     else
@@ -31,7 +31,7 @@ float2 TriangleIntersectUtils(Ray ray, float bestDistance, float3 vertices[3])
         // Inside: use forward culling
         if (det > -EPSILON)
         {
-            return float2(-1, outside);
+            return float4(-1, outside, 0, 0);
         }
     }
 
@@ -44,7 +44,7 @@ float2 TriangleIntersectUtils(Ray ray, float bestDistance, float3 vertices[3])
 
     if (u < 0.0 || u > 1.0f)
     {
-        return float2(-1, outside);
+        return float4(-1, outside, 0, 0);
     }
 
     // prepare to test V parameter
@@ -54,7 +54,7 @@ float2 TriangleIntersectUtils(Ray ray, float bestDistance, float3 vertices[3])
     float v = dot(ray.direction, qvec) * inv_det;
     if (v < 0.0 || u + v > 1.0f)
     {
-        return float2(-1, outside);
+        return float4(-1, outside, u, v);
     }
 
     // calculate t, ray intersects triangle
@@ -62,11 +62,11 @@ float2 TriangleIntersectUtils(Ray ray, float bestDistance, float3 vertices[3])
 
     if (ray.tmin < dis && dis < ray.tmax && dis < bestDistance)
     {
-        return float2(dis, outside);
+        return float4(dis, outside, u, v);
     }
     else
     {
-        return float2(-1, outside);
+        return float4(-1, outside, u, v);
     }
 }
 

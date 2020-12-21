@@ -25,9 +25,10 @@ namespace OpenRT
             int[] trianglesVertexOrder = m_mesh.GetTriangles(0);
             numberOfTriangles = trianglesVertexOrder.Length / 3;
             Vector3[] vertices = m_mesh.vertices;
+            Vector3[] normals = m_mesh.normals;
 
             ResetBoundingBox();
-            
+
             foreach (var vertex in vertices)
             {
                 AddVertices(ref boundingBox, vertex);
@@ -37,7 +38,12 @@ namespace OpenRT
 
             for (int i = 0; i < trianglesVertexOrder.Length; i += 3)
             {
-                List<float> triangle = GenerateTriangle(vertices[trianglesVertexOrder[i]], vertices[trianglesVertexOrder[i + 1]], vertices[trianglesVertexOrder[i + 2]]);
+                List<float> triangle = GenerateTriangle(vertices[trianglesVertexOrder[i]],
+                                                        vertices[trianglesVertexOrder[i + 1]],
+                                                        vertices[trianglesVertexOrder[i + 2]],
+                                                        normals[trianglesVertexOrder[i]],
+                                                        normals[trianglesVertexOrder[i + 1]],
+                                                        normals[trianglesVertexOrder[i + 2]]);
                 tris.AddRange(triangle);
             }
 
@@ -46,7 +52,7 @@ namespace OpenRT
 
         public override int GetStride()
         {
-            return sizeof(float) * 14;
+            return sizeof(float) * 20;
         }
 
         public override int GetCount()
@@ -61,7 +67,12 @@ namespace OpenRT
             boundingBox.max = Vector3.Max(boundingBox.max, worldVex);
         }
 
-        private List<float> GenerateTriangle(Vector3 v0, Vector3 v1, Vector3 v2)
+        private List<float> GenerateTriangle(Vector3 v0,
+                                             Vector3 v1,
+                                             Vector3 v2,
+                                             Vector3 n0,
+                                             Vector3 n1,
+                                             Vector3 n2)
         {
             v0 = transform.localToWorldMatrix.MultiplyPoint(v0);
             v1 = transform.localToWorldMatrix.MultiplyPoint(v1);
@@ -74,20 +85,31 @@ namespace OpenRT
 
             return new List<float>() {
                 v0.x,
-                    v0.y,
-                    v0.z,
-                    v1.x,
-                    v1.y,
-                    v1.z,
-                    v2.x,
-                    v2.y,
-                    v2.z,
-                    normal.x,
-                    normal.y,
-                    normal.z,
-                    planeD,
-                    area
+                v0.y,
+                v0.z,
+                v1.x,
+                v1.y,
+                v1.z,
+                v2.x,
+                v2.y,
+                v2.z,
+                n0.x,
+                n0.y,
+                n0.z,
+                n1.x,
+                n1.y,
+                n1.z,
+                n2.x,
+                n2.y,
+                n2.z,
+                planeD,
+                area
             };
+        }
+
+        public override Vector3[] GetNormals()
+        {
+            return m_mesh.normals;
         }
     }
 }
