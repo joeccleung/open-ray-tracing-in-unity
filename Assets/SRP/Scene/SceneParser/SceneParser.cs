@@ -101,7 +101,7 @@ namespace OpenRT
                         if (geometry.IsUnevenStride())
                         {
                             // Such as Low-Level BVH (RTMeshBVH)
-                            sceneParseResult.AddVaryingSizeGeometry(
+                            sceneParseResult.AddAccelerationStructureGeometry(
                                 geometryData: geoInsData,
                                 intersectIndex: intersectShaderIndex
                             );
