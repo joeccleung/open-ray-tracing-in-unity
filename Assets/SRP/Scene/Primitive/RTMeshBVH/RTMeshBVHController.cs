@@ -19,6 +19,8 @@ namespace OpenRT
 
         private IActuator m_actuator;
         private RTMeshBVHBuilder builder = new RTMeshBVHBuilder();
+        private bool meshDirty = true;
+        private List<List<float>> triangles = new List<List<float>>();
 
         public RTMeshBVHController(IActuator actuator)
         {
@@ -98,30 +100,46 @@ namespace OpenRT
 
         public List<List<float>> BuildBVHAndTriangleList(Vector3[] normals, int[] trianglesVertexOrder, Vector3[] vertices)
         {
-            int primitiveCounter = 0;
-            List<List<float>> triangles = new List<List<float>>();
-            builder.Clear();
+            _BuildBVHAndTriangleList(builder, ref meshDirty, normals, triangles, trianglesVertexOrder, vertices);
+            return triangles;
+        }
 
-            for (int i = 0; i < trianglesVertexOrder.Length; i += 3)
+        public void _BuildBVHAndTriangleList(RTMeshBVHBuilder builder,
+                                             ref bool meshDirty,
+                                             Vector3[] normals,
+                                             List<List<float>> triangles,
+                                             int[] trianglesVertexOrder,
+                                             Vector3[] vertices)
+        {
+            if (meshDirty)
             {
-                RTBoundingBox box = RTBoundingBox.RTBoundingBoxFromTriangle(primitiveCounter,
-                                                                            m_actuator.LocalToWorld(vertices[trianglesVertexOrder[i]]),
-                                                                            m_actuator.LocalToWorld(vertices[trianglesVertexOrder[i + 1]]),
-                                                                            m_actuator.LocalToWorld(vertices[trianglesVertexOrder[i + 2]]));
-                builder.AddBoundingBox(box);
+                meshDirty = false;
 
-                triangles.Add(GenerateTriangle(vertices[trianglesVertexOrder[i]],
-                                               vertices[trianglesVertexOrder[i + 1]],
-                                               vertices[trianglesVertexOrder[i + 2]],
-                                               normals[trianglesVertexOrder[i]],
-                                               normals[trianglesVertexOrder[i + 1]],
-                                               normals[trianglesVertexOrder[i + 2]]));
+                int primitiveCounter = 0;
+                triangles.Clear();
+                builder.Clear();
 
-                primitiveCounter++;
+                for (int i = 0; i < trianglesVertexOrder.Length; i += 3)
+                {
+                    RTBoundingBox box = RTBoundingBox.RTBoundingBoxFromTriangle(primitiveCounter,
+                                                                                m_actuator.LocalToWorld(vertices[trianglesVertexOrder[i]]),
+                                                                                m_actuator.LocalToWorld(vertices[trianglesVertexOrder[i + 1]]),
+                                                                                m_actuator.LocalToWorld(vertices[trianglesVertexOrder[i + 2]]));
+                    builder.AddBoundingBox(box);
+
+                    triangles.Add(GenerateTriangle(vertices[trianglesVertexOrder[i]],
+                                                   vertices[trianglesVertexOrder[i + 1]],
+                                                   vertices[trianglesVertexOrder[i + 2]],
+                                                   normals[trianglesVertexOrder[i]],
+                                                   normals[trianglesVertexOrder[i + 1]],
+                                                   normals[trianglesVertexOrder[i + 2]]));
+
+                    primitiveCounter++;
+                }
+
+                builder.Construct();
             }
 
-            builder.Construct();
-            return triangles;
         }
 
         public static List<float> SerializeRTMeshBVH(List<List<float>> flattenBVH, List<List<float>> reorderedPrimitives)

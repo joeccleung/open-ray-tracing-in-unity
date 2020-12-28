@@ -14,7 +14,7 @@ namespace OpenRT
         private List<Primitive> m_primitives;
         private List<Matrix4x4> m_worldToPrimitives;
         private TopLevelBVH topLevelBVH;
-        private SortedList<ISIdx, List<float>> m_varyingSizeGeometryData;
+        private SortedList<ISIdx, List<float>> m_objectLevelAccelerationStructureData;
 
         public SceneParseResult()
         {
@@ -26,7 +26,7 @@ namespace OpenRT
             m_primitives = new List<Primitive>();
             m_worldToPrimitives = new List<Matrix4x4>();
             topLevelBVH = new TopLevelBVH();
-            m_varyingSizeGeometryData = new SortedList<ISIdx, List<float>>();
+            m_objectLevelAccelerationStructureData = new SortedList<ISIdx, List<float>>();
         }
 
         public void AddBoundingBox(RTBoundingBox box)
@@ -82,15 +82,15 @@ namespace OpenRT
             m_worldToPrimitives.Add(worldToPrimitive);
         }
 
-        public void AddVaryingSizeGeometry(List<float> geometryData, int intersectIndex)
+        public void AddAccelerationStructureGeometry(List<float> geometryData, int intersectIndex)
         {
-            if (m_varyingSizeGeometryData.ContainsKey(intersectIndex))
+            if (m_objectLevelAccelerationStructureData.ContainsKey(intersectIndex))
             {
-                m_varyingSizeGeometryData[intersectIndex].AddRange(geometryData);
+                m_objectLevelAccelerationStructureData[intersectIndex].AddRange(geometryData);
             }
             else
             {
-                m_varyingSizeGeometryData[intersectIndex] = geometryData;
+                m_objectLevelAccelerationStructureData[intersectIndex] = geometryData;
             }
         }
 
@@ -104,7 +104,7 @@ namespace OpenRT
             m_geometryData.Clear();
             m_geometryCount.Clear();
             m_geometryStrides.Clear();
-            m_varyingSizeGeometryData.Clear();
+            m_objectLevelAccelerationStructureData.Clear();
         }
 
         public void ClearAllLights()
@@ -215,7 +215,7 @@ namespace OpenRT
         {
             get
             {
-                return m_varyingSizeGeometryData;
+                return m_objectLevelAccelerationStructureData;
             }
         }
 
