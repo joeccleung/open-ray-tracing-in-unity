@@ -34,10 +34,20 @@ namespace OpenRT.UnitTests.Primitive
 
             RTMeshBVHController controller = new RTMeshBVHController(actuator: actuator.Object);
 
+            List<List<float>> flatten = new List<List<float>>();
+            List<List<int>> accelerationGeometryMappingCollection = new List<List<int>>();
+
             // Act
-            List<List<float>> triangles = controller.BuildBVHAndTriangleList(normals, trianglesVertexOrder, vertices);
-            RTMeshBVHBuilder.Flatten(triangles, out List<List<float>> flatten, out List<List<float>> reorderedPrimitives, controller.GetRoot());
-            List<float> serialized = RTMeshBVHController.SerializeRTMeshBVH(flatten, reorderedPrimitives);
+            List<List<float>> triangles = controller.BuildBVHAndTriangleList(0,
+                                                                             normals,
+                                                                             trianglesVertexOrder,
+                                                                             vertices);
+            RTMeshBVHBuilder.Flatten(ref flatten,
+                                     0,
+                                     0,
+                                     ref accelerationGeometryMappingCollection,
+                                     controller.GetRoot());
+            List<float> serialized = RTMeshBVHController.SerializeRTMeshBVH(flatten);
 
             // Assert
             Assert.AreEqual(1, flatten.Count);  // There is only 1 bounding box
@@ -54,18 +64,7 @@ namespace OpenRT.UnitTests.Primitive
             Assert.AreEqual(0, box[8]); // primitive begin
             Assert.AreEqual(1, box[9]); // primitive count
 
-            Assert.AreEqual(1, reorderedPrimitives.Count);  // There is only 1 triangles
-            var triangle = reorderedPrimitives[0];
-            Assert.AreEqual(14, triangle.Count);    // There are 20 fields per triangles
-            Assert.AreEqual(0, triangle[0]);    // First vertex
-            Assert.AreEqual(0, triangle[1]);    // First vertex
-            Assert.AreEqual(0, triangle[2]);    // First vertex
-            Assert.AreEqual(0, triangle[3]);    // Second vertex
-            Assert.AreEqual(5, triangle[4]);    // Second vertex
-            Assert.AreEqual(0, triangle[5]);    // Second vertex
-            Assert.AreEqual(5, triangle[6]);    // Third vertex
-            Assert.AreEqual(0, triangle[7]);    // Third vertex
-            Assert.AreEqual(0, triangle[8]);    // Third vertex
+            Assert.AreEqual(1, accelerationGeometryMappingCollection.Count);  // There is only 1 triangles
 
             Assert.AreEqual(1 + 1 + 10 + 14, serialized.Count);   // Size of the BVH + Size of the primitive list + BVH + Primitive List
             Assert.AreEqual(12, serialized[0]); // #1 = the end + 1 of the BVH

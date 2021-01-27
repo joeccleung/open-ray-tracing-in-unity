@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace OpenRT
@@ -13,9 +14,8 @@ namespace OpenRT
     /// 
     public class RTMeshBVHBuilder
     {
-        public const int HARD_LIMIT_MAX_DEPTH = 31;
-        public const int MIN_NUMBER_OF_GEO_IN_BOX = 0;
-        public const int NO_MORE_CHILD_NODE = -1;
+        public const int HARD_LIMIT_MAX_DEPTH = 1;
+        public const int TRIANGLE_STRIDE = 20;
 
         private List<RTBoundingBox> m_boxes = new List<RTBoundingBox>();
         private BVHNode m_root;
@@ -34,7 +34,9 @@ namespace OpenRT
             }
         }
 
-        private BVHNode Build(List<RTBoundingBox> boxes, in int depth)
+        private BVHNode Build(List<RTBoundingBox> boxes,
+                              in int depth,
+                              in int minNumberOfGeoPerBox)
         {
             BVHNode rootNode = BVHNode.CombineAllBoxesAndPrimitives(boxes);
             char rootBoxLongestAxis = rootNode.bounding.longestAxis;
@@ -49,18 +51,22 @@ namespace OpenRT
 
             Bisect(boxes, rootBoxLongestAxis, left, right);
 
-            if (left.Count <= MIN_NUMBER_OF_GEO_IN_BOX
-                || right.Count <= MIN_NUMBER_OF_GEO_IN_BOX
-                || depth == HARD_LIMIT_MAX_DEPTH)
+            if (left.Count == 0 || right.Count == 0)
             {
-                // Can no longer bisect the bounding box, group them into one
-
+                // Bisect fail (e.g. all children aligned on the division plane), end the tree building
+                return rootNode;
             }
             else
             {
-                // Continue bisect
-                rootNode.left = Build(left, depth + 1);
-                rootNode.right = Build(right, depth + 1);
+                if (left.Count + right.Count > minNumberOfGeoPerBox
+                    && left.Count > 0
+                    && right.Count > 0
+                    && depth < HARD_LIMIT_MAX_DEPTH)
+                {
+                    // Continue bisect
+                    rootNode.left = Build(left, depth + 1, minNumberOfGeoPerBox);
+                    rootNode.right = Build(right, depth + 1, minNumberOfGeoPerBox);
+                }
             }
 
             return rootNode;
@@ -110,9 +116,9 @@ namespace OpenRT
             }
         }
 
-        public void Construct()
+        public void Construct(int minNumberOfGeoPerBox)
         {
-            m_root = Build(m_boxes, 0);
+            m_root = Build(m_boxes, 0, minNumberOfGeoPerBox);
         }
 
         public void Clear()
@@ -131,20 +137,23 @@ namespace OpenRT
             return cp;
         }
 
-        public static void Flatten(in List<List<float>> sceneTriangles,
-                                   out List<List<float>> flatten,
-                                   out List<List<float>> reorderedPrimitives,
+        public static void Flatten(ref List<List<float>> flatten,
+                                   int geoLocalToGlobalIndexOffset,
+                                   int mappingLocalToGlobalIndexOffset,
+                                   ref List<List<int>> accelerationGeometryMappingCollection,
                                    in BVHNode root)
         {
-
             int id = 0;
 
             flatten = new List<List<float>>();
-            reorderedPrimitives = new List<List<float>>();
+            accelerationGeometryMappingCollection = new List<List<int>>();
 
             Queue<BVHNode> bfs = new Queue<BVHNode>();
 
             bfs.Enqueue(root);
+
+            int mappingLocalIndexOffset = 0;
+
             while (bfs.Count > 0)
             {
                 var node = bfs.Dequeue();
@@ -167,15 +176,28 @@ namespace OpenRT
                     right: node.rightID
                 );
 
-                if (node.leftID == NO_MORE_CHILD_NODE && node.rightID == NO_MORE_CHILD_NODE)
+                if (box.leftID == -1 && box.rightID == -1)
                 {
                     // Leaf Node
-                    box.primitiveBegin = reorderedPrimitives.Count;
-                    box.primitiveCount = node.children.Count;
-                    foreach (var child in node.children)
-                    {
-                        reorderedPrimitives.Add(sceneTriangles[child.primitiveBegin]);
-                    }
+                    // Left child index will be -1 to indicate leaf node
+                    // Right child index will be pointing to the Acceleration Structure - Geometry mapping index
+
+                    // Firstly, we generate the mapping
+                    var geos = box.geoIndices.ToList();
+                    var triIdxCount = geos.Count;
+
+                    var offsetGeoIndices = new List<int>();
+                    geos.ForEach(e => offsetGeoIndices.Add(geoLocalToGlobalIndexOffset + e * TRIANGLE_STRIDE));
+
+                    List<int> accelerationGeometryMapping = new List<int>(triIdxCount + 1);
+                    accelerationGeometryMapping.Add(triIdxCount);
+                    accelerationGeometryMapping.AddRange(offsetGeoIndices);
+
+                    accelerationGeometryMappingCollection.Add(accelerationGeometryMapping);
+
+                    // Secondly, we assign the index to the mapping collection of the same geometry to the right child index
+                    box.rightID = mappingLocalToGlobalIndexOffset + mappingLocalIndexOffset;
+                    mappingLocalIndexOffset += accelerationGeometryMapping.Count;
                 }
 
                 flatten.Add(box.Serialize()); //TODO: Support overlapping bounding box and include all their primitives IDs
@@ -191,4 +213,3 @@ namespace OpenRT
         }
     }
 }
-

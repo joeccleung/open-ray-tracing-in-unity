@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 
@@ -22,20 +23,23 @@ namespace OpenRT {
             return node;
         }
 
-        private static RTBoundingBox Combine2Box(RTBoundingBox a, RTBoundingBox b) {
+        private static RTBoundingBox Combine2Box(RTBoundingBox a, RTBoundingBox b)
+        {
             var max = Vector3.Max(a.max, b.max);
             var min = Vector3.Min(a.min, b.min);
 
-            return new RTBoundingBox(-1, -1,
-                max,
-                min,
-                Mathf.Min(a.primitiveBegin, b.primitiveBegin),
-                a.primitiveCount + b.primitiveCount);
+            return new RTBoundingBox(-1,
+                                     -1,
+                                     max,
+                                     min,
+                                     a.geoIndices.Union(b.geoIndices));  // The union of triangle indices from both bounding boxes
         }
 
-        private static RTBoundingBox CombineAllBox(List<RTBoundingBox> boxes) {
+        private static RTBoundingBox CombineAllBox(List<RTBoundingBox> boxes)
+        {
             RTBoundingBox root = RTBoundingBox.Empty;
-            foreach (var box in boxes) {
+            foreach (var box in boxes)
+            {
                 root = Combine2Box(root, box);
             }
             return root;

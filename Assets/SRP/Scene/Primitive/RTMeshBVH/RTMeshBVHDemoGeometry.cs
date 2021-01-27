@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using OpenRT;
 using UnityEngine;
+using System.Linq;
 
-public class RTMeshBVHDemoGeometry : RTGeometry, RTMeshBVHController.IActuator
+[ExecuteInEditMode]
+public class RTMeshBVHDemoGeometry : IRTMeshBVH
 {
     private RTMeshBVHController m_controller;
     private RTMeshBVHController controller
@@ -15,37 +17,50 @@ public class RTMeshBVHDemoGeometry : RTGeometry, RTMeshBVHController.IActuator
         }
     }
 
-    private Vector3[] vertices = new Vector3[] {
-        new Vector3(0, 0, 0),
-        new Vector3(0, 5, 0),
-        new Vector3(5, 5, 0),
-        new Vector3(5, 0, 0),
-        new Vector3(0, 0, 0),
-        new Vector3(0, 0, 5),
-        new Vector3(5, 0, 5),
-        new Vector3(5, 0, 0) };
+    [SerializeField] private Mesh demoMesh;
+    [SerializeField] private MeshFilter meshFilter;
+    private int m_meshHashCode = 0;
+    [SerializeField] private int m_minNumberOfGeoPerBox = 0;
+    [SerializeField] private int numberOfTriangelsFromDemoMesh = 1;
 
-    private Vector3[] normal = new Vector3[] {
-        new Vector3(0, 0, -1),
-        new Vector3(0, 0, -1),
-        new Vector3(0, 0, -1),
-        new Vector3(0, 0, -1),
-        new Vector3(0, -1, 0),
-        new Vector3(0, -1, 0),
-        new Vector3(0, -1, 0),
-        new Vector3(0, -1, 0)
-    };
-
-    private int[] triangle = new int[] {
-        0, 1, 2,
-        0, 2, 3,
-        4, 7, 6,
-        4, 6, 5
-    };
-
-    public override RTBoundingBox GetBoundingBox()
+    public void Awake()
     {
-        return controller.GetBoundingBox();
+        var deformedMesh = new Mesh
+        {
+            vertices = GetVertices(),   // Must set vertices first
+            normals = GetNormals(),
+            triangles = GetTrianglesVertexOrder(0),
+        };
+
+        meshFilter.mesh = deformedMesh;
+    }
+
+    public override List<List<float>> BuildBVHAndTriangleList(int geoLocalToGlobalIndexOffset,
+                                                              int mappingLocalToGlobalIndexOffset)
+    {
+        return controller.BuildBVHAndTriangleList(geoLocalToGlobalIndexOffset,
+                                                  mappingLocalToGlobalIndexOffset,
+                                                  m_minNumberOfGeoPerBox);
+    }
+
+    public override List<List<float>> BuildBVHAndTriangleList(Vector3[] normals, int[] trianglesVertexOrder, Vector3[] vertices)
+    {
+        return controller.BuildBVHAndTriangleList(m_minNumberOfGeoPerBox, normals, trianglesVertexOrder, vertices);
+    }
+
+    public override List<float> GetAccelerationStructureGeometryData(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset)
+    {
+        return controller.GetAccelerationStructureGeometryData(geoLocalToGlobalIndexOffset, mappingLocalToGlobalIndexOffset, m_minNumberOfGeoPerBox);
+    }
+
+    public override List<int> GetAccelerationStructureGeometryMapping(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset)
+    {
+        return controller.GetAccelerationStructureGeometryMapping(geoLocalToGlobalIndexOffset, mappingLocalToGlobalIndexOffset, m_minNumberOfGeoPerBox);
+    }
+
+    public override RTBoundingBox GetTopLevelBoundingBox(int assignedPrimitiveId)
+    {
+        return controller.GetTopLevelBoundingBox(assignedPrimitiveId);
     }
 
     public override int GetCount()
@@ -53,14 +68,19 @@ public class RTMeshBVHDemoGeometry : RTGeometry, RTMeshBVHController.IActuator
         return 1;
     }
 
-    public override List<float> GetGeometryInstanceData()
+    public override List<float> GetGeometryInstanceData(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset)
     {
-        return controller.GetGeometryInstanceData();
+        return controller.GetGeometryInstanceData(geoLocalToGlobalIndexOffset, mappingLocalToGlobalIndexOffset, m_minNumberOfGeoPerBox);
     }
 
     public override Vector3[] GetNormals()
     {
-        return normal;
+        return demoMesh.normals;
+    }
+
+    public override BVHNode GetRoot()
+    {
+        return controller.GetRoot();
     }
 
     public override int GetStride()
@@ -68,24 +88,46 @@ public class RTMeshBVHDemoGeometry : RTGeometry, RTMeshBVHController.IActuator
         return sizeof(float);
     }
 
-    public int[] GetTrianglesVertexOrder(int bitmap)
+    public override int[] GetTrianglesVertexOrder(int bitmap)
     {
-        return triangle;
+        return demoMesh.triangles.Take(numberOfTriangelsFromDemoMesh * 3).ToArray();
     }
 
-    public Vector3[] GetVertices()
+    public override Vector3[] GetVertices()
     {
-        return vertices;
+        return demoMesh.vertices;
     }
 
-    public Vector3 LocalToWorld(Vector3 local)
-    {
-        return transform.localToWorldMatrix.MultiplyPoint(local);
-    }
-
-    public override bool IsUnevenStride()
+    public override bool IsAccelerationStructure()
     {
         return true;
     }
 
+    public override bool IsDirty()
+    {
+        if (transform.hasChanged)
+        {
+            transform.hasChanged = false;
+            return true;
+        }
+
+        int _curHashCode = demoMesh.GetHashCode();
+        if (m_meshHashCode != _curHashCode)
+        {
+            m_meshHashCode = _curHashCode;
+            return true;
+        }
+
+        return false;
+    }
+
+    public override bool IsGeometryValid()
+    {
+        return true;
+    }
+
+    public override Vector3 LocalToWorld(Vector3 local)
+    {
+        return transform.localToWorldMatrix.MultiplyPoint(local);
+    }
 }

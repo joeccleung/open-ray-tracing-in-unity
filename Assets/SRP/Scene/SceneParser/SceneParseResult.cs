@@ -8,6 +8,7 @@ namespace OpenRT
     {
         private SortedList<ISIdx, List<float>> m_geometryData;
         private Dictionary<ISIdx, int> m_geometryCount;
+        private Dictionary<ISIdx, bool> m_geometryTypeIsDirty;
         private Dictionary<ISIdx, int> m_geometryStrides;
         private List<RTLightInfo> m_lightInfos;
         private List<RTMaterial> m_materials;
@@ -15,18 +16,28 @@ namespace OpenRT
         private List<Matrix4x4> m_worldToPrimitives;
         private TopLevelBVH topLevelBVH;
         private SortedList<ISIdx, List<float>> m_objectLevelAccelerationStructureData;
+        private SortedList<ISIdx, List<float>> m_objectLevelAccelerationStructureGeometryData;
+        private SortedList<ISIdx, int> m_objectLevelAccelerationStructureGeometryDataCursor;
+        private SortedList<ISIdx, List<int>> m_objectLevelAccelerationStructureGeometryMapping;
+        private SortedList<ISIdx, int> m_objectLevelAccelerationStructureGeometryMappingCursor;
+
 
         public SceneParseResult()
         {
             m_geometryCount = new Dictionary<ISIdx, int>();
             m_geometryData = new SortedList<ISIdx, List<float>>();
             m_geometryStrides = new Dictionary<ISIdx, int>();
+            m_geometryTypeIsDirty = new Dictionary<ISIdx, bool>();
             m_lightInfos = new List<RTLightInfo>();
             m_materials = new List<RTMaterial>();
             m_primitives = new List<Primitive>();
             m_worldToPrimitives = new List<Matrix4x4>();
             topLevelBVH = new TopLevelBVH();
             m_objectLevelAccelerationStructureData = new SortedList<ISIdx, List<float>>();
+            m_objectLevelAccelerationStructureGeometryData = new SortedList<ISIdx, List<float>>();
+            m_objectLevelAccelerationStructureGeometryDataCursor = new SortedList<ISIdx, int>();
+            m_objectLevelAccelerationStructureGeometryMapping = new SortedList<ISIdx, List<int>>();
+            m_objectLevelAccelerationStructureGeometryMappingCursor = new SortedList<ISIdx, int>();
         }
 
         public void AddBoundingBox(RTBoundingBox box)
@@ -82,15 +93,40 @@ namespace OpenRT
             m_worldToPrimitives.Add(worldToPrimitive);
         }
 
-        public void AddAccelerationStructureGeometry(List<float> geometryData, int intersectIndex)
+        public void AddAccelerationStructureGeometry(List<float> accelerationStructureData,
+                                                     List<float> accelGeometryData,
+                                                     List<int> accelGeometryMapping,
+                                                     int intersectIndex)
         {
             if (m_objectLevelAccelerationStructureData.ContainsKey(intersectIndex))
             {
-                m_objectLevelAccelerationStructureData[intersectIndex].AddRange(geometryData);
+                m_objectLevelAccelerationStructureData[intersectIndex].AddRange(accelerationStructureData);
             }
             else
             {
-                m_objectLevelAccelerationStructureData[intersectIndex] = geometryData;
+                m_objectLevelAccelerationStructureData[intersectIndex] = accelerationStructureData;
+            }
+
+            if (m_objectLevelAccelerationStructureGeometryData.ContainsKey(intersectIndex))
+            {
+                m_objectLevelAccelerationStructureGeometryData[intersectIndex].AddRange(accelGeometryData);
+                m_objectLevelAccelerationStructureGeometryDataCursor[intersectIndex] = m_objectLevelAccelerationStructureGeometryData[intersectIndex].Count;
+            }
+            else
+            {
+                m_objectLevelAccelerationStructureGeometryData[intersectIndex] = accelGeometryData;
+                m_objectLevelAccelerationStructureGeometryDataCursor[intersectIndex] = m_objectLevelAccelerationStructureGeometryData[intersectIndex].Count;
+            }
+
+            if (m_objectLevelAccelerationStructureGeometryMapping.ContainsKey(intersectIndex))
+            {
+                m_objectLevelAccelerationStructureGeometryMapping[intersectIndex].AddRange(accelGeometryMapping);
+                m_objectLevelAccelerationStructureGeometryMappingCursor[intersectIndex] = m_objectLevelAccelerationStructureGeometryMapping[intersectIndex].Count;
+            }
+            else
+            {
+                m_objectLevelAccelerationStructureGeometryMapping[intersectIndex] = accelGeometryMapping;
+                m_objectLevelAccelerationStructureGeometryMappingCursor[intersectIndex] = m_objectLevelAccelerationStructureGeometryMapping[intersectIndex].Count;
             }
         }
 
@@ -105,6 +141,10 @@ namespace OpenRT
             m_geometryCount.Clear();
             m_geometryStrides.Clear();
             m_objectLevelAccelerationStructureData.Clear();
+            m_objectLevelAccelerationStructureGeometryData.Clear();
+            m_objectLevelAccelerationStructureGeometryDataCursor.Clear();
+            m_objectLevelAccelerationStructureGeometryMapping.Clear();
+            m_objectLevelAccelerationStructureGeometryMappingCursor.Clear();
         }
 
         public void ClearAllLights()
@@ -187,6 +227,30 @@ namespace OpenRT
             }
         }
 
+        public int ObjectLevelAccGeoCursor(int intersectShaderIdx)
+        {
+            if (m_objectLevelAccelerationStructureGeometryDataCursor.ContainsKey(intersectShaderIdx))
+            {
+                return m_objectLevelAccelerationStructureGeometryDataCursor[intersectShaderIdx];
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        public int ObjectLevelAccGeoMapCursor(int intersectShaderIdx)
+        {
+            if (m_objectLevelAccelerationStructureGeometryMappingCursor.ContainsKey(intersectShaderIdx))
+            {
+                return m_objectLevelAccelerationStructureGeometryMappingCursor[intersectShaderIdx];
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
         public List<Primitive> Primitives
         {
             get
@@ -211,7 +275,23 @@ namespace OpenRT
             }
         }
 
-        public SortedList<ISIdx, List<float>> VaryingGeometry
+        public SortedList<ISIdx, List<float>> ObjectLevelAccelerationGeometries
+        {
+            get
+            {
+                return m_objectLevelAccelerationStructureGeometryData;
+            }
+        }
+
+        public SortedList<ISIdx, List<int>> ObjectLevelAccelerationGeometryMapping
+        {
+            get
+            {
+                return m_objectLevelAccelerationStructureGeometryMapping;
+            }
+        }
+
+        public SortedList<ISIdx, List<float>> ObjectLevelAccelerationStructures
         {
             get
             {

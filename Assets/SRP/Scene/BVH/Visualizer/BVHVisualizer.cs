@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace OpenRT
 {
@@ -10,15 +11,35 @@ namespace OpenRT
         [SerializeField] private int level;
         [SerializeField] private RTMeshBVH meshBVH;
         [SerializeField] private bool showTopLevelBVH = true;
+        [SerializeField] private bool refresh = false;
 
         public void OnDrawGizmos()
         {
-            if (meshBVH != null)
+            if (!isActiveAndEnabled)
             {
-                meshBVH.BuildBVHAndTriangleList(meshBVH.GetNormals(),
-                                                meshBVH.GetTrianglesVertexOrder(0),
-                                                meshBVH.GetVertices());
+                return;
             }
+
+            if (refresh)
+            {
+                refresh = false;
+
+                if (showTopLevelBVH)
+                {
+                    SceneParser.Instance.ParseScene(SceneManager.GetActiveScene());
+                }
+                else
+                {
+                    if (meshBVH != null)
+                    {
+                        meshBVH.BuildBVHAndTriangleList(meshBVH.GetNormals(),
+                                                        meshBVH.GetTrianglesVertexOrder(0),
+                                                        meshBVH.GetVertices());
+                    }
+                }
+
+            }
+
 
             BVHNode root = Root();
             if (root == null)
@@ -42,6 +63,7 @@ namespace OpenRT
                 {
                     Gizmos.color = Rainbow(depth);
                     Gizmos.DrawWireCube(node.bounding.center, node.bounding.size);
+                    Gizmos.DrawSphere(node.bounding.center, 0.1f);
                 }
                 if (node.left != null)
                 {
@@ -54,7 +76,6 @@ namespace OpenRT
                     depthQ.Enqueue(depth + 1);
                 }
             }
-
         }
 
         private Color Rainbow(int depth)
@@ -97,6 +118,11 @@ namespace OpenRT
             {
                 return meshBVH.GetRoot();
             }
+        }
+
+        public void Start()
+        {
+
         }
     }
 }

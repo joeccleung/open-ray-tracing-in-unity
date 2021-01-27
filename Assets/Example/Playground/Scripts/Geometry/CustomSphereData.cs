@@ -20,7 +20,7 @@ namespace Example {
             return 1;
         }
 
-        public List<float> GetGeometryInstanceData() {
+        public List<float> GetGeometryInstanceData(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset) {
             return new List<float> {
                 center.x,
                 center.y,

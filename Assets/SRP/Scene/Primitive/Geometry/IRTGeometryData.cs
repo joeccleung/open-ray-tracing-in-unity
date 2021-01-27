@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace OpenRT {
     public interface IRTGeometryData {
-        List<float> GetGeometryInstanceData();
+        List<float> GetGeometryInstanceData(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset);
         int GetCount();
         int GetStride();
     }

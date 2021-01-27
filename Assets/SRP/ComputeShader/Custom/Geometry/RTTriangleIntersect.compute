@@ -1,6 +1,7 @@
 ﻿#ifndef RTTriangle_Intersect_COMPUTE
 #define RTTriangle_Intersect_COMPUTE
 
+
 static const float EPSILON = 1.19e-07f;
 
 struct RTTriangle

@@ -37,7 +37,10 @@ namespace OpenRT.UnitTests.Primitive
             RTMeshBVHController controller = new RTMeshBVHController(actuator: actuator.Object);
 
             // Act
-            List<List<float>> triangles = controller.BuildBVHAndTriangleList(normals, trianglesVertexOrder, vertices);
+            List<List<float>> triangles = controller.BuildBVHAndTriangleList(0,
+                                                                             normals,
+                                                                             trianglesVertexOrder,
+                                                                             vertices);
 
             // Assert
             Assert.AreEqual(1, triangles.Count);    // There is only 1 triangle
@@ -100,7 +103,10 @@ namespace OpenRT.UnitTests.Primitive
             RTMeshBVHController controller = new RTMeshBVHController(actuator: actuator.Object);
 
             // Act
-            List<List<float>> triangles = controller.BuildBVHAndTriangleList(normals, trianglesVertexOrder, vert);
+            List<List<float>> triangles = controller.BuildBVHAndTriangleList(0,
+                                                                             normals,
+                                                                             trianglesVertexOrder,
+                                                                             vert);
 
             // Assert
             Assert.AreEqual(2, triangles.Count);    // There are 2 triangle

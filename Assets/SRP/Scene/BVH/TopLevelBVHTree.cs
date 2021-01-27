@@ -1,39 +1,48 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-namespace OpenRT {
+namespace OpenRT
+{
 
     /// <summary>
     /// Tree building algorithm from 
     /// Reference: https://github.com/CRCS-Graphics/2020.4.Kaihua.Hu.RealTime-RayTracer
     /// 
     /// </summary>
-    public class TopLevelBVH {
+    public class TopLevelBVH
+    {
 
         public const int HARD_LIMIT_MAX_DEPTH = 31;
-        public const int MIN_NUMBER_OF_GEO_IN_BOX = 0;
+        public const int MIN_NUMBER_OF_GEO_IN_BOX = 1;
+        public const int NO_MORE_CHILD_NODE = -1;
 
         private List<RTBoundingBox> m_boxes = new List<RTBoundingBox>();
         private BVHNode m_root;
 
-        public void AddBoundingBox(RTBoundingBox box) {
+        public void AddBoundingBox(RTBoundingBox box)
+        {
             m_boxes.Add(box);
         }
 
         // Debug
-        public List<RTBoundingBox> AllBoundingBoxes {
-            get {
+        public List<RTBoundingBox> AllBoundingBoxes
+        {
+            get
+            {
                 return m_boxes;
             }
         }
 
-        private BVHNode Build(List<RTBoundingBox> boxes, in int depth) {
+        private BVHNode Build(List<RTBoundingBox> boxes, in int depth)
+        {
 
             BVHNode rootNode = BVHNode.CombineAllBoxesAndPrimitives(boxes);
             char rootBoxLongestAxis = rootNode.bounding.longestAxis;
 
-            if (boxes.Count <= 1) {
+            if (boxes.Count <= 1)
+            {
                 return rootNode;
             }
 
@@ -42,86 +51,112 @@ namespace OpenRT {
 
             var cutting = CuttingPlane(boxes);
 
-            foreach (RTBoundingBox box in boxes) {
-                switch (rootBoxLongestAxis) {
+            foreach (RTBoundingBox box in boxes)
+            {
+                switch (rootBoxLongestAxis)
+                {
                     case 'x':
-                        if (cutting.x < box.center.x) {
+                        if (cutting.x < box.center.x)
+                        {
                             right.Add(box);
-                        } else {
+                        }
+                        else
+                        {
                             left.Add(box);
                         }
                         break;
 
                     case 'y':
-                        if (cutting.y < box.center.y) {
+                        if (cutting.y < box.center.y)
+                        {
                             right.Add(box);
-                        } else {
+                        }
+                        else
+                        {
                             left.Add(box);
                         }
                         break;
 
                     case 'z':
-                        if (cutting.z < box.center.z) {
+                        if (cutting.z < box.center.z)
+                        {
                             right.Add(box);
-                        } else {
+                        }
+                        else
+                        {
                             left.Add(box);
                         }
                         break;
                 }
             }
 
-            if (left.Count <= MIN_NUMBER_OF_GEO_IN_BOX
-                || right.Count <= MIN_NUMBER_OF_GEO_IN_BOX
-                || depth == HARD_LIMIT_MAX_DEPTH) {
-                // Can no longer bisect the bounding box, group them into one
-
-            } else {
-                // Continue bisect
-                rootNode.left = Build(left, depth + 1);
-                rootNode.right = Build(right, depth + 1);
+            if (left.Count == 0 || right.Count == 0)
+            {
+                // Bisect fail (e.g. all children aligned on the division plane), end the tree building
+                return rootNode;
             }
+            else
+            {
+                if (left.Count > MIN_NUMBER_OF_GEO_IN_BOX && depth < HARD_LIMIT_MAX_DEPTH)
+                {
+                    // Continue bisect
+                    rootNode.left = Build(left, depth + 1);
+                }
 
-            return rootNode;
+                if (right.Count > MIN_NUMBER_OF_GEO_IN_BOX && depth < HARD_LIMIT_MAX_DEPTH)
+                {
+                    // Continue bisect
+                    rootNode.right = Build(right, depth + 1);
+                }
+
+                return rootNode;
+            }
         }
 
-        public void Construct() {
+        public void Construct()
+        {
             m_root = Build(m_boxes, 0);
         }
 
-        public void Clear() {
+        public void Clear()
+        {
             m_boxes.Clear();
         }
 
-        private Vector3 CuttingPlane(List<RTBoundingBox> boxes) {
+        private Vector3 CuttingPlane(List<RTBoundingBox> boxes)
+        {
             Vector3 cp = new Vector3(0f, 0f, 0f);
             float div = 1.0f / boxes.Count;
-            foreach (var box in boxes) {
+            foreach (var box in boxes)
+            {
                 cp = cp + (box.center * div);
             }
             return cp;
         }
 
-        public void Flatten(in List<Primitive> scenePrimitives,
-            out List<RTBoundingBox> flatten,
-            out List<Primitive> reorderedPrimitives) {
-
+        public void Flatten(out List<RTBoundingBoxToGPU> flatten,
+                            out List<int> accelerationGeometryMapping)
+        {
             int id = 0;
 
-            flatten = new List<RTBoundingBox>();
-            reorderedPrimitives = new List<Primitive>();
+            flatten = new List<RTBoundingBoxToGPU>();
+            accelerationGeometryMapping = new List<int>();
 
             Queue<BVHNode> bfs = new Queue<BVHNode>();
 
             bfs.Enqueue(m_root);
-            while (bfs.Count > 0) {
+            while (bfs.Count > 0)
+            {
                 var node = bfs.Dequeue();
 
-                if (node.left != null) {
+                if (node.left != null)
+                {
                     id++;
                     node.leftID = id;
                     bfs.Enqueue(node.left);
                 }
-                if (node.right != null) {
+                if (node.right != null)
+                {
                     id++;
                     node.rightID = id;
                     bfs.Enqueue(node.right);
@@ -132,23 +167,32 @@ namespace OpenRT {
                     right: node.rightID
                 );
 
-                if (node.leftID == -1 && node.rightID == -1) {
+                if (node.leftID == NO_MORE_CHILD_NODE && node.rightID == NO_MORE_CHILD_NODE)
+                {
                     // Leaf Node
-                    box.primitiveBegin = reorderedPrimitives.Count;
-                    box.primitiveCount = node.children.Count;
-                    foreach (var child in node.children)
-                    {
-                        reorderedPrimitives.Add(scenePrimitives[child.primitiveBegin]);
-                    }
+                    // Left child index will be -1 to indicate leaf node
+                    // Right child index will be pointing to the Acceleration Structure - Geometry mapping index
+
+                    var geos = box.geoIndices.ToList();
+                    int numberOfPrimitiveInThisBox = geos.Count;
+                    accelerationGeometryMapping.Add(numberOfPrimitiveInThisBox);
+                    int cursorToThisPrimitiveList = accelerationGeometryMapping.Count - 1;
+                    accelerationGeometryMapping.AddRange(geos);
+
+                    // Secondly, we assign the index to the mapping collection of the same geometry to the right child index
+                    // Noted that, this is different from the final mapping collection, which contains ALL the geometries' mapping
+                    box.rightID = cursorToThisPrimitiveList;
                 }
 
-                flatten.Add(box); //TODO: Support overlapping bounding box and include all their primitives IDs
+                flatten.Add(new RTBoundingBoxToGPU(box)); //TODO: Support overlapping bounding box and include all their primitives IDs
 
             }
         }
 
-        public BVHNode Root {
-            get {
+        public BVHNode Root
+        {
+            get
+            {
                 return m_root;
             }
         }
