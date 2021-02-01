@@ -35,17 +35,22 @@ public class RTMeshBVHDemoGeometry : IRTMeshBVH
         meshFilter.mesh = deformedMesh;
     }
 
-    public override List<List<float>> BuildBVHAndTriangleList(int geoLocalToGlobalIndexOffset,
-                                                              int mappingLocalToGlobalIndexOffset)
+    public override void BuildBVHAndTriangleList(int geoLocalToGlobalIndexOffset,
+                                                 int mappingLocalToGlobalIndexOffset)
     {
-        return controller.BuildBVHAndTriangleList(geoLocalToGlobalIndexOffset,
-                                                  mappingLocalToGlobalIndexOffset,
-                                                  m_minNumberOfGeoPerBox);
+        controller.BuildBVHAndTriangleList(geoLocalToGlobalIndexOffset,
+                                           mappingLocalToGlobalIndexOffset,
+                                           m_minNumberOfGeoPerBox);
     }
 
-    public override List<List<float>> BuildBVHAndTriangleList(Vector3[] normals, int[] trianglesVertexOrder, Vector3[] vertices)
+    public override void BuildBVHAndTriangleList(Vector3[] normals,
+                                                 int[] trianglesVertexOrder,
+                                                 Vector3[] vertices)
     {
-        return controller.BuildBVHAndTriangleList(m_minNumberOfGeoPerBox, normals, trianglesVertexOrder, vertices);
+        controller.BuildBVHAndTriangleList(m_minNumberOfGeoPerBox,
+                                           normals,
+                                           trianglesVertexOrder,
+                                           vertices);
     }
 
     public override List<float> GetAccelerationStructureGeometryData(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset)

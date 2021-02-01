@@ -17,7 +17,7 @@ namespace OpenRT
         public override RTBoundingBox GetTopLevelBoundingBox(int assignedPrimitiveId)
         {
             //TODO: Optimization. Does not need to rebuild the bounding box if the mesh did not deform or transform
-            boundingBox.geoIndices = new List<int> { assignedPrimitiveId };
+            boundingBox.geoIndices = new HashSet<int> { assignedPrimitiveId };
             return boundingBox;
         }
 

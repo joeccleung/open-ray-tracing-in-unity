@@ -183,15 +183,14 @@ namespace OpenRT
                     // Right child index will be pointing to the Acceleration Structure - Geometry mapping index
 
                     // Firstly, we generate the mapping
-                    var geos = box.geoIndices.ToList();
-                    var triIdxCount = geos.Count;
+                    var geoIndicesIter = box.geoIndices.GetEnumerator();
 
-                    var offsetGeoIndices = new List<int>();
-                    geos.ForEach(e => offsetGeoIndices.Add(geoLocalToGlobalIndexOffset + e * TRIANGLE_STRIDE));
-
-                    List<int> accelerationGeometryMapping = new List<int>(triIdxCount + 1);
-                    accelerationGeometryMapping.Add(triIdxCount);
-                    accelerationGeometryMapping.AddRange(offsetGeoIndices);
+                    List<int> accelerationGeometryMapping = new List<int>();
+                    while (geoIndicesIter.MoveNext())
+                    {
+                        accelerationGeometryMapping.Add(geoLocalToGlobalIndexOffset + geoIndicesIter.Current * TRIANGLE_STRIDE);
+                    }
+                    accelerationGeometryMapping.Insert(0, accelerationGeometryMapping.Count);
 
                     accelerationGeometryMappingCollection.Add(accelerationGeometryMapping);
 

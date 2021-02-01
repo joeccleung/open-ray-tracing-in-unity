@@ -41,7 +41,7 @@ namespace Example
 
         public override RTBoundingBox GetTopLevelBoundingBox(int assignedPrimitiveId)
         {
-            boundingBox.geoIndices = new List<int> { assignedPrimitiveId };
+            boundingBox.geoIndices = new HashSet<int> { assignedPrimitiveId };
             return boundingBox;
         }
 

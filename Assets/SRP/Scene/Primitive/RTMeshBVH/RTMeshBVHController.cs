@@ -22,14 +22,14 @@ namespace OpenRT
         private List<List<float>> m_flattenBVH = new List<List<float>>();
         private bool m_meshDirty = true;
         private List<List<int>> m_accelerationGeometryMappingCollection = new List<List<int>>();
-        private List<List<float>> m_triangles = new List<List<float>>();
+        private List<float> m_triangles = new List<float>();
 
         public RTMeshBVHController(IActuator actuator)
         {
             m_actuator = actuator;
         }
 
-        public List<List<float>> BuildBVHAndTriangleList(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset, int minNumberOfGeoPerBox)
+        public void BuildBVHAndTriangleList(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset, int minNumberOfGeoPerBox)
         {
             _BuildFlatternBVHIfDirty(ref m_builder,
                                      geoLocalToGlobalIndexOffset,
@@ -42,8 +42,6 @@ namespace OpenRT
                                      ref m_flattenBVH,
                                      ref m_accelerationGeometryMappingCollection,
                                      ref m_triangles);
-
-            return m_triangles;
         }
 
         private void _BuildFlatternBVHIfDirty(ref RTMeshBVHBuilder builder,
@@ -56,7 +54,7 @@ namespace OpenRT
                                               Vector3[] vertices,
                                               ref List<List<float>> flattenBVH,
                                               ref List<List<int>> accelerationGeometryMappingCollection,
-                                              ref List<List<float>> triangles)
+                                              ref List<float> triangles)
         {
             if (meshDirty)
             {
@@ -102,7 +100,7 @@ namespace OpenRT
                                                                 Vector3[] normals,
                                                                 ref List<List<float>> flattenBVH,
                                                                 ref List<List<int>> accelerationGeometryMappingCollection,
-                                                                ref List<List<float>> triangles,
+                                                                ref List<float> triangles,
                                                                 in int[] trianglesVertexOrder,
                                                                 Vector3[] vertices)
         {
@@ -118,7 +116,7 @@ namespace OpenRT
             //                          ref accelerationGeometryMappingCollection,
             //                          ref triangles);
 
-            return SerializeTriangleList(triangles);
+            return triangles;
         }
 
         public List<int> GetAccelerationStructureGeometryMapping(int geoLocalToGlobalIndexOffset,
@@ -146,7 +144,7 @@ namespace OpenRT
                                                                  Vector3[] normals,
                                                                  ref List<List<float>> flattenBVH,
                                                                  ref List<List<int>> accelerationGeometryMappingCollection,
-                                                                 ref List<List<float>> triangles,
+                                                                 ref List<float> triangles,
                                                                  in int[] trianglesVertexOrder,
                                                                  Vector3[] vertices)
         {
@@ -188,7 +186,7 @@ namespace OpenRT
                                                    ref List<List<int>> accelerationGeometryMappingCollection,
                                                    int geoLocalToGlobalIndexOffset,
                                                    int mappingLocalToGlobalIndexOffset,
-                                                   ref List<List<float>> triangles,
+                                                   ref List<float> triangles,
                                                    in int[] trianglesVertexOrder,
                                                    Vector3[] vertices)
         {
@@ -214,7 +212,7 @@ namespace OpenRT
                                      rightID: -1,
                                      max: m_builder.Root.bounding.max,
                                      min: m_builder.Root.bounding.min,
-                                     geoIndices: new List<int>() { assignedPrimitiveId });    // There is exactly 1 primitive in this box
+                                     geoIndices: new HashSet<int> { assignedPrimitiveId });    // There is exactly 1 primitive in this box
         }
 
         public BVHNode GetRoot()
@@ -222,12 +220,12 @@ namespace OpenRT
             return m_builder.Root;
         }
 
-        private List<float> GenerateTriangle(Vector3 v0,
-                                             Vector3 v1,
-                                             Vector3 v2,
-                                             Vector3 n0,
-                                             Vector3 n1,
-                                             Vector3 n2)
+        private float[] GenerateTriangle(Vector3 v0,
+                                         Vector3 v1,
+                                         Vector3 v2,
+                                         Vector3 n0,
+                                         Vector3 n1,
+                                         Vector3 n2)
         {
             v0 = m_actuator.LocalToWorld(v0);
             v1 = m_actuator.LocalToWorld(v1);
@@ -238,7 +236,7 @@ namespace OpenRT
             float planeD = -1 * Vector3.Dot(normal, v0);
             float area = Vector3.Dot(normal, _cross);
 
-            return new List<float>() {
+            return new float[] {
                 v0.x,
                 v0.y,
                 v0.z,
@@ -262,10 +260,10 @@ namespace OpenRT
             };
         }
 
-        public List<List<float>> BuildBVHAndTriangleList(int minNumberOfGeoPerBox,
-                                                         Vector3[] normals,
-                                                         int[] trianglesVertexOrder,
-                                                         Vector3[] vertices)
+        public void BuildBVHAndTriangleList(int minNumberOfGeoPerBox,
+                                            Vector3[] normals,
+                                            int[] trianglesVertexOrder,
+                                            Vector3[] vertices)
         {
             _BuildBVHAndTriangleList(ref m_builder,
                                      minNumberOfGeoPerBox,
@@ -273,13 +271,12 @@ namespace OpenRT
                                      m_triangles,
                                      trianglesVertexOrder,
                                      vertices);
-            return m_triangles;
         }
 
         private void _BuildBVHAndTriangleList(ref RTMeshBVHBuilder builder,
                                               int minNumberOfGeoPerBox,
                                               Vector3[] normals,
-                                              List<List<float>> triangles,
+                                              List<float> triangles,
                                               int[] trianglesVertexOrder,
                                               Vector3[] vertices)
         {
@@ -295,12 +292,12 @@ namespace OpenRT
                                                                             m_actuator.LocalToWorld(vertices[trianglesVertexOrder[i + 2]]));
                 builder.AddBoundingBox(box);
 
-                triangles.Add(GenerateTriangle(vertices[trianglesVertexOrder[i]],
-                                               vertices[trianglesVertexOrder[i + 1]],
-                                               vertices[trianglesVertexOrder[i + 2]],
-                                               normals[trianglesVertexOrder[i]],
-                                               normals[trianglesVertexOrder[i + 1]],
-                                               normals[trianglesVertexOrder[i + 2]]));
+                triangles.AddRange(GenerateTriangle(vertices[trianglesVertexOrder[i]],
+                                                    vertices[trianglesVertexOrder[i + 1]],
+                                                    vertices[trianglesVertexOrder[i + 2]],
+                                                    normals[trianglesVertexOrder[i]],
+                                                    normals[trianglesVertexOrder[i + 1]],
+                                                    normals[trianglesVertexOrder[i + 2]]));
                 primitiveCounter++;
             }
 
@@ -329,19 +326,6 @@ namespace OpenRT
                 bvhLen
             };
             flattenBVH.ForEach(v =>
-            {
-                result.AddRange(v);
-            });
-
-            return result;
-        }
-
-        public static List<float> SerializeTriangleList(List<List<float>> reorderedPrimitives)
-        {
-            var result = new List<float>()
-            {
-            };
-            reorderedPrimitives.ForEach(v =>
             {
                 result.AddRange(v);
             });

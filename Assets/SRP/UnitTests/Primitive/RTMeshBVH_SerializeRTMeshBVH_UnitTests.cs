@@ -38,10 +38,10 @@ namespace OpenRT.UnitTests.Primitive
             List<List<int>> accelerationGeometryMappingCollection = new List<List<int>>();
 
             // Act
-            List<List<float>> triangles = controller.BuildBVHAndTriangleList(0,
-                                                                             normals,
-                                                                             trianglesVertexOrder,
-                                                                             vertices);
+            controller.BuildBVHAndTriangleList(0,
+                                               normals,
+                                               trianglesVertexOrder,
+                                               vertices);
             RTMeshBVHBuilder.Flatten(ref flatten,
                                      0,
                                      0,

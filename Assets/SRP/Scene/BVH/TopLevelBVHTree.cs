@@ -173,11 +173,12 @@ namespace OpenRT
                     // Left child index will be -1 to indicate leaf node
                     // Right child index will be pointing to the Acceleration Structure - Geometry mapping index
 
-                    var geos = box.geoIndices.ToList();
-                    int numberOfPrimitiveInThisBox = geos.Count;
-                    accelerationGeometryMapping.Add(numberOfPrimitiveInThisBox);
-                    int cursorToThisPrimitiveList = accelerationGeometryMapping.Count - 1;
-                    accelerationGeometryMapping.AddRange(geos);
+                    int cursorToThisPrimitiveList = accelerationGeometryMapping.Count;
+                    accelerationGeometryMapping.Add(0);
+                    accelerationGeometryMapping.AddRange(box.geoIndices);
+                    int cursorToEnd = accelerationGeometryMapping.Count;
+                    int numberOfPrimitiveInThisBox = cursorToEnd - 1 - cursorToThisPrimitiveList;
+                    accelerationGeometryMapping[cursorToThisPrimitiveList] = numberOfPrimitiveInThisBox;
 
                     // Secondly, we assign the index to the mapping collection of the same geometry to the right child index
                     // Noted that, this is different from the final mapping collection, which contains ALL the geometries' mapping

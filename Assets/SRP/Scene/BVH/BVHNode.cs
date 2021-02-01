@@ -4,8 +4,10 @@ using System.Linq;
 
 using UnityEngine;
 
-namespace OpenRT {
-    public class BVHNode {
+namespace OpenRT
+{
+    public class BVHNode
+    {
 
         public RTBoundingBox bounding;
 
@@ -15,7 +17,8 @@ namespace OpenRT {
         public int rightID = -1; // For referrencing in flatten array
         public List<RTBoundingBox> children;
 
-        public static BVHNode CombineAllBoxesAndPrimitives(List<RTBoundingBox> boxes) {
+        public static BVHNode CombineAllBoxesAndPrimitives(List<RTBoundingBox> boxes)
+        {
             BVHNode node = new BVHNode();
             node.bounding = CombineAllBox(boxes);
             node.children = boxes;
@@ -28,11 +31,13 @@ namespace OpenRT {
             var max = Vector3.Max(a.max, b.max);
             var min = Vector3.Min(a.min, b.min);
 
+            a.geoIndices.UnionWith(b.geoIndices); // The union of triangle indices from both bounding boxes
+
             return new RTBoundingBox(-1,
                                      -1,
                                      max,
                                      min,
-                                     a.geoIndices.Union(b.geoIndices));  // The union of triangle indices from both bounding boxes
+                                     a.geoIndices);
         }
 
         private static RTBoundingBox CombineAllBox(List<RTBoundingBox> boxes)

@@ -17,7 +17,7 @@ namespace OpenRT
         public int rightID; // For referrencing in flatten array
         public Vector3 max;
         public Vector3 min;
-        public IEnumerable<int> geoIndices;
+        public HashSet<int> geoIndices;
 
         /// <summary>
         /// Initialize the RTBoundingBox as empty content box.
@@ -33,12 +33,12 @@ namespace OpenRT
                     rightID: -1,
                     max: new Vector3(float.MinValue, float.MinValue, float.MinValue),
                     min: new Vector3(float.MaxValue, float.MaxValue, float.MaxValue),
-                    geoIndices: new int[0]
+                    geoIndices: new HashSet<int>()
                 );
             }
         }
 
-        public RTBoundingBox(int leftID, int rightID, Vector3 max, Vector3 min, IEnumerable<int> geoIndices)
+        public RTBoundingBox(int leftID, int rightID, Vector3 max, Vector3 min, HashSet<int> geoIndices)
         {
             this.leftID = leftID;
             this.rightID = rightID;
@@ -56,7 +56,7 @@ namespace OpenRT
             this.rightID = -1;
             this.max = max;
             this.min = min;
-            this.geoIndices = new List<int>();
+            this.geoIndices = new HashSet<int>();
         }
 
         public static void AddVerticesToBox(ref RTBoundingBox boundingBox, Vector3 vertex)
@@ -122,7 +122,7 @@ namespace OpenRT
                 rightID: -1,
                 max: new Vector3(float.MinValue, float.MinValue, float.MinValue),
                 min: new Vector3(float.MaxValue, float.MaxValue, float.MaxValue),
-                geoIndices: new int[1] { triangleIndex }
+                geoIndices: new HashSet<int>() { triangleIndex }
             );
             AddVerticesToBox(ref box, v0);
             AddVerticesToBox(ref box, v1);
@@ -138,7 +138,7 @@ namespace OpenRT
                 rightID: right,
                 max: this.max,
                 min: this.min,
-                geoIndices: new List<int>(this.geoIndices)
+                geoIndices: this.geoIndices
             );
         }
 
