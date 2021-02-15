@@ -32,6 +32,7 @@ namespace OpenRT
             var min = Vector3.Min(a.min, b.min);
 
             a.geoIndices.UnionWith(b.geoIndices); // The union of triangle indices from both bounding boxes
+                                                  // Use UnionWith instead of Linq Union to avoid creating a new IEnumerable
 
             return new RTBoundingBox(-1,
                                      -1,

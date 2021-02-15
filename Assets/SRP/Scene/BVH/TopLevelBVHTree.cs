@@ -15,7 +15,7 @@ namespace OpenRT
     {
 
         public const int HARD_LIMIT_MAX_DEPTH = 31;
-        public const int MIN_NUMBER_OF_GEO_IN_BOX = 1;
+        public const int MIN_NUMBER_OF_GEO_IN_BOX = 0;
         public const int NO_MORE_CHILD_NODE = -1;
 
         private List<RTBoundingBox> m_boxes = new List<RTBoundingBox>();

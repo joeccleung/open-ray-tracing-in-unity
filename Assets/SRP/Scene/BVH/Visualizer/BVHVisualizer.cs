@@ -116,7 +116,14 @@ namespace OpenRT
             }
             else
             {
-                return meshBVH.GetRoot();
+                if (meshBVH != null)
+                {
+                    return meshBVH.GetRoot();
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 

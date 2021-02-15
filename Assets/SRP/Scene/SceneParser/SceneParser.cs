@@ -108,15 +108,16 @@ namespace OpenRT
 
             foreach (var renderer in renderers)
             {
-                if (renderer.gameObject.activeSelf)
+                if (renderer.gameObject.activeInHierarchy)
                 {
                     RTMaterial material = renderer.material;
-                    if (!renderer.geometry.IsGeometryValid() || material == null)
+                    if (renderer.geometry == null || !renderer.geometry.IsGeometryValid() || material == null)
                     {
                         continue;
                     }
 
-                    int closestShaderIndex = 0;
+                    var closestShaderGUID = renderer.material.GetClosestHitGUID();
+                    int closestShaderIndex = CustomShaderDatabase.Instance.GUIDToShaderIndex(closestShaderGUID, EShaderType.ClosestHit);
                     var intersectShaderGUID = renderer.geometry.GetIntersectShaderGUID();
                     int intersectShaderIndex = CustomShaderDatabase.Instance.GUIDToShaderIndex(intersectShaderGUID, EShaderType.Intersect);
 
@@ -159,6 +160,8 @@ namespace OpenRT
                         intersectIndex: intersectShaderIndex
                     );
 
+                    int materialInstanceIndex = sceneParseResult.AddMaterial(material);
+
                     sceneParseResult.AddWorldToPrimitive(renderer.gameObject.transform.worldToLocalMatrix);
 
                     sceneParseResult.AddPrimitive(new Primitive(
@@ -166,13 +169,12 @@ namespace OpenRT
                         geometryInstanceBegin: startIndex,
                         geometryInstanceCount: renderer.geometry.GetCount(),
                         materialIndex: closestShaderIndex,
+                        materialInstanceIndex: materialInstanceIndex,
                         transformIndex: sceneParseResult.WorldToPrimitive.Count - 1
                     ));
 
                     var boxOfThisObject = renderer.geometry.GetTopLevelBoundingBox(assginedPrimitiveId: sceneParseResult.Primitives.Count - 1);
                     sceneParseResult.AddBoundingBox(boxOfThisObject);
-
-                    sceneParseResult.AddMaterial(material);
                 }
             }
         }

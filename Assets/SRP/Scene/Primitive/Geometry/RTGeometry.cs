@@ -9,6 +9,7 @@ namespace OpenRT
         [HideInInspector, SerializeField] private string intersectShaderGUID = string.Empty;
 
         protected RTBoundingBox boundingBox = RTBoundingBox.Empty;
+        protected bool prevFrameIsEnable = false;
 
         public virtual List<float> GetAccelerationStructureGeometryData(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset)
         {
