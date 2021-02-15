@@ -1,27 +1,83 @@
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace OpenRT
 {
     static class PipelineMaterialToBuffer
     {
-        public static void MaterialsToBuffer(in List<RTMaterial> materials,
+        public static void MaterialsToBuffer(List<ComputeBuffer> computeBuffersForMaterialProperties,
+                                             in SceneParseResult sceneParseResult,
                                              ref ComputeShader mainShader,
                                              ref SceneTextureCollection sceneTexture)
         {
-            foreach (var mat in materials)
+            foreach (var mat in sceneParseResult.Materials)
             {
                 MaterialToBuffer(material: mat,
                                  mainShader: ref mainShader,
-                                 sceneTexture: ref sceneTexture);
+                                 sceneTexture: ref sceneTexture,
+                                 sceneParseResult: sceneParseResult);
+            }
+
+            foreach (var materialColorList in sceneParseResult.m_materialsColorList)
+            {
+                ComputeBuffer cb = new ComputeBuffer(materialColorList.Value.Count, sizeof(float) * 4);
+                cb.SetData(materialColorList.Value);
+                mainShader.SetBuffer(0, materialColorList.Key, cb);
+                computeBuffersForMaterialProperties.Add(cb);
+                // Do NOT release the compute buffer before the actual draw commands is being sent
+            }
+
+            foreach (var materialIntList in sceneParseResult.m_materialsIntList)
+            {
+                ComputeBuffer cb = new ComputeBuffer(materialIntList.Value.Count, sizeof(int));
+                cb.SetData(materialIntList.Value);
+                mainShader.SetBuffer(0, materialIntList.Key, cb);
+                computeBuffersForMaterialProperties.Add(cb);
+                // Do NOT release the compute buffer before the actual draw commands is being sent
+            }
+
+            foreach (var materialFloatList in sceneParseResult.m_materialsFloatList)
+            {
+                ComputeBuffer cb = new ComputeBuffer(materialFloatList.Value.Count, sizeof(float));
+                cb.SetData(materialFloatList.Value);
+                mainShader.SetBuffer(0, materialFloatList.Key, cb);
+                computeBuffersForMaterialProperties.Add(cb);
+                // Do NOT release the compute buffer before the actual draw commands is being sent
+            }
+
+            foreach (var materialVector2List in sceneParseResult.m_materialsVector2List)
+            {
+                ComputeBuffer cb = new ComputeBuffer(materialVector2List.Value.Count, sizeof(float) * 2);
+                cb.SetData(materialVector2List.Value);
+                mainShader.SetBuffer(0, materialVector2List.Key, cb);
+                computeBuffersForMaterialProperties.Add(cb);
+                // Do NOT release the compute buffer before the actual draw commands is being sent
+            }
+
+            foreach (var materialVector3List in sceneParseResult.m_materialsVector3List)
+            {
+                ComputeBuffer cb = new ComputeBuffer(materialVector3List.Value.Count, sizeof(float) * 3);
+                cb.SetData(materialVector3List.Value);
+                mainShader.SetBuffer(0, materialVector3List.Key, cb);
+                computeBuffersForMaterialProperties.Add(cb);
+                // Do NOT release the compute buffer before the actual draw commands is being sent
+            }
+
+            foreach (var materialVector4List in sceneParseResult.m_materialsVector4List)
+            {
+                ComputeBuffer cb = new ComputeBuffer(materialVector4List.Value.Count, sizeof(float) * 4);
+                cb.SetData(materialVector4List.Value);
+                mainShader.SetBuffer(0, materialVector4List.Key, cb);
+                computeBuffersForMaterialProperties.Add(cb);
+                // Do NOT release the compute buffer before the actual draw commands is being sent
             }
         }
 
         public static void MaterialToBuffer(in RTMaterial material,
                                             ref SceneTextureCollection sceneTexture,
-                                            ref ComputeShader mainShader)
+                                            ref ComputeShader mainShader,
+                                            SceneParseResult sceneParseResult)
         {
             FieldInfo[] fieldsInMat = GetFieldsInMaterial(material); // TODO: Later we may want to decide to include both public fields and private fields
 
@@ -31,7 +87,7 @@ namespace OpenRT
 
                 var fieldValue = GetFieldValue(material, field);
 
-                ProcessField(ref mainShader, ref sceneTexture, fieldName, fieldValue);
+                ProcessField(ref mainShader, ref sceneTexture, fieldName, fieldValue, sceneParseResult);
             }
         }
 
@@ -57,32 +113,33 @@ namespace OpenRT
 
         private static void AssignFieldToMainShader(string fieldName,
                                                     in object fieldValue,
-                                                    ref ComputeShader mainShader)
+                                                    ref ComputeShader mainShader,
+                                                    SceneParseResult sceneParseResult)
         {
             switch (fieldValue)
             {
                 case Color c:
-                    mainShader.SetVector(name: fieldName, val: c);
+                    sceneParseResult.AddMaterialColor(name: fieldName, color: c);
                     break;
 
                 case int i:
-                    mainShader.SetInt(name: fieldName, val: i);
+                    sceneParseResult.AddMaterialInt(name: fieldName, value: i);
                     break;
 
                 case float f:
-                    mainShader.SetFloat(name: fieldName, val: f);
+                    sceneParseResult.AddMaterialFloat(name: fieldName, value: f);
                     break;
 
                 case Vector2 v2:
-                    mainShader.SetVector(name: fieldName, val: v2);
+                    sceneParseResult.AddMaterialVector2(name: fieldName, value: v2);
                     break;
 
                 case Vector3 v3:
-                    mainShader.SetVector(name: fieldName, val: v3);
+                    sceneParseResult.AddMaterialVector3(name: fieldName, value: v3);
                     break;
 
                 case Vector4 v4:
-                    mainShader.SetVector(name: fieldName, val: v4);
+                    sceneParseResult.AddMaterialVector4(name: fieldName, value: v4);
                     break;
             }
         }
@@ -96,7 +153,8 @@ namespace OpenRT
         private static void ProcessField(ref ComputeShader mainShader,
                                          ref SceneTextureCollection sceneTexture,
                                          string fieldName,
-                                         object fieldValue)
+                                         object fieldValue,
+                                         SceneParseResult sceneParseResult)
         {
             if (fieldValue == null)
             {
@@ -110,7 +168,7 @@ namespace OpenRT
             }
             else
             {
-                AssignFieldToMainShader(fieldName, fieldValue, ref mainShader);
+                AssignFieldToMainShader(fieldName, fieldValue, ref mainShader, sceneParseResult);
             }
         }
 

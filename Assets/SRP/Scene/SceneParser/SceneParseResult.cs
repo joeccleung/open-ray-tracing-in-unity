@@ -12,6 +12,13 @@ namespace OpenRT
         private Dictionary<ISIdx, int> m_geometryStrides;
         private List<RTLightInfo> m_lightInfos;
         private List<RTMaterial> m_materials;
+        private Dictionary<string, int> m_materialsInstancesCount;
+        public Dictionary<string, List<Color>> m_materialsColorList;
+        public Dictionary<string, List<float>> m_materialsFloatList;
+        public Dictionary<string, List<int>> m_materialsIntList;
+        public Dictionary<string, List<Vector2>> m_materialsVector2List;
+        public Dictionary<string, List<Vector3>> m_materialsVector3List;
+        public Dictionary<string, List<Vector4>> m_materialsVector4List;
         private List<Primitive> m_primitives;
         private List<Matrix4x4> m_worldToPrimitives;
         private TopLevelBVH topLevelBVH;
@@ -30,6 +37,13 @@ namespace OpenRT
             m_geometryTypeIsDirty = new Dictionary<ISIdx, bool>();
             m_lightInfos = new List<RTLightInfo>();
             m_materials = new List<RTMaterial>();
+            m_materialsInstancesCount = new Dictionary<string, int>();
+            m_materialsColorList = new Dictionary<string, List<Color>>();
+            m_materialsFloatList = new Dictionary<string, List<float>>();
+            m_materialsIntList = new Dictionary<string, List<int>>();
+            m_materialsVector2List = new Dictionary<string, List<Vector2>>();
+            m_materialsVector3List = new Dictionary<string, List<Vector3>>();
+            m_materialsVector4List = new Dictionary<string, List<Vector4>>();
             m_primitives = new List<Primitive>();
             m_worldToPrimitives = new List<Matrix4x4>();
             topLevelBVH = new TopLevelBVH();
@@ -78,9 +92,99 @@ namespace OpenRT
             m_lightInfos.Add(lightInfo);
         }
 
-        public void AddMaterial(RTMaterial material)
+        /// <summary>
+        /// Register the material from a geometry, return the material index of that geometry relative to the material group
+        /// </summary>
+        /// <param name="material"></param>
+        /// <returns></returns>
+        public int AddMaterial(RTMaterial material)
         {
+            var closestHitGUID = material.GetClosestHitGUID();
+
             m_materials.Add(material);
+            if (m_materialsInstancesCount.ContainsKey(closestHitGUID))
+            {
+                // Material already exists
+                m_materialsInstancesCount[closestHitGUID]++;
+            }
+            else
+            {
+                // First time
+                m_materialsInstancesCount.Add(closestHitGUID, 1);
+            }
+            return m_materialsInstancesCount[closestHitGUID] - 1; // 0 index based
+        }
+
+        public void AddMaterialColor(string name, Color color)
+        {
+            if (m_materialsColorList.ContainsKey(name))
+            {
+                m_materialsColorList[name].Add(color);
+            }
+            else
+            {
+                m_materialsColorList.Add(name, new List<Color>() { color });
+            }
+        }
+
+        public void AddMaterialFloat(string name, float value)
+        {
+            if (m_materialsFloatList.ContainsKey(name))
+            {
+                m_materialsFloatList[name].Add(value);
+            }
+            else
+            {
+                m_materialsFloatList.Add(name, new List<float>() { value });
+            }
+        }
+
+        public void AddMaterialInt(string name, int value)
+        {
+            if (m_materialsIntList.ContainsKey(name))
+            {
+                m_materialsIntList[name].Add(value);
+            }
+            else
+            {
+                m_materialsIntList.Add(name, new List<int>() { value });
+            }
+        }
+
+        public void AddMaterialVector2(string name, Vector2 value)
+        {
+            if (m_materialsVector2List.ContainsKey(name))
+            {
+                m_materialsVector2List[name].Add(value);
+            }
+            else
+            {
+                m_materialsVector2List.Add(name, new List<Vector2>() { value });
+            }
+        }
+
+        public void AddMaterialVector3(string name, Vector3 value)
+        {
+            if (m_materialsVector3List.ContainsKey(name))
+            {
+                m_materialsVector3List[name].Add(value);
+            }
+            else
+            {
+                m_materialsVector3List.Add(name, new List<Vector3>() { value });
+            }
+        }
+
+        public void AddMaterialVector4(string name, Vector4 value)
+        {
+            if (m_materialsVector4List.ContainsKey(name))
+            {
+                m_materialsVector4List[name].Add(value);
+            }
+            else
+            {
+                m_materialsVector4List.Add(name, new List<Vector4>() { value });
+            }
         }
 
         public void AddPrimitive(Primitive primitive)
@@ -145,6 +249,9 @@ namespace OpenRT
             m_objectLevelAccelerationStructureGeometryDataCursor.Clear();
             m_objectLevelAccelerationStructureGeometryMapping.Clear();
             m_objectLevelAccelerationStructureGeometryMappingCursor.Clear();
+
+            m_materials.Clear();
+            m_materialsInstancesCount.Clear();
         }
 
         public void ClearAllLights()
@@ -154,7 +261,12 @@ namespace OpenRT
 
         public void ClearAllMaterials()
         {
-            m_materials.Clear();
+            m_materialsColorList.Clear();
+            m_materialsFloatList.Clear();
+            m_materialsIntList.Clear();
+            m_materialsVector2List.Clear();
+            m_materialsVector3List.Clear();
+            m_materialsVector4List.Clear();
         }
 
         public void ClearAllPrimitives()

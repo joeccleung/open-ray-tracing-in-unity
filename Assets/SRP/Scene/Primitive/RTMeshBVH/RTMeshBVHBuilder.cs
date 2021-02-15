@@ -14,7 +14,7 @@ namespace OpenRT
     /// 
     public class RTMeshBVHBuilder
     {
-        public const int HARD_LIMIT_MAX_DEPTH = 1;
+        public const int HARD_LIMIT_MAX_DEPTH = 16;
         public const int TRIANGLE_STRIDE = 20;
 
         private List<RTBoundingBox> m_boxes = new List<RTBoundingBox>();

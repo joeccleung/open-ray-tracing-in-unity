@@ -1,7 +1,6 @@
 ﻿#ifndef GREEN_COMPUTE
 #define GREEN_COMPUTE
 
-float4 DemoMat_color;
 Texture2D<float4> DemoMat_main;
 
 // [shader(Green)]

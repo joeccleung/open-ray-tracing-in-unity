@@ -5,7 +5,8 @@ using OpenRT;
 
 public class TranslucentMat : RTMaterial
 {
-   [SerializeField] public float reflectivity = 0;
-   [SerializeField] public float secondaryRayEffect = 0;
-   [SerializeField] public float transparency = 0;
+    [SerializeField] public Color color = Color.white;
+    [SerializeField] public float reflectivity = 0;
+    [SerializeField] public float secondaryRayEffect = 0;
+    [SerializeField] public float transparency = 0;
 }

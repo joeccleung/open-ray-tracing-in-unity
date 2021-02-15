@@ -33,19 +33,19 @@ namespace OpenRT
         public override void BuildBVHAndTriangleList(int geoLocalToGlobalIndexOffset,
                                                      int mappingLocalToGlobalIndexOffset)
         {
-             controller.BuildBVHAndTriangleList(geoLocalToGlobalIndexOffset,
-                                                mappingLocalToGlobalIndexOffset,
-                                                m_minNumberOfGeoPerBox);
+            controller.BuildBVHAndTriangleList(geoLocalToGlobalIndexOffset,
+                                               mappingLocalToGlobalIndexOffset,
+                                               m_minNumberOfGeoPerBox);
         }
 
         public override void BuildBVHAndTriangleList(Vector3[] normals,
                                                      int[] trianglesVertexOrder,
                                                      Vector3[] vertices)
         {
-             controller.BuildBVHAndTriangleList(m_minNumberOfGeoPerBox,
-                                                normals,
-                                                trianglesVertexOrder,
-                                                vertices);
+            controller.BuildBVHAndTriangleList(m_minNumberOfGeoPerBox,
+                                               normals,
+                                               trianglesVertexOrder,
+                                               vertices);
         }
 
         public override List<float> GetAccelerationStructureGeometryData(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset)

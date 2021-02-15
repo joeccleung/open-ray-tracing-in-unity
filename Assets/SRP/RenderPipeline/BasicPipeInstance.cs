@@ -27,6 +27,7 @@ namespace OpenRT
         private SortedList<ISIdx, ObjectLevelAccelerationGeometryMappingCollectionBuffer> m_objectLevelAccGeoMapBuffers = new SortedList<ISIdx, ObjectLevelAccelerationGeometryMappingCollectionBuffer>();
         private PrimitiveBuffer m_primitiveBuffer;
         // -
+        private List<ComputeBuffer> m_computeBufferForMaterials;
         private SceneParseResult sceneParseResult;
         private TopLevelAccelerationBuffer m_topLevelAcc;
         private TopLevelAccelerationGeometryMappingCollectionBuffer m_topLevelAccGeoMap;
@@ -41,8 +42,8 @@ namespace OpenRT
 
         private ComputeShader m_mainShader;
         private CommandBuffer commands;
+        private ComputeBuffer empty;
         private int kIndex = 0;
-        private ComputeBuffer m_secondaryRaysBuffer;
 
         private ComputeBuffer m_lightInfoBuffer;
 
@@ -60,17 +61,11 @@ namespace OpenRT
 
             commands = new CommandBuffer { name = s_bufferName };
 
-            m_secondaryRaysBuffer = new ComputeBuffer(16, RTRay.Stride);
-            List<RTRay> secondaryRayPlaceholder = new List<RTRay>();
-            for (int i = 0; i < 16; i++)
-            {
-                secondaryRayPlaceholder.Add(new RTRay());
-            }
-            m_secondaryRaysBuffer.SetData(secondaryRayPlaceholder);
-
             kIndex = mainShader.FindKernel("CSMain");
 
             m_config = m_allConfig[0];
+
+            m_computeBufferForMaterials = new List<GeometryInstanceBuffer>();
         }
 
         protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras) // This is the function called every frame to draw on the screen
@@ -90,7 +85,9 @@ namespace OpenRT
                                     ref m_worldToPrimitiveBuffer,
                                     ref m_gemoetryInstanceBuffer,
                                     ref m_topLevelAccGeoMap);
-            RunLoadMaterialToBuffer(sceneParseResult, ref m_mainShader);
+            RunLoadMaterialToBuffer(m_computeBufferForMaterials,
+                                    sceneParseResult,
+                                    ref m_mainShader);
             RunLoadLightToBuffer(sceneParseResult, ref m_lightInfoBuffer);
             RunSetAmbientToMainShader(m_config);
             RunSetMissShader(m_mainShader, m_config);
@@ -117,15 +114,18 @@ namespace OpenRT
             RunBufferCleanUp();
         }
 
-        private void RunLoadMaterialToBuffer(SceneParseResult sceneParseResult,
+        private void RunLoadMaterialToBuffer(List<ComputeBuffer> computeShadersForMaterials,
+                                             SceneParseResult sceneParseResult,
                                              ref ComputeShader mainShader)
         {
+            sceneParseResult.ClearAllMaterials();
 
             SceneTextureCollection sceneTexture = new SceneTextureCollection();
 
-            PipelineMaterialToBuffer.MaterialsToBuffer(sceneParseResult.Materials,
-                ref mainShader,
-                ref sceneTexture);
+            PipelineMaterialToBuffer.MaterialsToBuffer(computeShadersForMaterials,
+                                                       sceneParseResult,
+                                                       ref mainShader,
+                                                       ref sceneTexture);
 
             PipelineMaterialToBuffer.LoadTextureToBuffer(sceneTexture, ref mainShader);
         }
@@ -292,7 +292,7 @@ namespace OpenRT
             m_mainShader.SetBuffer(kIndex, "_BVHTree", bvhBuffer);
             m_mainShader.SetBuffer(kIndex, "_TopLevelAccelerationGeometryMapping", topLevelAccGeoMapColBuffer);
 
-            ComputeBuffer empty = new ComputeBuffer(1, sizeof(float));
+            empty = new ComputeBuffer(1, sizeof(float));
 
             for (int intersectIdx = 0; intersectIdx < intersectShaderNames.Length; intersectIdx++)
             {
@@ -322,8 +322,6 @@ namespace OpenRT
             {
                 m_mainShader.SetBuffer(kIndex, $"_{intersectShaderNames[objectLvAccGeoMapBuffersIter.Current.Key]}GeometryMapping", objectLvAccGeoMapBuffersIter.Current.Value);
             }
-
-            empty.Release();
         }
 
         private void RunSetLightsToMainShader(int count, ref ComputeBuffer lightInfoBuffer)
@@ -352,6 +350,7 @@ namespace OpenRT
 
         private void RunBufferCleanUp()
         {
+            empty.Release();
             m_topLevelAcc.Release();
             m_topLevelAccGeoMap.Release();
             m_primitiveBuffer.Release();
@@ -372,6 +371,12 @@ namespace OpenRT
             }
             m_objectLevelAccGeoMapBuffers.Clear();
             m_lightInfoBuffer?.Release();
+
+            foreach (var materialBuffers in m_computeBufferForMaterials)
+            {
+                materialBuffers.Release();
+            }
+            m_computeBufferForMaterials.Clear();
         }
 
         private void RunSendTextureToUnity(CommandBuffer commands, RenderTexture targeTexture,
