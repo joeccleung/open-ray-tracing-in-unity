@@ -1,6 +1,8 @@
 {
     "name": "OpenRT.Scene.Primitive.RTMeshBVH.Editor",
     "references": [
+        "GUID:f65cbe7679c34604bbd9f38ee9eeb45b",
+        "GUID:b8a7001ed44d49f43b73c2e2f48bf148",
         "GUID:cf5e4a1c002324843aeca706ce21efff",
         "GUID:3777857fbc557774fa9db131d5f1e78c"
     ],

@@ -105,6 +105,12 @@ namespace OpenRT
 
         public override bool IsDirty()
         {
+            if (prevFrameIsEnable != gameObject.activeInHierarchy)
+            {
+                prevFrameIsEnable = gameObject.activeInHierarchy;
+                return true;
+            }
+
             if (transform.hasChanged)
             {
                 transform.hasChanged = false;

@@ -47,7 +47,14 @@ namespace Example
 
         public override bool IsDirty()
         {
-            if (transform.hasChanged) {
+            if (prevFrameIsEnable != gameObject.activeInHierarchy)
+            {
+                prevFrameIsEnable = gameObject.activeInHierarchy;
+                return true;
+            }
+
+            if (transform.hasChanged)
+            {
                 transform.hasChanged = false;
                 return true;
             }
