@@ -18,52 +18,214 @@ namespace OpenRT
         }
 
         private IActuator m_actuator;
-        private RTMeshBVHBuilder builder = new RTMeshBVHBuilder();
-        private bool meshDirty = true;
-        private List<List<float>> triangles = new List<List<float>>();
+        private RTMeshBVHBuilder m_builder = new RTMeshBVHBuilder();
+        private List<List<float>> m_flattenBVH = new List<List<float>>();
+        private bool m_meshDirty = true;
+        private List<List<int>> m_accelerationGeometryMappingCollection = new List<List<int>>();
+        private List<float> m_triangles = new List<float>();
 
         public RTMeshBVHController(IActuator actuator)
         {
             m_actuator = actuator;
         }
 
-        public List<float> GetGeometryInstanceData()
+        public void BuildBVHAndTriangleList(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset, int minNumberOfGeoPerBox)
         {
-            return GetGeometryInstanceData(normals: m_actuator.GetNormals(),
+            _BuildFlatternBVHIfDirty(ref m_builder,
+                                     geoLocalToGlobalIndexOffset,
+                                     mappingLocalToGlobalIndexOffset,
+                                     ref m_meshDirty,
+                                     minNumberOfGeoPerBox,
+                                     m_actuator.GetNormals(),
+                                     m_actuator.GetTrianglesVertexOrder(0),
+                                     m_actuator.GetVertices(),
+                                     ref m_flattenBVH,
+                                     ref m_accelerationGeometryMappingCollection,
+                                     ref m_triangles);
+        }
+
+        private void _BuildFlatternBVHIfDirty(ref RTMeshBVHBuilder builder,
+                                              int geoLocalToGlobalIndexOffset,
+                                              int mappingLocalToGlobalIndexOffset,
+                                              ref bool meshDirty,
+                                              int minNumberOfGeoPerBox,
+                                              Vector3[] normals,
+                                              in int[] trianglesVertexOrder,
+                                              Vector3[] vertices,
+                                              ref List<List<float>> flattenBVH,
+                                              ref List<List<int>> accelerationGeometryMappingCollection,
+                                              ref List<float> triangles)
+        {
+            if (meshDirty)
+            {
+                // meshDirty = false;   // Disable dirty flag
+
+                _BuildBVHAndTriangleList(ref builder,
+                                         minNumberOfGeoPerBox,
+                                         normals,
+                                         triangles,
+                                         trianglesVertexOrder,
+                                         vertices);
+
+                RTMeshBVHBuilder.Flatten(ref flattenBVH,
+                                         geoLocalToGlobalIndexOffset,
+                                         mappingLocalToGlobalIndexOffset,
+                                         ref accelerationGeometryMappingCollection,
+                                         builder.Root);
+            }
+        }
+
+        public List<float> GetAccelerationStructureGeometryData(int geoLocalToGlobalIndexOffset,
+                                                                int mappingLocalToGlobalIndexOffset,
+                                                                int minNumberOfGeoPerBox)
+        {
+            return GetAccelerationStructureGeometryData(builder: ref m_builder,
+                                                        geoLocalToGlobalIndexOffset: geoLocalToGlobalIndexOffset,
+                                                        mappingLocalToGlobalIndexOffset: mappingLocalToGlobalIndexOffset,
+                                                        meshDirty: ref m_meshDirty,
+                                                        minNumberOfGeoPerBox: minNumberOfGeoPerBox,
+                                                        normals: m_actuator.GetNormals(),
+                                                        flattenBVH: ref m_flattenBVH,
+                                                        accelerationGeometryMappingCollection: ref m_accelerationGeometryMappingCollection,
+                                                        triangles: ref m_triangles,
+                                                        trianglesVertexOrder: m_actuator.GetTrianglesVertexOrder(0),
+                                                        vertices: m_actuator.GetVertices());
+        }
+
+        public List<float> GetAccelerationStructureGeometryData(ref RTMeshBVHBuilder builder,
+                                                                int geoLocalToGlobalIndexOffset,
+                                                                int mappingLocalToGlobalIndexOffset,
+                                                                ref bool meshDirty,
+                                                                int minNumberOfGeoPerBox,
+                                                                Vector3[] normals,
+                                                                ref List<List<float>> flattenBVH,
+                                                                ref List<List<int>> accelerationGeometryMappingCollection,
+                                                                ref List<float> triangles,
+                                                                in int[] trianglesVertexOrder,
+                                                                Vector3[] vertices)
+        {
+            // _BuildFlatternBVHIfDirty(ref builder,
+            //                          geoLocalToGlobalIndexOffset,
+            //                          mappingLocalToGlobalIndexOffset,
+            //                          ref meshDirty,
+            //                          minNumberOfGeoPerBox,
+            //                          normals,
+            //                          trianglesVertexOrder,
+            //                          vertices,
+            //                          ref flattenBVH,
+            //                          ref accelerationGeometryMappingCollection,
+            //                          ref triangles);
+
+            return triangles;
+        }
+
+        public List<int> GetAccelerationStructureGeometryMapping(int geoLocalToGlobalIndexOffset,
+                                                                 int mappingLocalToGlobalIndexOffset,
+                                                                 int minNumberOfGeoPerBox)
+        {
+            return GetAccelerationStructureGeometryMapping(builder: ref m_builder,
+                                                           geoLocalToGlobalIndexOffset: geoLocalToGlobalIndexOffset,
+                                                           mappingLocalToGlobalIndexOffset: mappingLocalToGlobalIndexOffset,
+                                                           meshDirty: ref m_meshDirty,
+                                                           minNumberOfGeoPerBox: minNumberOfGeoPerBox,
+                                                           normals: m_actuator.GetNormals(),
+                                                           flattenBVH: ref m_flattenBVH,
+                                                           accelerationGeometryMappingCollection: ref m_accelerationGeometryMappingCollection,
+                                                           triangles: ref m_triangles,
+                                                           trianglesVertexOrder: m_actuator.GetTrianglesVertexOrder(0),
+                                                           vertices: m_actuator.GetVertices());
+        }
+
+        public List<int> GetAccelerationStructureGeometryMapping(ref RTMeshBVHBuilder builder,
+                                                                 int geoLocalToGlobalIndexOffset,
+                                                                 int mappingLocalToGlobalIndexOffset,
+                                                                 ref bool meshDirty,
+                                                                 int minNumberOfGeoPerBox,
+                                                                 Vector3[] normals,
+                                                                 ref List<List<float>> flattenBVH,
+                                                                 ref List<List<int>> accelerationGeometryMappingCollection,
+                                                                 ref List<float> triangles,
+                                                                 in int[] trianglesVertexOrder,
+                                                                 Vector3[] vertices)
+        {
+            // _BuildFlatternBVHIfDirty(ref builder,
+            //                          geoLocalToGlobalIndexOffset,
+            //                          mappingLocalToGlobalIndexOffset,
+            //                          ref meshDirty,
+            //                          minNumberOfGeoPerBox,
+            //                          normals,
+            //                          trianglesVertexOrder,
+            //                          vertices,
+            //                          ref flattenBVH,
+            //                          ref accelerationGeometryMappingCollection,
+            //                          ref triangles);
+
+            return SerializeObjectLevelGeoMap(accelerationGeometryMappingCollection);
+        }
+
+        public List<float> GetGeometryInstanceData(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset, int minNumberOfGeoPerBox)
+        {
+            return GetGeometryInstanceData(ref m_builder,
+                                           ref m_meshDirty,
+                                           minNumberOfGeoPerBox: minNumberOfGeoPerBox,
+                                           normals: m_actuator.GetNormals(),
+                                           flattenBVH: ref m_flattenBVH,
+                                           accelerationGeometryMappingCollection: ref m_accelerationGeometryMappingCollection,
+                                           geoLocalToGlobalIndexOffset: geoLocalToGlobalIndexOffset,
+                                           mappingLocalToGlobalIndexOffset: mappingLocalToGlobalIndexOffset,
+                                           triangles: ref m_triangles,
                                            trianglesVertexOrder: m_actuator.GetTrianglesVertexOrder(0),
                                            vertices: m_actuator.GetVertices());
         }
 
-        public RTBoundingBox GetBoundingBox()
+        public List<float> GetGeometryInstanceData(ref RTMeshBVHBuilder builder,
+                                                   ref bool meshDirty,
+                                                   int minNumberOfGeoPerBox,
+                                                   Vector3[] normals,
+                                                   ref List<List<float>> flattenBVH,
+                                                   ref List<List<int>> accelerationGeometryMappingCollection,
+                                                   int geoLocalToGlobalIndexOffset,
+                                                   int mappingLocalToGlobalIndexOffset,
+                                                   ref List<float> triangles,
+                                                   in int[] trianglesVertexOrder,
+                                                   Vector3[] vertices)
         {
-            //TODO: Optimization. Does not need to rebuild the bounding box if the mesh did not deform or transform
-            return builder.Root.bounding;
+            // _BuildFlatternBVHIfDirty(ref builder,
+            //                          geoLocalToGlobalIndexOffset: geoLocalToGlobalIndexOffset,
+            //                          mappingLocalToGlobalIndexOffset: mappingLocalToGlobalIndexOffset,
+            //                          ref meshDirty,
+            //                          minNumberOfGeoPerBox,
+            //                          normals,
+            //                          trianglesVertexOrder,
+            //                          vertices,
+            //                          ref flattenBVH,
+            //                          ref accelerationGeometryMappingCollection,
+            //                          ref triangles);
+
+            return SerializeRTMeshBVH(flattenBVH);
         }
 
-        public List<float> GetGeometryInstanceData(Vector3[] normals, in int[] trianglesVertexOrder, Vector3[] vertices)
+        public RTBoundingBox GetTopLevelBoundingBox(int assignedPrimitiveId)
         {
-            List<List<float>> triangles = BuildBVHAndTriangleList(normals, trianglesVertexOrder, vertices);
-
-            RTMeshBVHBuilder.Flatten(triangles,
-                                     out List<List<float>> flattenBVH,
-                                     out List<List<float>> reorderedPrimitives,
-                                     builder.Root);
-
-            return SerializeRTMeshBVH(flattenBVH, reorderedPrimitives);
+            // Top Level Bounding Box is the box that capsulate the entire Game Object / geometry, not individual geometries (triangles)
+            return new RTBoundingBox(leftID: -1,
+                                     rightID: -1,
+                                     max: m_builder.Root.bounding.max,
+                                     min: m_builder.Root.bounding.min,
+                                     geoIndices: new HashSet<int> { assignedPrimitiveId });    // There is exactly 1 primitive in this box
         }
 
         public BVHNode GetRoot()
         {
-            return builder.Root;
+            return m_builder.Root;
         }
 
-
-        private List<float> GenerateTriangle(Vector3 v0,
-                                             Vector3 v1,
-                                             Vector3 v2,
-                                             Vector3 n0,
-                                             Vector3 n1,
-                                             Vector3 n2)
+        private float[] GenerateTriangle(Vector3 v0,
+                                         Vector3 v1,
+                                         Vector3 v2,
+                                         Vector3 n0,
+                                         Vector3 n1,
+                                         Vector3 n2)
         {
             v0 = m_actuator.LocalToWorld(v0);
             v1 = m_actuator.LocalToWorld(v1);
@@ -74,7 +236,7 @@ namespace OpenRT
             float planeD = -1 * Vector3.Dot(normal, v0);
             float area = Vector3.Dot(normal, _cross);
 
-            return new List<float>() {
+            return new float[] {
                 v0.x,
                 v0.y,
                 v0.z,
@@ -98,63 +260,72 @@ namespace OpenRT
             };
         }
 
-        public List<List<float>> BuildBVHAndTriangleList(Vector3[] normals, int[] trianglesVertexOrder, Vector3[] vertices)
+        public void BuildBVHAndTriangleList(int minNumberOfGeoPerBox,
+                                            Vector3[] normals,
+                                            int[] trianglesVertexOrder,
+                                            Vector3[] vertices)
         {
-            _BuildBVHAndTriangleList(builder, ref meshDirty, normals, triangles, trianglesVertexOrder, vertices);
-            return triangles;
+            _BuildBVHAndTriangleList(ref m_builder,
+                                     minNumberOfGeoPerBox,
+                                     normals,
+                                     m_triangles,
+                                     trianglesVertexOrder,
+                                     vertices);
         }
 
-        public void _BuildBVHAndTriangleList(RTMeshBVHBuilder builder,
-                                             ref bool meshDirty,
-                                             Vector3[] normals,
-                                             List<List<float>> triangles,
-                                             int[] trianglesVertexOrder,
-                                             Vector3[] vertices)
+        private void _BuildBVHAndTriangleList(ref RTMeshBVHBuilder builder,
+                                              int minNumberOfGeoPerBox,
+                                              Vector3[] normals,
+                                              List<float> triangles,
+                                              int[] trianglesVertexOrder,
+                                              Vector3[] vertices)
         {
-            if (meshDirty)
+            int primitiveCounter = 0;
+            builder.Clear();
+            triangles.Clear();
+
+            for (int i = 0; i < trianglesVertexOrder.Length; i += 3)
             {
-                meshDirty = false;
+                RTBoundingBox box = RTBoundingBox.RTBoundingBoxFromTriangle(primitiveCounter,
+                                                                            m_actuator.LocalToWorld(vertices[trianglesVertexOrder[i]]),
+                                                                            m_actuator.LocalToWorld(vertices[trianglesVertexOrder[i + 1]]),
+                                                                            m_actuator.LocalToWorld(vertices[trianglesVertexOrder[i + 2]]));
+                builder.AddBoundingBox(box);
 
-                int primitiveCounter = 0;
-                triangles.Clear();
-                builder.Clear();
-
-                for (int i = 0; i < trianglesVertexOrder.Length; i += 3)
-                {
-                    RTBoundingBox box = RTBoundingBox.RTBoundingBoxFromTriangle(primitiveCounter,
-                                                                                m_actuator.LocalToWorld(vertices[trianglesVertexOrder[i]]),
-                                                                                m_actuator.LocalToWorld(vertices[trianglesVertexOrder[i + 1]]),
-                                                                                m_actuator.LocalToWorld(vertices[trianglesVertexOrder[i + 2]]));
-                    builder.AddBoundingBox(box);
-
-                    triangles.Add(GenerateTriangle(vertices[trianglesVertexOrder[i]],
-                                                   vertices[trianglesVertexOrder[i + 1]],
-                                                   vertices[trianglesVertexOrder[i + 2]],
-                                                   normals[trianglesVertexOrder[i]],
-                                                   normals[trianglesVertexOrder[i + 1]],
-                                                   normals[trianglesVertexOrder[i + 2]]));
-
-                    primitiveCounter++;
-                }
-
-                builder.Construct();
+                triangles.AddRange(GenerateTriangle(vertices[trianglesVertexOrder[i]],
+                                                    vertices[trianglesVertexOrder[i + 1]],
+                                                    vertices[trianglesVertexOrder[i + 2]],
+                                                    normals[trianglesVertexOrder[i]],
+                                                    normals[trianglesVertexOrder[i + 1]],
+                                                    normals[trianglesVertexOrder[i + 2]]));
+                primitiveCounter++;
             }
 
+            builder.Construct(minNumberOfGeoPerBox);
         }
 
-        public static List<float> SerializeRTMeshBVH(List<List<float>> flattenBVH, List<List<float>> reorderedPrimitives)
+        public void SetMesh()
         {
-            var bvhLen = flattenBVH.Count * RTBoundingBox.NUMBER_OF_FLOAT;
-            var triLen = reorderedPrimitives.Count * FLOAT_PER_TRIANGLE;
-            var result = new List<float>(){
-                bvhLen,
-                triLen
-            };
-            flattenBVH.ForEach(v =>
+            m_meshDirty = true;
+        }
+
+        public static List<int> SerializeObjectLevelGeoMap(List<List<int>> geoMapCol)
+        {
+            var result = new List<int>();
+            geoMapCol.ForEach(v =>
             {
                 result.AddRange(v);
             });
-            reorderedPrimitives.ForEach(v =>
+            return result;
+        }
+
+        public static List<float> SerializeRTMeshBVH(List<List<float>> flattenBVH)
+        {
+            var bvhLen = flattenBVH.Count * RTBoundingBox.NUMBER_OF_FLOAT;
+            var result = new List<float>(){
+                bvhLen
+            };
+            flattenBVH.ForEach(v =>
             {
                 result.AddRange(v);
             });

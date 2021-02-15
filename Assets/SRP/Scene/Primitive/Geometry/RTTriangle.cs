@@ -21,7 +21,7 @@ namespace OpenRT
         public int isDoubleSide;
         public int materialIndex;
 
-        public List<float> GetGeometryInstanceData()
+        public List<float> GetGeometryInstanceData(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset)
         {
             return new List<float> {
                 vert0.x,

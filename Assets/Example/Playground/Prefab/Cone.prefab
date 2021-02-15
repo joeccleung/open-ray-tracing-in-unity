@@ -48,6 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   intersectShaderGUID: 47924f01-597c-4371-8442-d375d585e790
   m_mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  m_refreshMesh: 0
 --- !u!114 &3633872939945302331
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -64,6 +65,7 @@ MonoBehaviour:
   level: 0
   meshBVH: {fileID: 6453797448537165940}
   showTopLevelBVH: 0
+  refresh: 0
 --- !u!114 &5073630684321478776
 MonoBehaviour:
   m_ObjectHideFlags: 0

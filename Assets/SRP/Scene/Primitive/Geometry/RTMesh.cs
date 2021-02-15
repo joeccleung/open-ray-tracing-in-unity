@@ -6,19 +6,22 @@ namespace OpenRT
 {
     public class RTMesh : RTGeometry
     {
+        public const int TRIANGLE_STRIDE = 20;
 
         [SerializeField] Mesh m_mesh;
+        private int m_meshHashCode = 0;
 
         private List<float> tris = new List<float>();
         private int numberOfTriangles = 0;
 
-        public override RTBoundingBox GetBoundingBox()
+        public override RTBoundingBox GetTopLevelBoundingBox(int assignedPrimitiveId)
         {
             //TODO: Optimization. Does not need to rebuild the bounding box if the mesh did not deform or transform
+            boundingBox.geoIndices = new HashSet<int> { assignedPrimitiveId };
             return boundingBox;
         }
 
-        public override List<float> GetGeometryInstanceData()
+        public override List<float> GetGeometryInstanceData(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset)
         {
             //TODO: Cache the mesh if it does not deform
 
@@ -27,8 +30,8 @@ namespace OpenRT
             Vector3[] vertices = m_mesh.vertices;
             Vector3[] normals = m_mesh.normals;
 
-            ResetBoundingBox();
-
+            boundingBox.min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+            boundingBox.max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
             foreach (var vertex in vertices)
             {
                 AddVertices(ref boundingBox, vertex);
@@ -52,7 +55,7 @@ namespace OpenRT
 
         public override int GetStride()
         {
-            return sizeof(float) * 20;
+            return sizeof(float) * TRIANGLE_STRIDE;
         }
 
         public override int GetCount()
@@ -110,6 +113,29 @@ namespace OpenRT
         public override Vector3[] GetNormals()
         {
             return m_mesh.normals;
+        }
+
+        public override bool IsDirty()
+        {
+            if (transform.hasChanged)
+            {
+                transform.hasChanged = false;
+                return true;
+            }
+
+            int _curHashCode = m_mesh.GetHashCode();
+            if (m_meshHashCode != _curHashCode)
+            {
+                m_meshHashCode = _curHashCode;
+                return true;
+            }
+
+            return false;
+        }
+        
+        public override bool IsGeometryValid()
+        {
+            return m_mesh != null;
         }
     }
 }

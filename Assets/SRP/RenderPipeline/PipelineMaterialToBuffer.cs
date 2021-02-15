@@ -3,13 +3,16 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace OpenRT {
-    static class PipelineMaterialToBuffer {
-
+namespace OpenRT
+{
+    static class PipelineMaterialToBuffer
+    {
         public static void MaterialsToBuffer(in List<RTMaterial> materials,
                                              ref ComputeShader mainShader,
-                                             ref SceneTextureCollection sceneTexture) {
-            foreach (var mat in materials) {
+                                             ref SceneTextureCollection sceneTexture)
+        {
+            foreach (var mat in materials)
+            {
                 MaterialToBuffer(material: mat,
                                  mainShader: ref mainShader,
                                  sceneTexture: ref sceneTexture);
@@ -18,11 +21,12 @@ namespace OpenRT {
 
         public static void MaterialToBuffer(in RTMaterial material,
                                             ref SceneTextureCollection sceneTexture,
-                                            ref ComputeShader mainShader) {
-
+                                            ref ComputeShader mainShader)
+        {
             FieldInfo[] fieldsInMat = GetFieldsInMaterial(material); // TODO: Later we may want to decide to include both public fields and private fields
 
-            foreach (var field in fieldsInMat) {
+            foreach (var field in fieldsInMat)
+            {
                 string fieldName = GetFieldName(matName: GetMatName(material), field);
 
                 var fieldValue = GetFieldValue(material, field);
@@ -31,26 +35,32 @@ namespace OpenRT {
             }
         }
 
-        private static FieldInfo[] GetFieldsInMaterial(RTMaterial material) {
+        private static FieldInfo[] GetFieldsInMaterial(RTMaterial material)
+        {
             return material.GetType().GetFields();
         }
 
-        private static string GetFieldName(string matName, FieldInfo field) {
+        private static string GetFieldName(string matName, FieldInfo field)
+        {
             return $"{matName}_{field.Name}";
         }
 
-        private static object GetFieldValue(RTMaterial material, FieldInfo field) {
+        private static object GetFieldValue(RTMaterial material, FieldInfo field)
+        {
             return field.GetValue(material);
         }
 
-        private static string GetMatName(RTMaterial material) {
+        private static string GetMatName(RTMaterial material)
+        {
             return material.GetType().Name;
         }
 
         private static void AssignFieldToMainShader(string fieldName,
                                                     in object fieldValue,
-                                                    ref ComputeShader mainShader) {
-            switch (fieldValue) {
+                                                    ref ComputeShader mainShader)
+        {
+            switch (fieldValue)
+            {
                 case Color c:
                     mainShader.SetVector(name: fieldName, val: c);
                     break;
@@ -78,22 +88,28 @@ namespace OpenRT {
         }
 
         public static void LoadTextureToBuffer(in SceneTextureCollection sceneTexture,
-                                               ref ComputeShader mainShader) {
-            
+                                               ref ComputeShader mainShader)
+        {
+
         }
 
         private static void ProcessField(ref ComputeShader mainShader,
                                          ref SceneTextureCollection sceneTexture,
                                          string fieldName,
-                                         object fieldValue) {
-            if (fieldValue == null) {
+                                         object fieldValue)
+        {
+            if (fieldValue == null)
+            {
                 return;
             }
 
             // TODO: Investigate how to only send the texture once to GPU if the texture is the same
-            if (fieldValue is Texture2D tex) {
+            if (fieldValue is Texture2D tex)
+            {
                 RegisterTexture(fieldName, tex, ref sceneTexture, ref mainShader);
-            } else {
+            }
+            else
+            {
                 AssignFieldToMainShader(fieldName, fieldValue, ref mainShader);
             }
         }
@@ -101,9 +117,10 @@ namespace OpenRT {
         private static void RegisterTexture(string fieldName,
                                             Texture2D texture,
                                             ref SceneTextureCollection texturesCol,
-                                            ref ComputeShader mainShader) {
-                                                
-            mainShader.SetTexture(mainShader.FindKernel("CSMain"), fieldName, texture != null ? texture: Texture2D.whiteTexture);
+                                            ref ComputeShader mainShader)
+        {
+
+            mainShader.SetTexture(mainShader.FindKernel("CSMain"), fieldName, texture != null ? texture : Texture2D.whiteTexture);
 
             // texturesCol.AddTexture(fieldName, texture);
         }

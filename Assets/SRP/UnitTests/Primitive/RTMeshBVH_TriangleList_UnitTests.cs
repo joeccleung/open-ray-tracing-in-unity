@@ -37,11 +37,13 @@ namespace OpenRT.UnitTests.Primitive
             RTMeshBVHController controller = new RTMeshBVHController(actuator: actuator.Object);
 
             // Act
-            List<List<float>> triangles = controller.BuildBVHAndTriangleList(normals, trianglesVertexOrder, vertices);
+            controller.BuildBVHAndTriangleList(0,
+                                               normals,
+                                               trianglesVertexOrder,
+                                               vertices);
 
             // Assert
-            Assert.AreEqual(1, triangles.Count);    // There is only 1 triangle
-            var firstTriangle = triangles[0];
+            var firstTriangle = controller.GetAccelerationStructureGeometryData(0, 0, 0);
             Assert.AreEqual(14, firstTriangle.Count);   // There are 14 number of floats in one triangle
             Assert.AreEqual(vertices[0].x, firstTriangle[0]);   // First vertex
             Assert.AreEqual(vertices[0].y, firstTriangle[1]);
@@ -100,11 +102,15 @@ namespace OpenRT.UnitTests.Primitive
             RTMeshBVHController controller = new RTMeshBVHController(actuator: actuator.Object);
 
             // Act
-            List<List<float>> triangles = controller.BuildBVHAndTriangleList(normals, trianglesVertexOrder, vert);
+            controller.BuildBVHAndTriangleList(0,
+                                               normals,
+                                               trianglesVertexOrder,
+                                               vert);
 
             // Assert
-            Assert.AreEqual(2, triangles.Count);    // There are 2 triangle
-            var firstTriangle = triangles[0];
+            var triangles = controller.GetAccelerationStructureGeometryData(0, 0, 0);
+            Assert.AreEqual(28, triangles.Count);    // There are 2 triangle
+            var firstTriangle = triangles.GetRange(0, 14);
             Assert.AreEqual(14, firstTriangle.Count);   // There are 14 number of floats in one triangle
             Assert.AreEqual(vert[0].x, firstTriangle[0]);   // First vertex
             Assert.AreEqual(vert[0].y, firstTriangle[1]);
@@ -127,7 +133,7 @@ namespace OpenRT.UnitTests.Primitive
             Assert.AreEqual(planeD1, firstTriangle[18]);     // Plane D
             Assert.AreEqual(area1, firstTriangle[19]);       // Area
 
-            var secondTriangle = triangles[0];
+            var secondTriangle = triangles.GetRange(14, 14);
             Assert.AreEqual(14, secondTriangle.Count);   // There are 14 number of floats in one triangle
             Assert.AreEqual(vert[0].x, secondTriangle[0]);   // First vertex
             Assert.AreEqual(vert[0].y, secondTriangle[1]);

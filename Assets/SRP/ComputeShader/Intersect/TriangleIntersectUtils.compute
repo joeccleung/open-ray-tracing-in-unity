@@ -1,6 +1,7 @@
 ﻿#ifndef Triangle_Intersect_Utils_Compute
 #define Triangle_Intersect_Utils_Compute
 
+
 float4 TriangleIntersectUtils(Ray ray, float bestDistance, float3 vertices[3])
 {
     float EPSILON = 1.19e-07f;

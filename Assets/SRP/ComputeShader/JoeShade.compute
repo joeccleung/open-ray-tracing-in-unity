@@ -71,7 +71,8 @@ float3 missShader(float3 direction) {
 static const int MAX_RAY_GEN = 4;
 static const int MAX_RAY_PER_LEVEL = 2;
 
-int childRayOffset(int myLevel) {
+int childRayOffset(int myLevel) 
+{
     return (myLevel + 1) * MAX_RAY_PER_LEVEL;
 }
 
@@ -87,22 +88,28 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float4 finalColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
     Ray _secondaryRayStack[MAX_RAY_GEN * MAX_RAY_PER_LEVEL];
-    int srElement[MAX_RAY_GEN];
+    int srSbilingAtEachLevel[MAX_RAY_GEN];
     for (uint e = 0; e < MAX_RAY_GEN; e++)
     {
-        srElement[e] = -1;
+        srSbilingAtEachLevel[e] = -1;
     }
 
-    [fastopt] for (uint i = 0; i < numberOfRay; i++) {
+    [fastopt] for (uint i = 0; i < numberOfRay; i++) 
+    {
         Ray ray = RayGeneration(width, height, id, _RayGenID, i);
 
         // Trace
         RayHit hit = Trace(ray, _NumOfPrimitive);    // Exclude nothing
 
         float3 result;
-        if (hit.primitiveId == -1) {
+        if (hit.primitiveId == -1) 
+        {
+            // Miss Shader
             result = missShader(ray.direction);
-        } else {
+        } 
+        else 
+        {
+            // -
             
             int srLevel = -1;
             float3 secRayCombinedColor = float3(0, 0, 0);
@@ -112,50 +119,56 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             SecRays(ray, hit, secRaysAtHit);
             
             // Check if there is secondary rays
-            if (secRaysAtHit.srays[0].tmin > -1 * 1.#INF) {
+            if (secRaysAtHit.srays[0].tmin > -1 * 1.#INF) 
+            {
                 srLevel = srLevel + 1;
-                srElement[0] = 0;
-                for (int j = 0; j < MAX_RAY_PER_LEVEL; j++) {
+                srSbilingAtEachLevel[0] = 0;
+                for (int j = 0; j < MAX_RAY_PER_LEVEL; j++) 
+                {
                     _secondaryRayStack[srLevel * MAX_RAY_PER_LEVEL + j] = secRaysAtHit.srays[j];  // Copy to secondary rays stack
                 }
 
                 [fastopt] while (srLevel > -1)
                 {
-                    if (srElement[srLevel] < MAX_RAY_PER_LEVEL)
+                    if (srSbilingAtEachLevel[srLevel] < MAX_RAY_PER_LEVEL)
                     {
-                        int secRayIndex = srLevel * MAX_RAY_PER_LEVEL + srElement[srLevel];
+                        int secRayIndex = srLevel * MAX_RAY_PER_LEVEL + srSbilingAtEachLevel[srLevel];
                         if (srLevel < (MAX_RAY_GEN - 1))
                         {
-                            if (srElement[srLevel + 1] < 0) 
+                            if (srSbilingAtEachLevel[srLevel + 1] < 0) 
                             {
                                 RayHit secHit = Trace(_secondaryRayStack[secRayIndex], _NumOfPrimitive);
+                                // -
                                 if (secHit.primitiveId == -1)
                                 {
                                     _secondaryRayStack[secRayIndex].color = missShader(_secondaryRayStack[secRayIndex].direction);
                                     // Move to sibling
-                                    srElement[srLevel] = srElement[srLevel] + 1;
+                                    srSbilingAtEachLevel[srLevel] = srSbilingAtEachLevel[srLevel] + 1;
                                 }
                                 else
                                 {
                                     SecRaysAtHit _hit = CreateSecRaysAtHit();   // TODO: Optimization: Avoid initialize the internal Ray array
                                     SecRays(_secondaryRayStack[secRayIndex], secHit, _hit);
-                                    for (int i = 0; i < MAX_RAY_PER_LEVEL; i++) {
+                                    for (int i = 0; i < MAX_RAY_PER_LEVEL; i++) 
+                                    {
                                         _secondaryRayStack[childRayOffset(srLevel) + i] = _hit.srays[i];  // Copy to secondary rays stack
                                     }
                                     // Move to children
                                     srLevel = srLevel + 1;
-                                    srElement[srLevel] = 0; // Start from the first index of my children
+                                    srSbilingAtEachLevel[srLevel] = 0; // Start from the first index of my children
                                 }
                             }
                             else
                             {
                                 // Back from children. Calculate the ray color from children rays
-                                srElement[srLevel + 1] = -1;
+                                srSbilingAtEachLevel[srLevel + 1] = -1;
                                 float3 children = float3(0, 0, 0);
-                                for (int c = 0; c < MAX_RAY_PER_LEVEL; c++) {
+                                for (int c = 0; c < MAX_RAY_PER_LEVEL; c++) 
+                                {
                                     children = children + _secondaryRayStack[childRayOffset(srLevel) + c].color * _secondaryRayStack[childRayOffset(srLevel) + c].weight;
                                 }
                                 RayHit secHit = Trace(_secondaryRayStack[secRayIndex], _NumOfPrimitive); //TODO: Optimization. Avoid doing trace again.
+                                // -
                                 _secondaryRayStack[secRayIndex].color = ClosestHit(
                                                                         _secondaryRayStack[secRayIndex],
                                                                         secHit,
@@ -163,13 +176,14 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                                                                         children
                                                                     );
                                 // Move to sibling
-                                srElement[srLevel] = srElement[srLevel] + 1;
+                                srSbilingAtEachLevel[srLevel] = srSbilingAtEachLevel[srLevel] + 1;
                             }
                         }
                         else
                         {
                             // The deepest iteration. We only allow ray-scene intersection. No more secondary ray spawning.
                             RayHit secHit = Trace(_secondaryRayStack[secRayIndex], _NumOfPrimitive);
+                            // -
                             if (secHit.primitiveId == -1)
                             {
                                 _secondaryRayStack[secRayIndex].color = missShader(_secondaryRayStack[secRayIndex].direction);
@@ -185,7 +199,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                             }
                             
                             // Move to sibling
-                            srElement[srLevel] = srElement[srLevel] + 1;
+                            srSbilingAtEachLevel[srLevel] = srSbilingAtEachLevel[srLevel] + 1;
                         }
                     }
                     else
@@ -194,9 +208,10 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                         srLevel = srLevel - 1;
                     }
                 }
-                srElement[0] = -1;
+                srSbilingAtEachLevel[0] = -1;
 
-                for (int c = 0; c < MAX_RAY_PER_LEVEL; c++) {
+                for (int c = 0; c < MAX_RAY_PER_LEVEL; c++) 
+                {
                     secRayCombinedColor = secRayCombinedColor + _secondaryRayStack[c].color * _secondaryRayStack[c].weight;
                 }
             }
