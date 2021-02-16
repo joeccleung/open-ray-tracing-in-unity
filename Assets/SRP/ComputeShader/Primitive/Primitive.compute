@@ -7,6 +7,7 @@ struct Primitive
     int geometryInstanceBegin;
     int geometryInstanceCount;
     int materialIndex;
+    int materialInstanceIndex;
     int transformIndex;
 };
 

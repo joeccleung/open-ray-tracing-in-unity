@@ -1,6 +1,8 @@
 ﻿#ifndef PHONG_COMPUTE
 #define PHONG_COMPUTE
 
+StructuredBuffer<float4> DemoMat_color;
+
 // [shader(Phong)]
 
 void Phong_SecRays(
@@ -20,6 +22,8 @@ float3 Phong(
 {
     float3 color = float3(0, 0, 0);
 
+    float4 mat = DemoMat_color[_Primitives[hit.primitiveId].materialInstanceIndex];
+
     [fastopt] for(int l = 0; l < _NumOfLights; l++)
     {
         LightHit light0 = GetIlluminate(hit.position, hit.primitiveId, l);
@@ -27,11 +31,11 @@ float3 Phong(
         float nDotL = dot(hit.normal, -1 * light0.direction);
         if (nDotL >= 0)
         {
-            color += light0.color * nDotL;
+            color += mat.xyz * light0.color * nDotL;
         }
     }
 
-   return (color);
+   return color;
 }
 
 #endif // PHONG_COMPUTE
