@@ -19,19 +19,22 @@ void RTSphereIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int p
     {
         RTSphere sphere = _RTSphere[primitive.geometryInstanceBegin + s];
 
-        float2 result = SphereIntersectUtils(ray, bestHit, sphere.center, sphere.radius);
+        float2 result = SphereIntersectUtils(ray, bestHit, sphere.center, sphere.radius, primitiveId);
 
         if (result.x != -1) // Has intersect?
         {
             bestHit.primitiveId = primitiveId;
 
-            if (result.y == 1)  // Ray is inside?
+            if (result.y <= 0)  // Ray is inside->outside?
             {
-                bestHit.mediumToEnter = primitiveId;  // Ray is inside
+                // Ray is inside->outside
+                bestHit.mediumToEnter = 0; // FIXME: Even if an inside ray is leaving, it may not necessary entering the air
+                bestHit.mediumToLeave = primitiveId;
             }
             else
             {
-                bestHit.mediumToEnter = 0;  // Ray is outside
+                bestHit.mediumToEnter = primitiveId;  // Ray is outside->inside
+                bestHit.mediumToLeave = ray.medium;
             }
         }
     }

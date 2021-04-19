@@ -11,7 +11,7 @@ void Green_SecRays(
     inout SecRaysAtHit secRaysAtHit
 ) 
 {
-
+    
 }
 
 static const float PI = 3.14159265f;
@@ -43,6 +43,11 @@ float3 Green(
     float3 color = DemoMat_main[uint2(floor((lon + PI)/(2*PI) * w), floor((lat/PI + 0.5f) * h))];
 
     return color;
+}
+
+float3 Green_OnShadowRayHit(Ray ray, RayHit hit)
+{
+    return float3(0, 0, 0); // Opaque
 }
 
 #endif // GREEN_COMPUTE 

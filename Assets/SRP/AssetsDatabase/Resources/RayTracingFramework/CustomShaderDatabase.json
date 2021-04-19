@@ -58,5 +58,16 @@
       "shaderType": 1
     }
   },
-  "lights": {}
+  "lights": {
+    "a0b58e92-ec2e-417f-9026-5030663e0a08": {
+      "name": "CustomPointLight",
+      "absPath": "Assets/SRP/ComputeShader/Custom/Lights/CustomPointLight.compute",
+      "shaderType": 4
+    },
+    "5a7e6178-ac2d-4824-9dad-f560a6074d72": {
+      "name": "CustomDirectionalLight",
+      "absPath": "Assets/SRP/ComputeShader/Custom/Lights/CustomDirectionalLight.compute",
+      "shaderType": 4
+    }
+  }
 }

@@ -1,4 +1,6 @@
-﻿#include "DataStructure/RayFlag.compute"
+﻿#pragma enable_d3d11_debug_symbols
+
+#include "DataStructure/RayFlag.compute"
 #include "Ray.compute"
 #include "RayHit.compute"
 #include "DataStructure/LightInfo.compute"
@@ -17,6 +19,8 @@ RWTexture2D<float4> Result;
 float4 _CameraForward;
 float4x4 _CameraToWorld;
 float4x4 _CameraInverseProjection;
+float _CameraOrthographicSize;
+float4x4 _CameraLocalToWorld;
 
 // Ray Generation
 int _RayGenID;
@@ -53,13 +57,13 @@ float3 missShader(float3 direction) {
 
 #include "Intersect/IntersectShaderCollection.compute"
 
-#include "RayCasting/Trace.compute"
+#include "Light/CustomLights.compute"
+
+#include "Shading/CustomShaderCollection.compute"
 
 #include "Custom/RayGeneration/CustomRayGeneration.compute"
 
-#include "Custom/Lights/CustomLights.compute"
-
-#include "Shading/CustomShaderCollection.compute"
+#include "RayCasting/Trace.compute"
 
 
 // Each #kernel tells which function to compile; you can have many kernels
@@ -99,7 +103,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         Ray ray = RayGeneration(width, height, id, _RayGenID, i);
 
         // Trace
-        RayHit hit = Trace(ray, _NumOfPrimitive);    // Exclude nothing
+        RayHit hit = Trace(ray);    // Exclude nothing
 
         float3 result;
         if (hit.primitiveId == -1) 
@@ -137,7 +141,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                         {
                             if (srSbilingAtEachLevel[srLevel + 1] < 0) 
                             {
-                                RayHit secHit = Trace(_secondaryRayStack[secRayIndex], _NumOfPrimitive);
+                                RayHit secHit = Trace(_secondaryRayStack[secRayIndex]);
                                 // -
                                 if (secHit.primitiveId == -1)
                                 {
@@ -167,7 +171,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                                 {
                                     children = children + _secondaryRayStack[childRayOffset(srLevel) + c].color * _secondaryRayStack[childRayOffset(srLevel) + c].weight;
                                 }
-                                RayHit secHit = Trace(_secondaryRayStack[secRayIndex], _NumOfPrimitive); //TODO: Optimization. Avoid doing trace again.
+                                RayHit secHit = Trace(_secondaryRayStack[secRayIndex]); //TODO: Optimization. Avoid doing trace again.
                                 // -
                                 _secondaryRayStack[secRayIndex].color = ClosestHit(
                                                                         _secondaryRayStack[secRayIndex],
@@ -182,7 +186,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                         else
                         {
                             // The deepest iteration. We only allow ray-scene intersection. No more secondary ray spawning.
-                            RayHit secHit = Trace(_secondaryRayStack[secRayIndex], _NumOfPrimitive);
+                            RayHit secHit = Trace(_secondaryRayStack[secRayIndex]);
                             // -
                             if (secHit.primitiveId == -1)
                             {

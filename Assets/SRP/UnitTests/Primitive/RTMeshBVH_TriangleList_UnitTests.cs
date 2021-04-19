@@ -32,7 +32,7 @@ namespace OpenRT.UnitTests.Primitive
 
             var actuator = new Mock<RTMeshBVHController.IActuator>();
             actuator.Setup(x => x.GetVertices()).Returns(vertices);
-            actuator.Setup(x => x.LocalToWorld(It.IsAny<Vector3>())).Returns<Vector3>(v => v);
+            actuator.Setup(x => x.LocalToWorldVertex(It.IsAny<Vector3>())).Returns<Vector3>(v => v);
 
             RTMeshBVHController controller = new RTMeshBVHController(actuator: actuator.Object);
 
@@ -97,7 +97,7 @@ namespace OpenRT.UnitTests.Primitive
 
             var actuator = new Mock<RTMeshBVHController.IActuator>();
             actuator.Setup(x => x.GetVertices()).Returns(vert);
-            actuator.Setup(x => x.LocalToWorld(It.IsAny<Vector3>())).Returns<Vector3>(v => v);
+            actuator.Setup(x => x.LocalToWorldVertex(It.IsAny<Vector3>())).Returns<Vector3>(v => v);
 
             RTMeshBVHController controller = new RTMeshBVHController(actuator: actuator.Object);
 

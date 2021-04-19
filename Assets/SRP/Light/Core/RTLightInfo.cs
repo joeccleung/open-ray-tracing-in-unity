@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace OpenRT {
     public struct RTLightInfo {
-        int instance;
         Vector3 position;
         Vector3 rotation;
         int type;
@@ -12,14 +11,12 @@ namespace OpenRT {
 
         public RTLightInfo(Vector3 position, int type)
         {
-            this.instance = -1;
             this.position = position;
             this.rotation = Vector3.zero;
-            this.type = -1;
+            this.type = type;
         }
 
-        public RTLightInfo(int instance, Vector3 position, Vector3 rotation, int type) {
-            this.instance = instance;
+        public RTLightInfo(Vector3 position, Vector3 rotation, int type) {
             this.position = position;
             this.rotation = rotation;
             this.type = type;
@@ -27,7 +24,7 @@ namespace OpenRT {
 
         public static int Stride {
             get {
-                return sizeof(int) * 2 + sizeof(float) * 3 * 2;
+                return sizeof(int) * 1 + sizeof(float) * 3 * 2;
             }
         }
     }

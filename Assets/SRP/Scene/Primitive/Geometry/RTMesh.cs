@@ -77,34 +77,38 @@ namespace OpenRT
                                              Vector3 n1,
                                              Vector3 n2)
         {
-            v0 = transform.localToWorldMatrix.MultiplyPoint(v0);
-            v1 = transform.localToWorldMatrix.MultiplyPoint(v1);
-            v2 = transform.localToWorldMatrix.MultiplyPoint(v2);
+            Vector3 wv0 = transform.localToWorldMatrix.MultiplyPoint(v0);
+            Vector3 wv1 = transform.localToWorldMatrix.MultiplyPoint(v1);
+            Vector3 wv2 = transform.localToWorldMatrix.MultiplyPoint(v2);
 
-            Vector3 _cross = Vector3.Cross(v1 - v0, v2 - v0);
+            Vector3 wn0 = transform.localToWorldMatrix.MultiplyVector(n0);
+            Vector3 wn1 = transform.localToWorldMatrix.MultiplyVector(n1);
+            Vector3 wn2 = transform.localToWorldMatrix.MultiplyVector(n2);
+
+            Vector3 _cross = Vector3.Cross(wv1 - wv0, wv2 - wv0);
             Vector3 normal = Vector3.Normalize(_cross);
-            float planeD = -1 * Vector3.Dot(normal, v0);
+            float planeD = -1 * Vector3.Dot(normal, wv0);
             float area = Vector3.Dot(normal, _cross);
 
             return new List<float>() {
-                v0.x,
-                v0.y,
-                v0.z,
-                v1.x,
-                v1.y,
-                v1.z,
-                v2.x,
-                v2.y,
-                v2.z,
-                n0.x,
-                n0.y,
-                n0.z,
-                n1.x,
-                n1.y,
-                n1.z,
-                n2.x,
-                n2.y,
-                n2.z,
+                wv0.x,
+                wv0.y,
+                wv0.z,
+                wv1.x,
+                wv1.y,
+                wv1.z,
+                wv2.x,
+                wv2.y,
+                wv2.z,
+                wn0.x,
+                wn0.y,
+                wn0.z,
+                wn1.x,
+                wn1.y,
+                wn1.z,
+                wn2.x,
+                wn2.y,
+                wn2.z,
                 planeD,
                 area
             };
@@ -117,22 +121,24 @@ namespace OpenRT
 
         public override bool IsDirty()
         {
+            bool isDirty = false;
+
             if (transform.hasChanged)
             {
                 transform.hasChanged = false;
-                return true;
+                isDirty = true;
             }
 
             int _curHashCode = m_mesh.GetHashCode();
             if (m_meshHashCode != _curHashCode)
             {
                 m_meshHashCode = _curHashCode;
-                return true;
+                isDirty = true;
             }
 
-            return false;
+            return isDirty;
         }
-        
+
         public override bool IsGeometryValid()
         {
             return m_mesh != null;

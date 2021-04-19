@@ -23,4 +23,10 @@ float3 SinShader(
    return float3(SinMat_sin, SinMat_sin, SinMat_sin);
 }
 
+float3 SinShader_OnShadowRayHit(Ray ray, RayHit hit)
+{
+    return float3(0, 0, 0); // Opaque
+}
+
+
 #endif // SinShader_COMPUTE 

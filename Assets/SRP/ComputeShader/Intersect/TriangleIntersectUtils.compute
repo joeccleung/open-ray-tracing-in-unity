@@ -2,10 +2,9 @@
 #define Triangle_Intersect_Utils_Compute
 
 
-float4 TriangleIntersectUtils(Ray ray, float bestDistance, float3 vertices[3])
+float4 TriangleIntersectUtils(Ray ray, float bestDistance, float3 vertices[3], int mediumId)
 {
     float EPSILON = 1.19e-07f;
-    float outside = 1;   // Assume outside the geometry. Outside = 1, Inside = -1
 
     // find vectors for two edges sharing vert0
     float3 edge1 = vertices[1] - vertices[0];
@@ -17,22 +16,20 @@ float4 TriangleIntersectUtils(Ray ray, float bestDistance, float3 vertices[3])
     // if determinant is near zero, ray lies in plane of triangle
     float det = dot(edge1, pvec);
 
-    if (ray.inside <= 0)
+    if (ray.medium <= 0 || ray.medium != mediumId)
     {
         // Outside: use backface culling
         if (det < EPSILON)
         {
-            return float4(-1, outside, 0, 0);
+            return float4(-1, 0, 0, 0);
         }
     }
     else
     {
-        outside = -1;
-
         // Inside: use forward culling
         if (det > -EPSILON)
         {
-            return float4(-1, outside, 0, 0);
+            return float4(-1, mediumId, 0, 0);
         }
     }
 
@@ -45,7 +42,7 @@ float4 TriangleIntersectUtils(Ray ray, float bestDistance, float3 vertices[3])
 
     if (u < 0.0 || u > 1.0f)
     {
-        return float4(-1, outside, 0, 0);
+        return float4(-1, ray.medium, 0, 0);
     }
 
     // prepare to test V parameter
@@ -55,7 +52,7 @@ float4 TriangleIntersectUtils(Ray ray, float bestDistance, float3 vertices[3])
     float v = dot(ray.direction, qvec) * inv_det;
     if (v < 0.0 || u + v > 1.0f)
     {
-        return float4(-1, outside, u, v);
+        return float4(-1, ray.medium, u, v);
     }
 
     // calculate t, ray intersects triangle
@@ -63,11 +60,17 @@ float4 TriangleIntersectUtils(Ray ray, float bestDistance, float3 vertices[3])
 
     if (ray.tmin < dis && dis < ray.tmax && dis < bestDistance)
     {
-        return float4(dis, outside, u, v);
+        if (ray.medium == mediumId) {
+            // I was inside, now I am hit. I am inside->outside
+            return float4(dis, 0, u, v);
+        } else {
+            // I was outside, now I am hit, I am outside->inside
+            return float4(dis, mediumId, u, v);
+        }
     }
     else
     {
-        return float4(-1, outside, u, v);
+        return float4(-1, ray.medium, u, v);
     }
 }
 

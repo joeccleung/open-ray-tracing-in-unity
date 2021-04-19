@@ -264,6 +264,8 @@ namespace OpenRT
             m_mainShader.SetMatrix("_CameraToWorld", camera.cameraToWorldMatrix);
             m_mainShader.SetVector("_CameraForward", camera.transform.forward);
             m_mainShader.SetMatrix("_CameraInverseProjection", camera.projectionMatrix.inverse);
+            m_mainShader.SetFloat("_CameraOrthographicSize", camera.orthographicSize);
+            m_mainShader.SetMatrix("_CameraLocalToWorld", camera.transform.localToWorldMatrix);
         }
 
         private void RunSetAmbientToMainShader(RenderPipelineConfigObject config)

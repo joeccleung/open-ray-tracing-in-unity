@@ -77,23 +77,27 @@ void RTMeshBVHIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int 
                     float3 normal1 = float3(_RTMeshBVHGeometryData[geoCursor + 12], _RTMeshBVHGeometryData[geoCursor + 13], _RTMeshBVHGeometryData[geoCursor + 14]);
                     float3 normal2 = float3(_RTMeshBVHGeometryData[geoCursor + 15], _RTMeshBVHGeometryData[geoCursor + 16], _RTMeshBVHGeometryData[geoCursor + 17]);
 
-                    float4 result = TriangleIntersectUtils(ray, bestHit.distance, vertices1);
+                    float4 result = TriangleIntersectUtils(ray, bestHit.distance, vertices1, primitiveId);
 
                     if (result.x != -1) // Has intersect?
                     {
                         bestHit.barycentric = float3(result.z, result.w, 1-result.z-result.w);
                         bestHit.distance = result.x;
                         bestHit.position = ray.origin + result.x * ray.direction;
-                        bestHit.normal = bestHit.barycentric.x * result.y * normal1 + bestHit.barycentric.y * result.y * normal2 + bestHit.barycentric.z * result.y * normal0;
                         bestHit.primitiveId = primitiveId;
 
-                        if (result.y == 1)  // Ray is outside?
+                        if (result.y <= 0)  // Ray is inside->outside?
                         {
-                            bestHit.mediumToEnter = 0;  // Ray is outside
+                            // Ray is inside->outside
+                            bestHit.mediumToEnter = 0; // FIXME: Even if an inside ray is leaving, it may not necessary entering the air
+                            bestHit.mediumToLeave = primitiveId;
+                            bestHit.normal = bestHit.barycentric.x * -1 * normal1 + bestHit.barycentric.y * -1 * normal2 + bestHit.barycentric.z * -1 * normal0;
                         }
                         else
                         {
-                            bestHit.mediumToEnter = primitiveId;  // Ray is inside
+                            bestHit.mediumToEnter = primitiveId;  // Ray is outside->inside
+                            bestHit.mediumToLeave = ray.medium;
+                            bestHit.normal = bestHit.barycentric.x * normal1 + bestHit.barycentric.y * normal2 + bestHit.barycentric.z * normal0;
                         }
                     }
 
@@ -103,18 +107,11 @@ void RTMeshBVHIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int 
             else
             {
                 // Intermediate node
-
-
                 bvhHead++;
                 bvhStack[bvhHead] = bvhStart + _RTMeshBVH[nodeIdx + BOX_RIGHT] * BOX_STRIDE;
 
                 bvhHead++;
                 bvhStack[bvhHead] = bvhStart + _RTMeshBVH[nodeIdx + BOX_LEFT] * BOX_STRIDE;
-
-
-
-
-                
             }
         }
     }

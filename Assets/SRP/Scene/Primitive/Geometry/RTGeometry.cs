@@ -4,12 +4,18 @@ using UnityEngine;
 
 namespace OpenRT
 {
+    [ExecuteAlways]
     public abstract class RTGeometry : MonoBehaviour, IRTGeometryData
     {
         [HideInInspector, SerializeField] private string intersectShaderGUID = string.Empty;
 
         protected RTBoundingBox boundingBox = RTBoundingBox.Empty;
         protected bool prevFrameIsEnable = false;
+
+        protected virtual void Start()
+        {
+            prevFrameIsEnable = false;
+        }
 
         public virtual List<float> GetAccelerationStructureGeometryData(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset)
         {
