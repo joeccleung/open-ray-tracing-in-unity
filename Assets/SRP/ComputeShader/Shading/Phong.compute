@@ -26,7 +26,7 @@ float3 Phong(
 
     [fastopt] for(int l = 0; l < _NumOfLights; l++)
     {
-        LightHit light0 = GetIlluminate(hit.position, hit.primitiveId, l);
+        LightHit light0 = GetIlluminate(hit.position, ray.medium, hit.primitiveId, l);   // Phong is hit on the surface, so medium = whereever the ray is traversing
 
         float nDotL = dot(hit.normal, -1 * light0.direction);
         if (nDotL >= 0)
@@ -36,6 +36,11 @@ float3 Phong(
     }
 
    return color;
+}
+
+float3 Phong_OnShadowRayHit(Ray ray, RayHit hit)
+{
+    return float3(0, 0, 0); // Opaque
 }
 
 #endif // PHONG_COMPUTE

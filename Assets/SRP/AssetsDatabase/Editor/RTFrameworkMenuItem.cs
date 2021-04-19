@@ -9,6 +9,7 @@ namespace OpenRT
     {
         private static ClosetHitShaderCollectionGPUProgramGenerator closetHitShaderCollectionGPUProgramGenerator = new ClosetHitShaderCollectionGPUProgramGenerator();
         private static IntersectShaderCollectionGPUProgramGenerator intersectShaderCollectionGPUProgramGenerator = new IntersectShaderCollectionGPUProgramGenerator();
+        private static LightShaderCollectionGPUProgramGenerator lightShaderCollectionGPUProgramGenerator = new LightShaderCollectionGPUProgramGenerator();
 
         [MenuItem("OpenRT/Refresh Shader Collection")]
         static void RefreshShaderCollection()
@@ -23,6 +24,9 @@ namespace OpenRT
 
             intersectShaderCollectionGPUProgramGenerator.ExportShaderCollection(CustomShaderDatabase.Instance.ShaderSortedByName(EShaderType.Intersect),
                                                                                 CustomShaderDatabase.Instance.ShaderMetaList(EShaderType.Intersect));
+
+            lightShaderCollectionGPUProgramGenerator.ExportShaderCollection(CustomShaderDatabase.Instance.ShaderSortedByName(EShaderType.Light),
+                                                                            CustomShaderDatabase.Instance.ShaderMetaList(EShaderType.Light));
         }
     }
 

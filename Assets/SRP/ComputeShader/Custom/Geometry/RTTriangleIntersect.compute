@@ -24,7 +24,7 @@ void RTTriangleIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int
     {
         RTTriangle tri = _RTTriangle[primitive.geometryInstanceBegin + s];
 
-        float4 result = TriangleIntersectUtils(ray, bestHit.distance, tri.vertices);
+        float4 result = TriangleIntersectUtils(ray, bestHit.distance, tri.vertices, primitiveId);
 
         if (result.x != -1) // Has intersect?
         {
@@ -32,16 +32,21 @@ void RTTriangleIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int
             bestHit.barycentric = float3(result.z, result.w, 1-result.z-result.w);
             bestHit.distance = result.x;
             bestHit.position = ray.origin + result.x * ray.direction;
-            bestHit.normal = bestHit.barycentric.x * result.y * tri.normal[0] + bestHit.barycentric.y * result.y * tri.normal[1] + bestHit.barycentric.z * result.y * tri.normal[2];
+            // bestHit.normal = bestHit.barycentric.x * result.y * tri.normal[0] + bestHit.barycentric.y * result.y * tri.normal[1] + bestHit.barycentric.z * result.y * tri.normal[2];
             bestHit.primitiveId = primitiveId;
 
-            if (result.y == 1)  // Ray is outside?
+            if (result.y <= 0)  // Ray is inside->outside?
             {
-                bestHit.mediumToEnter = 0;  // Ray is outside
+                // Ray is inside->outside
+                bestHit.mediumToEnter = 0; // FIXME: Even if an inside ray is leaving, it may not necessary entering the air
+                bestHit.mediumToLeave = primitiveId;
+                bestHit.normal = bestHit.barycentric.x * -1 * tri.normal[0] + bestHit.barycentric.y * -1 * tri.normal[1] + bestHit.barycentric.z * -1 * tri.normal[2];
             }
             else
             {
-                bestHit.mediumToEnter = primitiveId;  // Ray is inside
+                bestHit.mediumToEnter = primitiveId;  // Ray is outside->inside
+                bestHit.mediumToLeave = ray.medium;
+                bestHit.normal = bestHit.barycentric.x * tri.normal[0] + bestHit.barycentric.y * tri.normal[1] + bestHit.barycentric.z * tri.normal[2];
             }
         }
     }

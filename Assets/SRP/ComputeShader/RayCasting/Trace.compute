@@ -4,18 +4,19 @@
 #include "../Ray.compute"
 #include "../RayHit.compute"
 #include "../BVH/RayBoxIntersect.compute"
+#include "../Shading/CustomShaderCollection.compute"
 
 // BVH
 StructuredBuffer<int> _TopLevelAccelerationGeometryMapping;
 // -
 // -
-RayHit Trace(Ray ray, int _NumOfPrimitive)
+RayHit Trace(Ray ray)
 {
     int NO_CHILD = -1;
 
     RayHit bestHit = CreateRayHit();
 
-    // Sometimes, tmin == 0 when people want to do refraction
+    // Sometimes, not all sibling secondary rays are initialized. Their ray.tmin will be smaller than 0.
     if (ray.tmin < 0) 
     {
         return bestHit;
@@ -64,7 +65,7 @@ RayHit Trace(Ray ray, int _NumOfPrimitive)
     return bestHit;
 }
 
-bool ShadowTrace(Ray ray, int originPrimitiveId)
+float3 ShadowTrace(Ray ray, int originPrimitiveId)
 {
     int NO_CHILD = -1;
     
@@ -77,7 +78,7 @@ bool ShadowTrace(Ray ray, int originPrimitiveId)
     {
         if (bvhHead <= -1) {
             // No more node to traverse
-            return false;
+            return ray.color;   // Use the ray color
         }
 
         int nodeIdx = bvhStack[bvhHead];
@@ -96,7 +97,7 @@ bool ShadowTrace(Ray ray, int originPrimitiveId)
                     IntersectByGeometry(ray, bestHit, _TopLevelAccelerationGeometryMapping[mapCursor + p]);
                     // It hit something and it is not the origin primitive, the light is blocked
                     if (bestHit.primitiveId != -1 && bestHit.primitiveId != originPrimitiveId) {
-                        return true;
+                        ray.color = ray.color * OnShadowRayHit(ray, bestHit);
                     }
                 }
             }
@@ -110,7 +111,7 @@ bool ShadowTrace(Ray ray, int originPrimitiveId)
         }
     }
 
-    return false;
+    return ray.color;   // Not hitting anything, use ray color
 } 
 
 #endif //TRACE_COMPUTE

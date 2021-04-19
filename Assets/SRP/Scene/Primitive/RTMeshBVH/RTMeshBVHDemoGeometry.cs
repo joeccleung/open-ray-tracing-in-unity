@@ -131,8 +131,13 @@ public class RTMeshBVHDemoGeometry : IRTMeshBVH
         return true;
     }
 
-    public override Vector3 LocalToWorld(Vector3 local)
+    public override Vector3 LocalToWorldVertex(Vector3 local)
     {
         return transform.localToWorldMatrix.MultiplyPoint(local);
+    }
+
+    public override Vector3 LocalToWorldDirection(Vector3 local)
+    {
+        return transform.localToWorldMatrix.MultiplyVector(local);
     }
 }

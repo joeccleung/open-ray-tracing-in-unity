@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: JoeRenderPipelineConfig
   m_EditorClassIdentifier: 
   skybox: {fileID: 2800000, guid: e71fc492f440446b99875b8e1df890ba, type: 3}
-  upperAmbitent: {r: 1, g: 1, b: 1, a: 1}
-  lowerAmbitent: {r: 1, g: 1, b: 1, a: 1}
+  upperAmbitent: {r: 0, g: 0, b: 0, a: 1}
+  lowerAmbitent: {r: 0, g: 0, b: 0, a: 1}
   globalRefractiveIndex: 1
-  maxRayGeneration: 1
+  maxRayGeneration: 2
   enableShadow: 0
-  fogColor: {r: 1, g: 1, b: 1, a: 1}
+  fogColor: {r: 0, g: 0, b: 0, a: 1}
   fogFactor: 0
   rayGenId: 0

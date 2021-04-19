@@ -10,6 +10,7 @@ namespace OpenRT
         // The filenames listed below are ignored by compute shader importer
         public const string CUSTOM_INTERSECT_SHADER_COLLECTION_FILENAME = "CustomGeometry";
         public const string CUSTOM_SHADER_COLLECTION_DIR = "Assets/SRP/ComputeShader/Shading/";
+        public const string CUSTOM_LIGHT_SHADER_COLLECTION_FILENAME = "CustomLights";
         public const string CUSTOM_SHADER_COLLECTION_FILENAME = "CustomShaderCollection";
         public const string GPU_MAIN_PROCESS_FILENAME = "JoeShade";
 
@@ -27,6 +28,11 @@ namespace OpenRT
                 }
 
                 if (filename == CUSTOM_SHADER_COLLECTION_FILENAME)
+                {
+                    return false;
+                }
+
+                if (filename == CUSTOM_LIGHT_SHADER_COLLECTION_FILENAME)
                 {
                     return false;
                 }

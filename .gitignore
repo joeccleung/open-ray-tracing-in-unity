@@ -62,3 +62,6 @@ crashlytics-build.properties
 # Open RT Framework auto-generated shaders
 Assets/SRP/ComputeShader/Intersect/IntersectShaderCollection.compute
 Assets/SRP/ComputeShader/Shading/CustomShaderCollection.compute
+
+# Unity Build
+**/BuildVS

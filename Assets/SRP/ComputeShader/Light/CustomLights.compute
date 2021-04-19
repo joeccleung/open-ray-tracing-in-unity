@@ -1,0 +1,25 @@
+#ifndef CUSTOM_LIGHTS
+#define CUSTOM_LIGHTS
+// =============================================
+// =           Light Shader Collection         =
+// = Auto-generated File. Do not edit manually =
+// =============================================
+
+#include "Assets/SRP/ComputeShader/Custom/Lights/CustomDirectionalLight.compute"
+#include "Assets/SRP/ComputeShader/Custom/Lights/CustomPointLight.compute"
+#include "Assets/SRP/ComputeShader/Custom/Lights/CustomDirectionalLight.compute"
+#include "Assets/SRP/ComputeShader/Custom/Lights/CustomPointLight.compute"
+
+LightHit GetIlluminate(float3 hitPos, int medium, int primitiveID, int lightID)
+{
+   switch(_Lights[lightID].type)
+   {
+        case 0:
+            return GetIlluminate_CustomDirectionalLight(_Lights[lightID], hitPos, medium, primitiveID);
+        case 1:
+            return GetIlluminate_CustomPointLight(_Lights[lightID], hitPos, medium, primitiveID);
+       default:
+            return CreateLightHit(float3(0, 0, 0), float3(0, 0, 0));
+   }
+}
+#endif // CUSTOM_LIGHTS 

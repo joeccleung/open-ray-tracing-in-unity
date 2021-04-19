@@ -1,7 +1,7 @@
 ﻿#ifndef Sphere_Intersect_Utils_Compute
 #define Sphere_Intersect_Utils_Compute
 
-float2 SphereIntersectUtils(Ray ray, inout RayHit bestHit, float3 center, float radius)
+float2 SphereIntersectUtils(Ray ray, inout RayHit bestHit, float3 center, float radius, int mediumId)
 {
     // For every sphere in the primitive, we do:
 
@@ -46,7 +46,7 @@ float2 SphereIntersectUtils(Ray ray, inout RayHit bestHit, float3 center, float 
 
 
     float t = -1;
-    float inside = 1;   // 0 = Outside, 1 = Inside
+    float inside = 1;   // 0 = Outside, ray.medium = Inside
 
     // Step 1: Define
 
@@ -64,14 +64,14 @@ float2 SphereIntersectUtils(Ray ray, inout RayHit bestHit, float3 center, float 
     // Check the truth table for the selection of inside vs outside algorithm
     // Currently, the prototype use a separated field "ray.inside" to replace the truth table
 
-    if (ray.inside == 0 || (ray.inside == -1 && e > radius))
+    if (ray.medium == 0 || ray.medium != mediumId || (ray.medium == -1 && e > radius))
     {
-        inside = 0;
+        inside = mediumId;   // outside->inside
 
         // Outside, do step 3a:
         if (dat < 0)
         {
-            return float2(-1, inside); // No intersection, bypass
+            return float2(-1, ray.medium); // No intersection, bypass
         }
 
         // Step 4a:
@@ -85,12 +85,19 @@ float2 SphereIntersectUtils(Ray ray, inout RayHit bestHit, float3 center, float 
         if (dot(ray.direction, n) >= 0)
         {
             // The hit normal is not "intercepting" the ray direction, we may intersecting behind the sphere surface due to origin placing just behind the surface due to floating point error
-            return float2(-1, inside);
+            return float2(-1, ray.medium);
         }
     }
     else
     {
-        // On or inside, do step 3b
+        // inside->outside, do step 3b
+        inside = 0;
+
+        if (dat < 0)
+        {
+            return float2(-1, inside); // No intersection, bypass
+        }
+
         float f = sqrt(dat);
 
         t = a + f;

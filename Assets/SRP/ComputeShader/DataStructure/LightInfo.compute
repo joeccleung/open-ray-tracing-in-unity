@@ -3,7 +3,6 @@
 
 struct LightInfo
 {
-    int instance;
     float3 position;
     float3 rotation;
     int type;

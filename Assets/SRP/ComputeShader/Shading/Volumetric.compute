@@ -1,8 +1,13 @@
 ﻿#ifndef Volumetric_COMPUTE
 #define Volumetric_COMPUTE
 
-float VolumetricMat_sigma;
-float VolumetricMat_luminanceLight;
+// Forward declaration
+LightHit GetIlluminate(float3 hitPos, int medium, int primitiveID, int lightID);
+float3 ComputeTransmittance(float3 color, float3 direction, float luminance, int medium, float3 origin, float sigma, float stepSize, float travel);
+
+StructuredBuffer<float> VolumetricMat_sigma;
+StructuredBuffer<float> VolumetricMat_stepSize;
+StructuredBuffer<float> VolumetricMat_luminanceLight;
 
 // [shader(Volumetric)]
 void Volumetric_SecRays(
@@ -20,8 +25,7 @@ void Volumetric_SecRays(
     secRaysAtHit.srays[0].direction = ray.direction;
     secRaysAtHit.srays[0].color = float3(0, 0, 0);
     secRaysAtHit.srays[0].gen = ray.gen - 1;
-    secRaysAtHit.srays[0].inside = (ray.inside <= 0) ? 1 : 0;   // Reflective ray is inside of the object
-    secRaysAtHit.srays[0].medium = (ray.inside <= 0) ? hit.mediumToEnter : 0 ;   // Translucent ray enter the object
+    secRaysAtHit.srays[0].medium = hit.mediumToEnter;   // If the ray is inside when hit, set 0; If the ray is outside, set the medium
     secRaysAtHit.srays[0].tmin = 0.001f;
     secRaysAtHit.srays[0].tmax = 1.#INF;
     secRaysAtHit.srays[0].weight = 1;
@@ -34,33 +38,87 @@ float3 Volumetric(
    float3 secondaryRayColor
 )
 {
-    if (ray.inside == 1)
+    float stepSize = VolumetricMat_stepSize[_Primitives[hit.primitiveId].materialInstanceIndex];
+    
+    if (stepSize == 0)
+    {
+        return float3(1, 0, 1);
+    }
+
+    if (ray.medium == hit.primitiveId || hit.mediumToEnter == hit.primitiveId)  // Is my secondary ray inside the volume
     {
         // Integration bounds
-        float stepSize = 0.2f;
         float travel = hit.distance;
 
         // Integration Variables
-        float3 transmittance = 1;
         float3 color = secondaryRayColor;
+
+        // Sample volume properties
+        float sigma_s = VolumetricMat_sigma[_Primitives[hit.primitiveId].materialInstanceIndex] / stepSize;
+
+        float luminance = VolumetricMat_luminanceLight[_Primitives[hit.primitiveId].materialInstanceIndex] / stepSize;
+
+        return ComputeTransmittance(color, ray.direction, luminance, hit.primitiveId, hit.position, sigma_s, stepSize, travel);
+    }
+    return secondaryRayColor;
+}
+
+float3 ComputeTransmittance(float3 color, float3 direction, float luminance, int medium, float3 origin, float sigma, float stepSize, float travel) {
+    // Integration Variables
+    float3 transmittance = 1;
+
+    [fastopt] while (travel >= stepSize)
+    {
+        // Determine sample position
+        float3 p_i = origin + -1 * direction * travel;
+
+        // Compute Transmittance from previous to current
+        transmittance *= exp( -1 * sigma * stepSize); // T_i
+
+        // Sample each light source
+        [fastopt] for(int l = 0; l < _NumOfLights; l++)
+        {
+            LightHit lightHit = GetIlluminate(p_i, medium, medium, l);   // We are traversing inside, so medium = primitiveId
+            color = saturate(color + transmittance * sigma * luminance * lightHit.color);
+        }
+
+        // Move to next position
+        travel -= stepSize;
+    }
+
+    return color;
+}
+
+float3 Volumetric_OnShadowRayHit(Ray ray, RayHit hit)
+{
+    if (ray.medium == hit.mediumToLeave)
+    {
+        // Inside
+        // Sample volume properties
+        float stepSize = VolumetricMat_stepSize[_Primitives[hit.primitiveId].materialInstanceIndex];
+
+        if (stepSize == 0)
+        {
+            return float3(1, 0, 1);
+        }
+
+        float sigma = VolumetricMat_sigma[_Primitives[hit.primitiveId].materialInstanceIndex] / stepSize;
+        float luminance = VolumetricMat_luminanceLight[_Primitives[hit.primitiveId].materialInstanceIndex] / stepSize;
+        float3 color = ray.color;
+        float travel = hit.distance;
+        float transmittance = 1;
 
         [fastopt] while (travel >= stepSize)
         {
+            // Here we simply the calculation by assuming the medium is uniform so transmittance is the same along the light ray travelling inside the medium
             // Determine sample position
-            float3 p_i = hit.position + -1 * ray.direction * travel;
-
-            // Sample volume properties
-            float sigma_s = VolumetricMat_sigma;
+            // float3 p_i = origin + -1 * direction * travel;
 
             // Compute Transmittance from previous to current
-            transmittance *= exp( -1 * sigma_s * stepSize); // T_i
+            transmittance *= exp( -1 * sigma * stepSize); // T_i
 
-            // Sample each light source
-            [fastopt] for(int l = 0; l < _NumOfLights; l++)
-            {
-                LightHit lightHit = GetIlluminate(p_i, hit.primitiveId, l);
-                color += transmittance * sigma_s * VolumetricMat_luminanceLight * lightHit.color;
-            }
+            // Integrating the light ray color
+            color = saturate(color + transmittance * sigma * luminance * color);
 
             // Move to next position
             travel -= stepSize;
@@ -68,7 +126,12 @@ float3 Volumetric(
 
         return color;
     }
-    return secondaryRayColor;
+    else
+    {
+        // Outside
+        return ray.color;   // TODO: Calculate the Transmittance based on the distance travelled
+    }
+
 }
 
 #endif // Volumetric_COMPUTE 

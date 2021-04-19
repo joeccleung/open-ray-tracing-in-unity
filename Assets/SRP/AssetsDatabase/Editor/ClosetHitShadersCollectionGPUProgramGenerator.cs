@@ -22,6 +22,8 @@ namespace OpenRT
 
             StringBuilder sb = new StringBuilder();
             // Order is reverse
+            sb.AppendLine("#ifndef CUSTOM_CLOSEST_HIT");
+            sb.AppendLine("#define CUSTOM_CLOSEST_HIT");
             sb.AppendLine("// =============================================");
             sb.AppendLine("// =        Closet Hit Shader Collection       =");
             sb.AppendLine("// = Auto-generated File. Do not edit manually =");
@@ -76,6 +78,30 @@ namespace OpenRT
 
             sb.AppendLine("}");
             sb.AppendLine("}");
+
+            sb.AppendLine("float3 OnShadowRayHit(Ray ray, RayHit hit)");
+            sb.AppendLine("{");
+            // TODO: Determine which kind of switch attribute works
+            // https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-switch
+            sb.AppendLine("switch(_Primitives[hit.primitiveId].materialIndex)");
+            sb.AppendLine("{");
+
+            int onShadowRayHitIndex = 0;
+            foreach (var shaderNameGUIDPair in sortedByName)
+            {
+                var guid = shaderNameGUIDPair.Value;
+
+                sb.AppendLine($"        case {onShadowRayHitIndex}:");
+                sb.AppendLine($"           return {shadersImportMetaList[guid].name}_OnShadowRayHit(ray, hit);");
+                onShadowRayHitIndex++;
+            }
+            sb.AppendLine($"        default:");
+            sb.AppendLine($"          return float3(1, 0, 1);");
+
+            sb.AppendLine("}");
+            sb.AppendLine("}");
+
+            sb.AppendLine("#endif  // CUSTOM_CLOSEST_HIT");
 
             return sb.ToString();
         }

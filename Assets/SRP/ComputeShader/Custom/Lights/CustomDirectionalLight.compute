@@ -1,31 +1,23 @@
-﻿#ifndef Custom_DirectionalLight_COMPUTE
+﻿// [light(CustomDirectionalLight)]
+
+#ifndef Custom_DirectionalLight_COMPUTE
 #define Custom_DirectionalLight_COMPUTE
 
 #include "../../RayCasting/Trace.compute"
 
-LightHit GetIlluminate_CustomDirectionalLight(LightInfo lightInfo, float3 hitPos, int primitiveId)
+LightHit GetIlluminate_CustomDirectionalLight(LightInfo lightInfo, float3 hitPos, int medium, int primitiveId)
 {
     Ray ray;
-    ray.color = float3(0.2, 0.2, 0.2);
-    ray.inside = -1;
-    ray.origin = lightInfo.position;
-    ray.direction = lightInfo.rotation;
+    ray.color = float3(1, 1, 1);
+    ray.origin = hitPos;
+    ray.direction = -1 * lightInfo.rotation;
     ray.gen = 1;
     ray.tmin = 0.0001f;
     ray.tmax = 1.#INF;
-    ray.medium = 0;
+    ray.medium = medium;
     ray.weight = 1;
     
-    if (ShadowTrace(ray, primitiveId))
-    {
-        return CreateLightHit(float3(0, 0, 0), float3(0, 0, 0));
-    }
-    else
-    {
-        // Not hitting anything
-        return CreateLightHit(float3(0.2, 0.2, 0.2), lightInfo.rotation);
-    }
-
+    return CreateLightHit(ShadowTrace(ray, primitiveId), lightInfo.rotation);
 }
 
 #endif

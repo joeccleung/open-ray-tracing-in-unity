@@ -47,25 +47,28 @@ namespace Example
 
         public override bool IsDirty()
         {
+            bool isDirty = false;
+
             if (prevFrameIsEnable != gameObject.activeInHierarchy)
             {
                 prevFrameIsEnable = gameObject.activeInHierarchy;
-                return true;
+                isDirty = true;
             }
 
             if (transform.hasChanged)
             {
                 transform.hasChanged = false;
-                return true;
+                isDirty = true;
             }
 
             if (m_previousSphereCenter != sphereData.center && m_previousSphereRadius == sphereData.radius)
             {
                 m_previousSphereCenter = sphereData.center;
                 m_previousSphereRadius = sphereData.radius;
-                return true;
+                isDirty = true;
             }
-            return false;
+
+            return isDirty;
         }
 
         public override bool IsGeometryValid()

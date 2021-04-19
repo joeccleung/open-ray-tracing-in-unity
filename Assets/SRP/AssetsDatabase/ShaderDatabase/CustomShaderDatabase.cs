@@ -24,6 +24,7 @@ namespace OpenRT
 
         private ClosestHitDataTable closestHitDataTable;
         private IntersectDataTable intersectDataTable;
+        private LightShaderDatabaseDataTable lightDataTable;
 
         private CustomShaderDatabaseFile databaseFile;
         private CustomShaderDatabaseFileIO fileIO;
@@ -43,6 +44,9 @@ namespace OpenRT
                 case EShaderType.Intersect:
                     return intersectDataTable.IsDirty();
 
+                case EShaderType.Light:
+                    return lightDataTable.IsDirty();
+
                 default:
                     Debug.LogWarning($"TODO: Support adding shaders of type {shaderType}");
                     return false;
@@ -53,12 +57,14 @@ namespace OpenRT
         {
             closestHitDataTable = new ClosestHitDataTable();
             intersectDataTable = new IntersectDataTable();
+            lightDataTable = new LightShaderDatabaseDataTable();
 
             fileIO = new CustomShaderDatabaseFileIO();
             databaseFile = fileIO.ReadDatabaseFromFile();
 
             closestHitDataTable.Populate(databaseFile.closetHit);
             intersectDataTable.Populate(databaseFile.intersect);
+            lightDataTable.Populate(databaseFile.lights);
         }
 
 
@@ -71,6 +77,9 @@ namespace OpenRT
 
                 case EShaderType.Intersect:
                     return intersectDataTable.ShaderNameList;
+
+                case EShaderType.Light:
+                    return lightDataTable.ShaderNameList;
 
                 default:
                     return new string[0];
@@ -87,6 +96,9 @@ namespace OpenRT
                 case EShaderType.Intersect:
                     return intersectDataTable.ShaderMetaList;
 
+                case EShaderType.Light:
+                    return lightDataTable.ShaderMetaList;
+
                 default:
                     return new SortedList<GUID, CustomShaderMeta>();
             }
@@ -101,6 +113,9 @@ namespace OpenRT
 
                 case EShaderType.Intersect:
                     return intersectDataTable.ShaderSortByName;
+
+                case EShaderType.Light:
+                    return lightDataTable.ShaderSortByName;
 
                 default:
                     return new SortedList<string, GUID>();
@@ -118,6 +133,10 @@ namespace OpenRT
 
                 case EShaderType.Intersect:
                     _Add(meta, intersectDataTable);
+                    break;
+
+                case EShaderType.Light:
+                    _Add(meta, lightDataTable);
                     break;
 
                 default:
@@ -150,6 +169,9 @@ namespace OpenRT
                 case EShaderType.Intersect:
                     return intersectDataTable.GUIDToShaderIndex(guid);
 
+                case EShaderType.Light:
+                    return lightDataTable.GUIDToShaderIndex(guid);
+
                 default:
                     return -1;
             }
@@ -165,6 +187,10 @@ namespace OpenRT
 
                 case OpenRT.EShaderType.Intersect:
                     _Move(meta, previous, intersectDataTable);
+                    break;
+
+                case OpenRT.EShaderType.Light:
+                    _Move(meta, previous, lightDataTable);
                     break;
 
                 default:
@@ -191,6 +217,10 @@ namespace OpenRT
                     _Remove(meta, intersectDataTable);
                     break;
 
+                case OpenRT.EShaderType.Light:
+                    _Remove(meta, lightDataTable);
+                    break;
+
                 default:
                     // TODO: Support adding shaders of type {meta.shaderType}
                     Debug.LogWarning($"TODO: Support adding shaders of type {meta.shaderType}");
@@ -215,6 +245,10 @@ namespace OpenRT
                     intersectDataTable.Clean();
                     break;
 
+                case EShaderType.Light:
+                    lightDataTable.Clean();
+                    break;
+
                 default:
                     Debug.LogWarning($"TODO: Support adding shaders of type {shaderType}");
                     break;
@@ -230,6 +264,9 @@ namespace OpenRT
 
                 case EShaderType.Intersect:
                     return intersectDataTable.ShaderNameToGUID(shaderName);
+
+                case EShaderType.Light:
+                    return lightDataTable.ShaderNameToGUID(shaderName);
 
                 default:
                     return string.Empty;

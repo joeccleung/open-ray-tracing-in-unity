@@ -17,7 +17,7 @@ void Reflective_SecRays(
     // secRaysAtHit.srays[0].direction = hit.normal;
     secRaysAtHit.srays[0].direction = normalize(reflect(ray.direction, hit.normal));
     secRaysAtHit.srays[0].color = float3(0, 0, 0);
-    secRaysAtHit.srays[0].inside = 0;   // outside
+    secRaysAtHit.srays[0].medium = hit.mediumToLeave;   // outside
     secRaysAtHit.srays[0].gen = ray.gen - 1;
     secRaysAtHit.srays[0].tmin = 0.01f;
     secRaysAtHit.srays[0].weight = 1;
@@ -34,7 +34,7 @@ float3 Reflective(
 
     [fastopt] for(int l = 0; l < _NumOfLights; l++)
     {
-        LightHit light0 = GetIlluminate(hit.position, hit.primitiveId, l);
+        LightHit light0 = GetIlluminate(hit.position, 0, hit.primitiveId, l);   // Reflection happens on the surface, medium = 0
 
         float nDotL = dot(hit.normal, -1 * light0.direction);
         if (nDotL >= 0)
@@ -46,5 +46,11 @@ float3 Reflective(
     
     return secondaryRayColor;
 }
+
+float3 Reflective_OnShadowRayHit(Ray ray, RayHit hit)
+{
+    return float3(0, 0, 0); // Opaque
+}
+
 
 #endif // Reflective_COMPUTE 

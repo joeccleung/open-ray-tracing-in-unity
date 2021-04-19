@@ -3,7 +3,7 @@
 
 // [shader(Red)]
 
-// Texture2D<float4> MarsMat_main;
+// StructuredBuffer<Texture2D<float4>> MarsMat_main;
 
 void Red_SecRays(
     inout Ray ray,
@@ -38,5 +38,11 @@ float3 Red(
 
     return 0.98f * color + 0.02f * secondaryRayColor;
 }
+
+float3 Red_OnShadowRayHit(Ray ray, RayHit hit)
+{
+    return float3(0, 0, 0); // Opaque
+}
+
 
 #endif // Red_COMPUTE 

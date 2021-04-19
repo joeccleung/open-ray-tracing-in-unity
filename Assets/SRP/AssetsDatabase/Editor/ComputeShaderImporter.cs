@@ -9,9 +9,11 @@ namespace OpenRT
     {
         private static IShaderMetaReader closetHitReader = new ClosetHitShaderMetaReader();
         private static IShaderMetaReader intersectReader = new IntersectShaderMetaReader();
+        private static IShaderMetaReader lightShaderReader = new LightShaderMetaReader();
 
         private static ClosetHitShaderCollectionGPUProgramGenerator closetHitShaderCollectionGPUProgramGenerator = new ClosetHitShaderCollectionGPUProgramGenerator();
         private static IntersectShaderCollectionGPUProgramGenerator intersectShaderCollectionGPUProgramGenerator = new IntersectShaderCollectionGPUProgramGenerator();
+        private static LightShaderCollectionGPUProgramGenerator lightShaderCollectionGPUProgramGenerator = new LightShaderCollectionGPUProgramGenerator();
 
         public static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
         {
@@ -86,6 +88,10 @@ namespace OpenRT
             {
                 return new CustomShaderMeta(name: shaderName, absPath: absPath, shaderType: OpenRT.EShaderType.Intersect);
             }
+            else if (lightShaderReader.CanHandle(fileContent, out shaderName))
+            {
+                return new CustomShaderMeta(name: shaderName, absPath: absPath, shaderType: OpenRT.EShaderType.Light);
+            }
             else
             {
                 return null;
@@ -103,9 +109,15 @@ namespace OpenRT
             }
             if (db.IsShaderTableDirty(EShaderType.Intersect))
             {
-                intersectShaderCollectionGPUProgramGenerator.ExportShaderCollection(db.ShaderSortedByName(EShaderType.Intersect), 
+                intersectShaderCollectionGPUProgramGenerator.ExportShaderCollection(db.ShaderSortedByName(EShaderType.Intersect),
                                                                                     db.ShaderMetaList(EShaderType.Intersect));
                 db.SetShaderTableClean(EShaderType.Intersect);
+            }
+            if (db.IsShaderTableDirty(EShaderType.Light))
+            {
+                lightShaderCollectionGPUProgramGenerator.ExportShaderCollection(db.ShaderSortedByName(EShaderType.Light),
+                                                                                db.ShaderMetaList(EShaderType.Light));
+                db.SetShaderTableClean(EShaderType.Light);
             }
         }
     }

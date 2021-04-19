@@ -26,6 +26,18 @@ namespace OpenRT
             sceneParseResult = new SceneParseResult();
         }
 
+        public List<RTLight> GetAllLights(GameObject[] roots)
+        {
+            List<RTLight> lights = new List<RTLight>();
+
+            foreach (var root in roots)
+            {
+                lights.AddRange(root.GetComponentsInChildren<RTLight>());
+            }
+
+            return lights;
+        }
+
         public List<RTRenderer> GetAllRenderers(GameObject[] roots)
         {
             List<RTRenderer> renderers = new List<RTRenderer>();
@@ -44,11 +56,22 @@ namespace OpenRT
 
             renderers.ForEach(r =>
             {
-                if (r.geometry == null)
+                if (r.geometry != null)
                 {
-                    return;
+                    isDirty |= r.geometry.IsDirty();
                 }
-                isDirty |= r.geometry.IsDirty();
+            });
+
+            return isDirty;
+        }
+
+        public bool IsAllLightsDirty(List<RTLight> lights)
+        {
+            bool isDirty = false;
+
+            lights.ForEach(r =>
+            {
+                isDirty |= r.IsDirty();
             });
 
             return isDirty;
@@ -61,31 +84,49 @@ namespace OpenRT
             ParseGeometry(roots,
                           ref sceneParseResult);
 
-            ParseLight(ref sceneParseResult);
+            ParseLight(
+                roots,
+                ref sceneParseResult);
 
             sceneParseResult.TopLevelBVH.Construct();
 
             return sceneParseResult;
         }
 
-        private void ParseLight(ref SceneParseResult sceneParseResult)
+        private void ParseLight(
+            GameObject[] roots,
+            ref SceneParseResult sceneParseResult)
         {
+            var lights = GetAllLights(roots);
+
+            if (!IsAllLightsDirty(lights))
+            {
+                // All the lights are unchange, no need to rebuild
+                return;
+            }
+
             sceneParseResult.ClearAllLights();
 
-            // Placeholder for scene parsing
-            sceneParseResult.AddLight(new RTLightInfo(
-                instance: 0,
-                position: new Vector3(1, 1, 1),
-                rotation: new Vector3(0, 0, -1),
-                type: 0
-            ));
+            foreach (var light in lights)
+            {
+                if (light.gameObject.activeInHierarchy)
+                {
+                    sceneParseResult.AddLight(light.GetLightInfo());
+                }
+            }
 
-            sceneParseResult.AddLight(new RTLightInfo(
-                instance: 0,
-                position: new Vector3(0, 0, 0),
-                rotation: new Vector3(0, 0, 0),
-                type: 1
-            ));
+            // // Placeholder for scene parsing
+            // sceneParseResult.AddLight(new RTLightInfo(
+            //     position: new Vector3(1, 1, 1),
+            //     rotation: new Vector3(0, 0, -1),
+            //     type: 0
+            // ));
+
+            // sceneParseResult.AddLight(new RTLightInfo(
+            //     position: new Vector3(0, 0, 0),
+            //     rotation: new Vector3(0, 0, 0),
+            //     type: 1
+            // ));
         }
 
         private void ParseGeometry(
@@ -94,7 +135,7 @@ namespace OpenRT
         {
             var renderers = GetAllRenderers(roots);
 
-            if (!IsAllGeometriesDirty(renderers))
+            if (!IsAllGeometriesDirty(renderers) && sceneParseResult.Primitives.Count != 0)
             {
                 // All the geometries are unchange, no need to rebuild
                 return;
@@ -105,7 +146,7 @@ namespace OpenRT
             sceneParseResult.ClearAllGeometries();
             sceneParseResult.ClearAllMaterials();
             sceneParseResult.ClearTopLevelBVH();
-
+ 
             foreach (var renderer in renderers)
             {
                 if (renderer.gameObject.activeInHierarchy)

@@ -26,7 +26,7 @@ namespace OpenRT
         }
         [SerializeField] Mesh m_mesh;
         private int m_meshHashCode = 0;
-        [SerializeField] private int m_minNumberOfGeoPerBox = 0;
+        [SerializeField] private int m_minNumberOfGeoPerBox = 30;
         private int m_minNumberOfGeoPerBoxPrev = 0;
         // [SerializeField] private bool m_refreshMesh;
 
@@ -105,32 +105,34 @@ namespace OpenRT
 
         public override bool IsDirty()
         {
+            bool isDirty = false;
+
             if (prevFrameIsEnable != gameObject.activeInHierarchy)
             {
                 prevFrameIsEnable = gameObject.activeInHierarchy;
-                return true;
+                isDirty = true;
             }
 
             if (transform.hasChanged)
             {
                 transform.hasChanged = false;
-                return true;
+                isDirty = true;
             }
 
             int _curHashCode = m_mesh.GetHashCode();
             if (m_meshHashCode != _curHashCode)
             {
                 m_meshHashCode = _curHashCode;
-                return true;
+                isDirty = true;
             }
 
             if (m_minNumberOfGeoPerBoxPrev != m_minNumberOfGeoPerBox)
             {
                 m_minNumberOfGeoPerBoxPrev = m_minNumberOfGeoPerBox;
-                return true;
+                isDirty = true;
             }
 
-            return false;
+            return isDirty;
         }
 
         public override bool IsGeometryValid()
@@ -138,7 +140,12 @@ namespace OpenRT
             return true;
         }
 
-        public override Vector3 LocalToWorld(Vector3 local)
+        public override Vector3 LocalToWorldDirection(Vector3 local)
+        {
+            return transform.localToWorldMatrix.MultiplyVector(local);
+        }
+
+        public override Vector3 LocalToWorldVertex(Vector3 local)
         {
             return transform.localToWorldMatrix.MultiplyPoint(local);
         }

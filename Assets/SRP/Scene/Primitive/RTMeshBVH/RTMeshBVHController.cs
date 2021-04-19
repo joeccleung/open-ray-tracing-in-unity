@@ -14,7 +14,8 @@ namespace OpenRT
             Vector3[] GetNormals();
             int[] GetTrianglesVertexOrder(int bitmap);
             Vector3[] GetVertices();
-            Vector3 LocalToWorld(Vector3 local);
+            Vector3 LocalToWorldDirection(Vector3 local);
+            Vector3 LocalToWorldVertex(Vector3 local);
         }
 
         private IActuator m_actuator;
@@ -227,34 +228,38 @@ namespace OpenRT
                                          Vector3 n1,
                                          Vector3 n2)
         {
-            v0 = m_actuator.LocalToWorld(v0);
-            v1 = m_actuator.LocalToWorld(v1);
-            v2 = m_actuator.LocalToWorld(v2);
+            Vector3 wv0 = m_actuator.LocalToWorldVertex(v0);
+            Vector3 wv1 = m_actuator.LocalToWorldVertex(v1);
+            Vector3 wv2 = m_actuator.LocalToWorldVertex(v2);
 
-            Vector3 _cross = Vector3.Cross(v1 - v0, v2 - v0);
+            Vector3 wn0 = m_actuator.LocalToWorldDirection(n0);
+            Vector3 wn1 = m_actuator.LocalToWorldDirection(n1);
+            Vector3 wn2 = m_actuator.LocalToWorldDirection(n2);
+
+            Vector3 _cross = Vector3.Cross(wv1 - wv0, wv2 - wv0);
             Vector3 normal = Vector3.Normalize(_cross);
-            float planeD = -1 * Vector3.Dot(normal, v0);
+            float planeD = -1 * Vector3.Dot(normal, wv0);
             float area = Vector3.Dot(normal, _cross);
 
             return new float[] {
-                v0.x,
-                v0.y,
-                v0.z,
-                v1.x,
-                v1.y,
-                v1.z,
-                v2.x,
-                v2.y,
-                v2.z,
-                n0.x,
-                n0.y,
-                n0.z,
-                n1.x,
-                n1.y,
-                n1.z,
-                n2.x,
-                n2.y,
-                n2.z,
+                wv0.x,
+                wv0.y,
+                wv0.z,
+                wv1.x,
+                wv1.y,
+                wv1.z,
+                wv2.x,
+                wv2.y,
+                wv2.z,
+                wn0.x,
+                wn0.y,
+                wn0.z,
+                wn1.x,
+                wn1.y,
+                wn1.z,
+                wn2.x,
+                wn2.y,
+                wn2.z,
                 planeD,
                 area
             };
@@ -287,9 +292,9 @@ namespace OpenRT
             for (int i = 0; i < trianglesVertexOrder.Length; i += 3)
             {
                 RTBoundingBox box = RTBoundingBox.RTBoundingBoxFromTriangle(primitiveCounter,
-                                                                            m_actuator.LocalToWorld(vertices[trianglesVertexOrder[i]]),
-                                                                            m_actuator.LocalToWorld(vertices[trianglesVertexOrder[i + 1]]),
-                                                                            m_actuator.LocalToWorld(vertices[trianglesVertexOrder[i + 2]]));
+                                                                            m_actuator.LocalToWorldVertex(vertices[trianglesVertexOrder[i]]),
+                                                                            m_actuator.LocalToWorldVertex(vertices[trianglesVertexOrder[i + 1]]),
+                                                                            m_actuator.LocalToWorldVertex(vertices[trianglesVertexOrder[i + 2]]));
                 builder.AddBoundingBox(box);
 
                 triangles.AddRange(GenerateTriangle(vertices[trianglesVertexOrder[i]],

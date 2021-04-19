@@ -5,10 +5,10 @@ using UnityEngine;
 namespace OpenRT
 {
 public class RTLight : MonoBehaviour {
-   [HideInInspector, SerializeField] public int shaderIndex = 0;
+   [HideInInspector, SerializeField] public int lightIndex = 0;
    [HideInInspector, SerializeField] public string shaderGUID = string.Empty;
 
-   private void OnDrawGizmosSelected() {
+   public void OnDrawGizmos() {
       Gizmos.color = Color.yellow;
       Gizmos.DrawLine(transform.position, transform.position + transform.forward);
    }
@@ -17,8 +17,14 @@ public class RTLight : MonoBehaviour {
    {
        return new RTLightInfo(
            position: transform.position,
-           type: shaderIndex
+           rotation: Vector3.Normalize(-1 * transform.up),     // We assume light points downward
+           type: lightIndex
        );
+   }
+
+   public virtual bool IsDirty()
+   {
+       return true;
    }
 }
 }

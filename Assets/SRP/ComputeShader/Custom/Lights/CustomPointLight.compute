@@ -1,30 +1,23 @@
-﻿#ifndef Custom_PointLight_COMPUTE
+﻿// [light(CustomPointLight)]
+
+#ifndef Custom_PointLight_COMPUTE
 #define Custom_PointLight_COMPUTE
 
 #include "../../RayCasting/Trace.compute"
 
-LightHit GetIlluminate_CustomPointLight(LightInfo lightInfo, float3 hitPos, int primitiveId)
+LightHit GetIlluminate_CustomPointLight(LightInfo lightInfo, float3 hitPos, int medium, int primitiveId)
 {
     Ray ray;
-    ray.color = float3(0, 0.4, 0);
-    ray.inside = -1;
+    ray.color = float3(1, 1, 1);
     ray.origin = lightInfo.position;
     ray.direction = normalize(hitPos - ray.origin);
     ray.gen = 1;
     ray.tmin = 0.0001f;
     ray.tmax = distance(ray.origin, hitPos);
-    ray.medium = 0;
+    ray.medium = medium;
     ray.weight = 1;
 
-    if (ShadowTrace(ray, primitiveId))
-    {
-        return CreateLightHit(float3(0, 0, 0), ray.direction);
-    }
-    else
-    {
-        return CreateLightHit(ray.color, ray.direction);
-    }
-    
+    return CreateLightHit(ShadowTrace(ray, primitiveId), lightInfo.rotation);
 }
 
 
