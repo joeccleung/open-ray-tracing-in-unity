@@ -32,6 +32,9 @@ int _RayGenID;
 Texture2D<float4> _SkyboxTexture;
 SamplerState sampler_SkyboxTexture;
 
+// Texture
+Texture2DArray _MatTexture;
+
 // Primitive
 int _NumOfPrimitive;
 StructuredBuffer<Primitive> _Primitives;
