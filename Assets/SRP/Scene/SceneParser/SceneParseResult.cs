@@ -19,6 +19,9 @@ namespace OpenRT
         public Dictionary<string, List<Vector2>> m_materialsVector2List;
         public Dictionary<string, List<Vector3>> m_materialsVector3List;
         public Dictionary<string, List<Vector4>> m_materialsVector4List;
+        public List<Texture2D> m_textureCollection;
+        public Dictionary<string, List<int>> m_materialsTextureIndexList;
+
         private List<Primitive> m_primitives;
         private List<Matrix4x4> m_worldToPrimitives;
         private TopLevelBVH topLevelBVH;
@@ -44,6 +47,8 @@ namespace OpenRT
             m_materialsVector2List = new Dictionary<string, List<Vector2>>();
             m_materialsVector3List = new Dictionary<string, List<Vector3>>();
             m_materialsVector4List = new Dictionary<string, List<Vector4>>();
+            m_textureCollection = new List<Texture2D>();
+            m_materialsTextureIndexList = new Dictionary<string, List<ISIdx>>();
             m_primitives = new List<Primitive>();
             m_worldToPrimitives = new List<Matrix4x4>();
             topLevelBVH = new TopLevelBVH();
@@ -187,6 +192,30 @@ namespace OpenRT
             }
         }
 
+        public void AddMaterialTexture(string name, Texture2D texture)
+        {
+            int index = -1;
+            for (int t = 0; t < m_textureCollection.Count; t++) {
+                if (texture.GetInstanceID() == m_textureCollection[t].GetInstanceID()) {
+                    index = t;
+                    break;
+                }
+            }
+            if (index == -1) {
+                m_textureCollection.Add(texture);
+                index = m_textureCollection.Count - 1;
+            }
+
+            if (m_materialsTextureIndexList.ContainsKey(name))
+            {
+                m_materialsTextureIndexList[name].Add(index);
+            }
+            else
+            {
+                m_materialsTextureIndexList.Add(name, new List<int>() { index });
+            }
+        }
+
         public void AddPrimitive(Primitive primitive)
         {
             m_primitives.Add(primitive);
@@ -267,6 +296,7 @@ namespace OpenRT
             m_materialsVector2List.Clear();
             m_materialsVector3List.Clear();
             m_materialsVector4List.Clear();
+            m_materialsTextureIndexList.Clear();
         }
 
         public void ClearAllPrimitives()

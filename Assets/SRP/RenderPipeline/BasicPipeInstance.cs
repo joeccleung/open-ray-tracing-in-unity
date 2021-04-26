@@ -28,6 +28,7 @@ namespace OpenRT
         private PrimitiveBuffer m_primitiveBuffer;
         // -
         private List<ComputeBuffer> m_computeBufferForMaterials;
+        private List<ComputeBuffer> computeBufferForMaterials { get { return m_computeBufferForMaterials ?? new List<ComputeBuffer>(); }}
         private SceneParseResult sceneParseResult;
         private TopLevelAccelerationBuffer m_topLevelAcc;
         private TopLevelAccelerationGeometryMappingCollectionBuffer m_topLevelAccGeoMap;
@@ -64,8 +65,6 @@ namespace OpenRT
             kIndex = mainShader.FindKernel("CSMain");
 
             m_config = m_allConfig[0];
-
-            m_computeBufferForMaterials = new List<GeometryInstanceBuffer>();
         }
 
         protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras) // This is the function called every frame to draw on the screen
@@ -85,7 +84,7 @@ namespace OpenRT
                                     ref m_worldToPrimitiveBuffer,
                                     ref m_gemoetryInstanceBuffer,
                                     ref m_topLevelAccGeoMap);
-            RunLoadMaterialToBuffer(m_computeBufferForMaterials,
+            RunLoadMaterialToBuffer(computeBufferForMaterials,
                                     sceneParseResult,
                                     ref m_mainShader);
             RunLoadLightToBuffer(sceneParseResult, ref m_lightInfoBuffer);
@@ -120,14 +119,11 @@ namespace OpenRT
         {
             sceneParseResult.ClearAllMaterials();
 
-            SceneTextureCollection sceneTexture = new SceneTextureCollection();
-
             PipelineMaterialToBuffer.MaterialsToBuffer(computeShadersForMaterials,
                                                        sceneParseResult,
-                                                       ref mainShader,
-                                                       ref sceneTexture);
+                                                       ref mainShader);
 
-            PipelineMaterialToBuffer.LoadTextureToBuffer(sceneTexture, ref mainShader);
+            PipelineMaterialToBuffer.LoadTextureToBuffer(sceneParseResult, ref mainShader);
         }
 
         private void RunParseScene()
@@ -374,11 +370,11 @@ namespace OpenRT
             m_objectLevelAccGeoMapBuffers.Clear();
             m_lightInfoBuffer?.Release();
 
-            foreach (var materialBuffers in m_computeBufferForMaterials)
+            foreach (var materialBuffers in computeBufferForMaterials)
             {
                 materialBuffers.Release();
             }
-            m_computeBufferForMaterials.Clear();
+            computeBufferForMaterials.Clear();
         }
 
         private void RunSendTextureToUnity(CommandBuffer commands, RenderTexture targeTexture,

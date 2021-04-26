@@ -8,14 +8,12 @@ namespace OpenRT
     {
         public static void MaterialsToBuffer(List<ComputeBuffer> computeBuffersForMaterialProperties,
                                              in SceneParseResult sceneParseResult,
-                                             ref ComputeShader mainShader,
-                                             ref SceneTextureCollection sceneTexture)
+                                             ref ComputeShader mainShader)
         {
             foreach (var mat in sceneParseResult.Materials)
             {
                 MaterialToBuffer(material: mat,
                                  mainShader: ref mainShader,
-                                 sceneTexture: ref sceneTexture,
                                  sceneParseResult: sceneParseResult);
             }
 
@@ -72,10 +70,27 @@ namespace OpenRT
                 computeBuffersForMaterialProperties.Add(cb);
                 // Do NOT release the compute buffer before the actual draw commands is being sent
             }
+
+            Texture2DArray texArr = new Texture2DArray(1024, 1024, sceneParseResult.m_textureCollection.Count, TextureFormat.RGBA32, 1, false);
+            int texCounter = 0;
+            foreach (var tex in sceneParseResult.m_textureCollection)
+            {
+                Graphics.CopyTexture(tex, 0, texArr, texCounter);
+                texCounter++;
+            }
+            mainShader.SetTexture(mainShader.FindKernel("CSMain"), "_MatTexture", texArr);
+
+            foreach (var materialTextureIndex in sceneParseResult.m_materialsTextureIndexList)
+            {
+                ComputeBuffer cb = new ComputeBuffer(materialTextureIndex.Value.Count, sizeof(int));
+                cb.SetData(materialTextureIndex.Value);
+                mainShader.SetBuffer(0, materialTextureIndex.Key, cb);
+                computeBuffersForMaterialProperties.Add(cb);
+                // Do NOT release the compute buffer before the actual draw commands is being sent
+            }
         }
 
         public static void MaterialToBuffer(in RTMaterial material,
-                                            ref SceneTextureCollection sceneTexture,
                                             ref ComputeShader mainShader,
                                             SceneParseResult sceneParseResult)
         {
@@ -87,7 +102,7 @@ namespace OpenRT
 
                 var fieldValue = GetFieldValue(material, field);
 
-                ProcessField(ref mainShader, ref sceneTexture, fieldName, fieldValue, sceneParseResult);
+                ProcessField(ref mainShader, fieldName, fieldValue, sceneParseResult);
             }
         }
 
@@ -113,7 +128,6 @@ namespace OpenRT
 
         private static void AssignFieldToMainShader(string fieldName,
                                                     in object fieldValue,
-                                                    ref ComputeShader mainShader,
                                                     SceneParseResult sceneParseResult)
         {
             switch (fieldValue)
@@ -141,17 +155,20 @@ namespace OpenRT
                 case Vector4 v4:
                     sceneParseResult.AddMaterialVector4(name: fieldName, value: v4);
                     break;
+
+                case Texture2D texture2D:
+                    sceneParseResult.AddMaterialTexture(name: fieldName, texture: texture2D);
+                    break;
             }
         }
 
-        public static void LoadTextureToBuffer(in SceneTextureCollection sceneTexture,
+        public static void LoadTextureToBuffer(in SceneParseResult sceneTexture,
                                                ref ComputeShader mainShader)
         {
 
         }
 
         private static void ProcessField(ref ComputeShader mainShader,
-                                         ref SceneTextureCollection sceneTexture,
                                          string fieldName,
                                          object fieldValue,
                                          SceneParseResult sceneParseResult)
@@ -161,20 +178,11 @@ namespace OpenRT
                 return;
             }
 
-            // TODO: Investigate how to only send the texture once to GPU if the texture is the same
-            if (fieldValue is Texture2D tex)
-            {
-                RegisterTexture(fieldName, tex, ref sceneTexture, ref mainShader);
-            }
-            else
-            {
-                AssignFieldToMainShader(fieldName, fieldValue, ref mainShader, sceneParseResult);
-            }
+            AssignFieldToMainShader(fieldName, fieldValue, sceneParseResult);
         }
 
         private static void RegisterTexture(string fieldName,
                                             Texture2D texture,
-                                            ref SceneTextureCollection texturesCol,
                                             ref ComputeShader mainShader)
         {
 
