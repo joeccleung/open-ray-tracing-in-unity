@@ -5,10 +5,12 @@
 
 #include "../../RayCasting/Trace.compute"
 
+StructuredBuffer<float4> CustomDirectionalLight_color;
+
 LightHit GetIlluminate_CustomDirectionalLight(LightInfo lightInfo, float3 hitPos, int medium, int primitiveId)
 {
     Ray ray;
-    ray.color = float3(1, 1, 1);
+    ray.color = CustomDirectionalLight_color[lightInfo.instanceIndex];
     ray.origin = hitPos;
     ray.direction = -1 * lightInfo.rotation;
     ray.gen = 1;

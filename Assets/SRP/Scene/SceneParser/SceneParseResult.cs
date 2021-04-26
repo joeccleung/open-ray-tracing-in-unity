@@ -10,7 +10,15 @@ namespace OpenRT
         private Dictionary<ISIdx, int> m_geometryCount;
         private Dictionary<ISIdx, bool> m_geometryTypeIsDirty;
         private Dictionary<ISIdx, int> m_geometryStrides;
+        private List<RTLight> m_lights;
         private List<RTLightInfo> m_lightInfos;
+        private Dictionary<string, int> m_lightInstancesCount;
+        public Dictionary<string, List<Color>> m_lightColorList;
+        public Dictionary<string, List<float>> m_lightFloatList;
+        public Dictionary<string, List<int>> m_lightIntList;
+        public Dictionary<string, List<Vector2>> m_lightVector2List;
+        public Dictionary<string, List<Vector3>> m_lightVector3List;
+        public Dictionary<string, List<Vector4>> m_lightVector4List;
         private List<RTMaterial> m_materials;
         private Dictionary<string, int> m_materialsInstancesCount;
         public Dictionary<string, List<Color>> m_materialsColorList;
@@ -38,7 +46,15 @@ namespace OpenRT
             m_geometryData = new SortedList<ISIdx, List<float>>();
             m_geometryStrides = new Dictionary<ISIdx, int>();
             m_geometryTypeIsDirty = new Dictionary<ISIdx, bool>();
+            m_lights = new List<RTLight>();
             m_lightInfos = new List<RTLightInfo>();
+            m_lightInstancesCount = new Dictionary<string, ISIdx>();
+            m_lightColorList = new Dictionary<string, List<Color>>();
+            m_lightFloatList = new Dictionary<string, List<float>>();
+            m_lightIntList = new Dictionary<string, List<int>>();
+            m_lightVector2List = new Dictionary<string, List<Vector2>>();
+            m_lightVector3List = new Dictionary<string, List<Vector3>>();
+            m_lightVector4List = new Dictionary<string, List<Vector4>>();
             m_materials = new List<RTMaterial>();
             m_materialsInstancesCount = new Dictionary<string, int>();
             m_materialsColorList = new Dictionary<string, List<Color>>();
@@ -92,10 +108,138 @@ namespace OpenRT
             }
         }
 
-        public void AddLight(RTLightInfo lightInfo)
+        /// <summary>
+        /// Register the material from a geometry, return the light instance index of that light relative to the light group
+        /// </summary>
+        public int AddLight(RTLight light)
         {
-            m_lightInfos.Add(lightInfo);
+            var lightGUID = light.shaderGUID;
+
+            if (m_lightInstancesCount.ContainsKey(lightGUID))
+            {
+                // Material already exists
+                m_lightInstancesCount[lightGUID]++;
+            }
+            else
+            {
+                // First time
+                m_lightInstancesCount.Add(lightGUID, 1);
+            }
+
+            // RTLight acts like Material. The fields are extracted to individual StructuredBuffer and pass to GPU.
+            m_lights.Add(light);
+
+            // RTLightInfo acts like Primitive. It is sent to GPU.
+            m_lightInfos.Add(new RTLightInfo(
+                position: light.Position(),
+                rotation: light.Rotation(),
+                instanceIndex: m_lightInstancesCount[lightGUID] - 1,    // 0 index based
+                type: CustomShaderDatabase.Instance.GUIDToShaderIndex(lightGUID, EShaderType.Light)
+            ));
+
+            return m_lightInstancesCount[lightGUID] - 1; // 0 index based
         }
+
+        public void AddLightColor(string name, Color color)
+        {
+            if (m_lightColorList.ContainsKey(name))
+            {
+                m_lightColorList[name].Add(color);
+            }
+            else
+            {
+                m_lightColorList.Add(name, new List<Color>() { color });
+            }
+        }
+
+        public void AddLightFloat(string name, float value)
+        {
+            if (m_lightFloatList.ContainsKey(name))
+            {
+                m_lightFloatList[name].Add(value);
+            }
+            else
+            {
+                m_lightFloatList.Add(name, new List<float>() { value });
+            }
+        }
+
+        public void AddLightInt(string name, int value)
+        {
+            if (m_lightIntList.ContainsKey(name))
+            {
+                m_lightIntList[name].Add(value);
+            }
+            else
+            {
+                m_lightIntList.Add(name, new List<int>() { value });
+            }
+        }
+
+        public void AddLightVector2(string name, Vector2 value)
+        {
+            if (m_lightVector2List.ContainsKey(name))
+            {
+                m_lightVector2List[name].Add(value);
+            }
+            else
+            {
+                m_lightVector2List.Add(name, new List<Vector2>() { value });
+            }
+        }
+
+        public void AddLightVector3(string name, Vector3 value)
+        {
+            if (m_lightVector3List.ContainsKey(name))
+            {
+                m_lightVector3List[name].Add(value);
+            }
+            else
+            {
+                m_lightVector3List.Add(name, new List<Vector3>() { value });
+            }
+        }
+
+        public void AddLightVector4(string name, Vector4 value)
+        {
+            if (m_lightVector4List.ContainsKey(name))
+            {
+                m_lightVector4List[name].Add(value);
+            }
+            else
+            {
+                m_lightVector4List.Add(name, new List<Vector4>() { value });
+            }
+        }
+
+        public void AddLightTexture(string name, Texture2D texture)
+        {
+            int index = -1;
+            for (int t = 0; t < m_textureCollection.Count; t++)
+            {
+                if (texture.GetInstanceID() == m_textureCollection[t].GetInstanceID())
+                {
+                    index = t;
+                    break;
+                }
+            }
+            if (index == -1)
+            {
+                m_textureCollection.Add(texture);
+                index = m_textureCollection.Count - 1;
+            }
+
+            // We are sharing the texture index list with materials because texture is hold on a separate list
+            if (m_materialsTextureIndexList.ContainsKey(name))
+            {
+                m_materialsTextureIndexList[name].Add(index);
+            }
+            else
+            {
+                m_materialsTextureIndexList.Add(name, new List<int>() { index });
+            }
+        }
+
 
         /// <summary>
         /// Register the material from a geometry, return the material index of that geometry relative to the material group
@@ -195,17 +339,21 @@ namespace OpenRT
         public void AddMaterialTexture(string name, Texture2D texture)
         {
             int index = -1;
-            for (int t = 0; t < m_textureCollection.Count; t++) {
-                if (texture.GetInstanceID() == m_textureCollection[t].GetInstanceID()) {
+            for (int t = 0; t < m_textureCollection.Count; t++)
+            {
+                if (texture.GetInstanceID() == m_textureCollection[t].GetInstanceID())
+                {
                     index = t;
                     break;
                 }
             }
-            if (index == -1) {
+            if (index == -1)
+            {
                 m_textureCollection.Add(texture);
                 index = m_textureCollection.Count - 1;
             }
 
+            // We are sharing the texture index list with lights because texture is hold on a separate list
             if (m_materialsTextureIndexList.ContainsKey(name))
             {
                 m_materialsTextureIndexList[name].Add(index);
@@ -279,13 +427,25 @@ namespace OpenRT
             m_objectLevelAccelerationStructureGeometryMapping.Clear();
             m_objectLevelAccelerationStructureGeometryMappingCursor.Clear();
 
+            m_lights.Clear();
+            m_lightInfos.Clear();
+            m_lightInstancesCount.Clear();
+
             m_materials.Clear();
             m_materialsInstancesCount.Clear();
         }
 
         public void ClearAllLights()
         {
+            m_lights.Clear();
             m_lightInfos.Clear();
+            m_lightInstancesCount.Clear();
+            m_lightColorList.Clear();
+            m_lightFloatList.Clear();
+            m_lightIntList.Clear();
+            m_lightVector2List.Clear();
+            m_lightVector3List.Clear();
+            m_lightVector4List.Clear();
         }
 
         public void ClearAllMaterials()
@@ -353,7 +513,15 @@ namespace OpenRT
             }
         }
 
-        public List<RTLightInfo> Lights
+        public List<RTLight> Lights
+        {
+            get
+            {
+                return m_lights;
+            }
+        }
+
+        public List<RTLightInfo> LightPrimitives
         {
             get
             {

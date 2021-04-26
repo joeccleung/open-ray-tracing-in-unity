@@ -95,8 +95,11 @@ float3 ShadowTrace(Ray ray, int originPrimitiveId)
                 [fastopt] for(int p = 1; p <= numberOfPrimitiveInThisBox; p++) // Shift 1 due to [0] holds the number of indices in this box
                 {
                     IntersectByGeometry(ray, bestHit, _TopLevelAccelerationGeometryMapping[mapCursor + p]);
-                    // It hit something and it is not the origin primitive, the light is blocked
-                    if (bestHit.primitiveId != -1 && bestHit.primitiveId != originPrimitiveId) {
+                    // Necessary conditions for a hit to be considered as blocking
+                    // - There is a hit (bestHit.primitiveId != -1)
+                    // - Non self-shadowing (bestHit.primitiveId != originPrimitiveId)
+                    // - Hit is within ray.tmax
+                    if (bestHit.primitiveId != -1 && bestHit.primitiveId != originPrimitiveId && bestHit.distance <= ray.tmax) {
                         ray.color = ray.color * OnShadowRayHit(ray, bestHit);
                     }
                 }

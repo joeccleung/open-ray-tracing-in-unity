@@ -10,16 +10,31 @@ namespace OpenRT
     {
         public override void OnInspectorGUI()
         {
+            serializedObject.Update();
+
             DrawDefaultInspector();
 
-            var m_shaderIndexProp = serializedObject.FindProperty("lightIndex");
+            var shaderGUIDProp = serializedObject.FindProperty("shaderGUID");
 
-            m_shaderIndexProp.intValue = EditorGUILayout.Popup("Light Shader", m_shaderIndexProp.intValue, CustomShaderDatabase.Instance.ShaderNameList(EShaderType.Light));
+            var shaderIndex = CustomShaderDatabase.Instance.GUIDToShaderIndex(shaderGUIDProp.stringValue, EShaderType.Light);
 
-            if (m_shaderIndexProp.intValue == -1)
+            if (shaderIndex == -1)
             {
-                m_shaderIndexProp.intValue = 0;
+                EditorGUILayout.HelpBox($"Unable to find light shader {shaderGUIDProp.stringValue}", MessageType.Warning);
+                shaderIndex = 0;
             }
+            else
+            {
+                EditorGUILayout.HelpBox($"Shader Index:{shaderIndex} GUID:{shaderGUIDProp.stringValue}", MessageType.None);
+            }
+
+            var selectedShaderIndex = EditorGUILayout.Popup(
+                "Light Shader",
+                shaderIndex,
+                CustomShaderDatabase.Instance.ShaderNameList(EShaderType.Light));
+
+            var selectedShaderName = CustomShaderDatabase.Instance.ShaderNameList(EShaderType.Light) [selectedShaderIndex];
+            shaderGUIDProp.stringValue = CustomShaderDatabase.Instance.ShaderNameToGUID(selectedShaderName, EShaderType.Light);
 
             serializedObject.ApplyModifiedProperties();
         }

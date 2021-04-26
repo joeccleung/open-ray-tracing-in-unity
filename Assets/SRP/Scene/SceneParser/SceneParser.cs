@@ -111,22 +111,9 @@ namespace OpenRT
             {
                 if (light.gameObject.activeInHierarchy)
                 {
-                    sceneParseResult.AddLight(light.GetLightInfo());
+                    int lightInstanceIndex = sceneParseResult.AddLight(light);
                 }
             }
-
-            // // Placeholder for scene parsing
-            // sceneParseResult.AddLight(new RTLightInfo(
-            //     position: new Vector3(1, 1, 1),
-            //     rotation: new Vector3(0, 0, -1),
-            //     type: 0
-            // ));
-
-            // sceneParseResult.AddLight(new RTLightInfo(
-            //     position: new Vector3(0, 0, 0),
-            //     rotation: new Vector3(0, 0, 0),
-            //     type: 1
-            // ));
         }
 
         private void ParseGeometry(
