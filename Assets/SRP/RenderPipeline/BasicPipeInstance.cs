@@ -27,8 +27,24 @@ namespace OpenRT
         private SortedList<ISIdx, ObjectLevelAccelerationGeometryMappingCollectionBuffer> m_objectLevelAccGeoMapBuffers = new SortedList<ISIdx, ObjectLevelAccelerationGeometryMappingCollectionBuffer>();
         private PrimitiveBuffer m_primitiveBuffer;
         // -
+        private List<ComputeBuffer> m_computeBufferForLights;
+        private List<ComputeBuffer> computeBufferForLights
+        {
+            get
+            {
+                m_computeBufferForLights = m_computeBufferForLights ?? new List<ComputeBuffer>();
+                return m_computeBufferForLights;
+            }
+        }
         private List<ComputeBuffer> m_computeBufferForMaterials;
-        private List<ComputeBuffer> computeBufferForMaterials { get { return m_computeBufferForMaterials ?? new List<ComputeBuffer>(); }}
+        private List<ComputeBuffer> computeBufferForMaterials
+        {
+            get
+            {
+                m_computeBufferForMaterials = m_computeBufferForMaterials ?? new List<ComputeBuffer>();
+                return m_computeBufferForMaterials;
+            }
+        }
         private SceneParseResult sceneParseResult;
         private TopLevelAccelerationBuffer m_topLevelAcc;
         private TopLevelAccelerationGeometryMappingCollectionBuffer m_topLevelAccGeoMap;
@@ -87,7 +103,10 @@ namespace OpenRT
             RunLoadMaterialToBuffer(computeBufferForMaterials,
                                     sceneParseResult,
                                     ref m_mainShader);
-            RunLoadLightToBuffer(sceneParseResult, ref m_lightInfoBuffer);
+            RunLoadLightToBuffer(computeBufferForLights,
+                                 sceneParseResult,
+                                 ref m_lightInfoBuffer,
+                                 ref m_mainShader);
             RunSetAmbientToMainShader(m_config);
             RunSetMissShader(m_mainShader, m_config);
             RunSetRayGenerationShader(m_config.rayGenId);
@@ -122,8 +141,6 @@ namespace OpenRT
             PipelineMaterialToBuffer.MaterialsToBuffer(computeShadersForMaterials,
                                                        sceneParseResult,
                                                        ref mainShader);
-
-            PipelineMaterialToBuffer.LoadTextureToBuffer(sceneParseResult, ref mainShader);
         }
 
         private void RunParseScene()
@@ -247,12 +264,21 @@ namespace OpenRT
                                             topLevelAccGeoMapColBuffer: ref topLevelAccGeoMap);
         }
 
-        private void RunLoadLightToBuffer(SceneParseResult sceneParseResult, ref ComputeBuffer lightInfoBuffer)
+        private void RunLoadLightToBuffer(
+            List<ComputeBuffer> computeShadersForLights,
+            SceneParseResult sceneParseResult,
+            ref ComputeBuffer lightInfoBuffer,
+            ref ComputeShader mainShader)
         {
             int numberOfLights = sceneParseResult.Lights.Count;
 
             lightInfoBuffer = new ComputeBuffer(numberOfLights, RTLightInfo.Stride);
-            lightInfoBuffer.SetData(sceneParseResult.Lights);
+            lightInfoBuffer.SetData(sceneParseResult.LightPrimitives);
+
+
+            PipelineLightslToBuffer.LightsToBuffer(computeShadersForLights,
+                                                   sceneParseResult,
+                                                   ref mainShader);
         }
 
         private void RunSetCameraToMainShader(Camera camera)
@@ -369,6 +395,12 @@ namespace OpenRT
             }
             m_objectLevelAccGeoMapBuffers.Clear();
             m_lightInfoBuffer?.Release();
+
+            foreach (var lightBuffers in computeBufferForLights)
+            {
+                lightBuffers.Release();
+            }
+            computeBufferForLights.Clear();
 
             foreach (var materialBuffers in computeBufferForMaterials)
             {

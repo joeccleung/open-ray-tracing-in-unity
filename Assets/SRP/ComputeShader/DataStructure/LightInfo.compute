@@ -5,6 +5,7 @@ struct LightInfo
 {
     float3 position;
     float3 rotation;
+    int instanceIndex;
     int type;
 };
 

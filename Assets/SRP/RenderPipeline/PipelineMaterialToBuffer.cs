@@ -162,12 +162,6 @@ namespace OpenRT
             }
         }
 
-        public static void LoadTextureToBuffer(in SceneParseResult sceneTexture,
-                                               ref ComputeShader mainShader)
-        {
-
-        }
-
         private static void ProcessField(ref ComputeShader mainShader,
                                          string fieldName,
                                          object fieldValue,
@@ -179,16 +173,6 @@ namespace OpenRT
             }
 
             AssignFieldToMainShader(fieldName, fieldValue, sceneParseResult);
-        }
-
-        private static void RegisterTexture(string fieldName,
-                                            Texture2D texture,
-                                            ref ComputeShader mainShader)
-        {
-
-            mainShader.SetTexture(mainShader.FindKernel("CSMain"), fieldName, texture != null ? texture : Texture2D.whiteTexture);
-
-            // texturesCol.AddTexture(fieldName, texture);
         }
     }
 }

@@ -5,19 +5,26 @@
 
 #include "../../RayCasting/Trace.compute"
 
+StructuredBuffer<float4> CustomPointLight_color;
+StructuredBuffer<float> CustomPointLight_range;
+
 LightHit GetIlluminate_CustomPointLight(LightInfo lightInfo, float3 hitPos, int medium, int primitiveId)
 {
+    if (distance(hitPos, lightInfo.position) > CustomPointLight_range[lightInfo.instanceIndex]) {
+        return CreateLightHit(float3(0, 0, 0), float3(0, 0, 0));    // Beyond the point light range
+    }
+
     Ray ray;
-    ray.color = float3(1, 1, 1);
+    ray.color = CustomPointLight_color[lightInfo.instanceIndex];
     ray.origin = lightInfo.position;
     ray.direction = normalize(hitPos - ray.origin);
     ray.gen = 1;
     ray.tmin = 0.0001f;
-    ray.tmax = distance(ray.origin, hitPos);
+    ray.tmax = distance(hitPos, lightInfo.position);    // Any hit behind me does not considered as blocking
     ray.medium = medium;
     ray.weight = 1;
 
-    return CreateLightHit(ShadowTrace(ray, primitiveId), lightInfo.rotation);
+    return CreateLightHit(ShadowTrace(ray, primitiveId), ray.direction);
 }
 
 
