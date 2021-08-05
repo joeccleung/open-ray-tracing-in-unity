@@ -100,7 +100,7 @@ float3 ShadowTrace(Ray ray, int originPrimitiveId)
                     // - Non self-shadowing (bestHit.primitiveId != originPrimitiveId)
                     // - Hit is within ray.tmax
                     if (bestHit.primitiveId != -1 && bestHit.primitiveId != originPrimitiveId && bestHit.distance <= ray.tmax) {
-                        ray.color = ray.color * OnShadowRayHit(ray, bestHit);
+                        ray.color = OnShadowRayHit(ray, bestHit);
                     }
                 }
             }

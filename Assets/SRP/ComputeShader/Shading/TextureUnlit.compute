@@ -1,0 +1,38 @@
+﻿#ifndef TEXTURE_UNLIT_COMPUTE
+#define TEXTURE_UNLIT_COMPUTE
+
+StructuredBuffer<int> TextureUnlitMat_main;
+
+// [shader(TextureUnlit)]
+
+void TextureUnlit_SecRays(
+    inout Ray ray,
+    RayHit hit,
+    inout SecRaysAtHit secRaysAtHit
+) 
+{
+    
+}
+
+float3 TextureUnlit(
+   inout Ray ray,
+   RayHit hit,
+   float3 ambientLightUpper,
+   float3 secondaryRayColor
+)
+{
+   int w = 1024;
+   int h = 1024;
+   int texIndex = TextureUnlitMat_main[_Primitives[hit.primitiveId].materialInstanceIndex];
+
+    float3 color = _MatTexture[uint3(floor(hit.uv.x * w), floor(hit.uv.y * h), texIndex)];
+
+    return color;
+}
+
+float3 TextureUnlit_OnShadowRayHit(Ray ray, RayHit hit)
+{
+    return float3(0, 0, 0); // Opaque
+}
+
+#endif // TEXTURE_UNLIT_COMPUTE 

@@ -15,6 +15,7 @@ namespace OpenRT
     /// </summary>    
     public class RTMeshBVH : IRTMeshBVH
     {
+        public const int TRIANGLE_STRIDE = 24; // 3 * float3 vertices + 3 * float3 normals + 3 * float2 UVs
         private RTMeshBVHController m_controller;
         private RTMeshBVHController controller
         {
@@ -40,11 +41,13 @@ namespace OpenRT
 
         public override void BuildBVHAndTriangleList(Vector3[] normals,
                                                      int[] trianglesVertexOrder,
+                                                     Vector2[] uvs,
                                                      Vector3[] vertices)
         {
             controller.BuildBVHAndTriangleList(m_minNumberOfGeoPerBox,
                                                normals,
                                                trianglesVertexOrder,
+                                               uvs,
                                                vertices);
         }
 
@@ -91,6 +94,11 @@ namespace OpenRT
         public override int[] GetTrianglesVertexOrder(int mipmap)
         {
             return m_mesh.GetTriangles(mipmap);
+        }
+
+        public override Vector2[] GetUVs()
+        {
+            return m_mesh.uv;
         }
 
         public override Vector3[] GetVertices()

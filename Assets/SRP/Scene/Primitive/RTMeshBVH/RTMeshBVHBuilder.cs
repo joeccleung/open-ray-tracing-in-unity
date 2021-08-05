@@ -15,7 +15,6 @@ namespace OpenRT
     public class RTMeshBVHBuilder
     {
         public const int HARD_LIMIT_MAX_DEPTH = 16;
-        public const int TRIANGLE_STRIDE = 20;
 
         private List<RTBoundingBox> m_boxes = new List<RTBoundingBox>();
         private BVHNode m_root;
@@ -188,7 +187,7 @@ namespace OpenRT
                     List<int> accelerationGeometryMapping = new List<int>();
                     while (geoIndicesIter.MoveNext())
                     {
-                        accelerationGeometryMapping.Add(geoLocalToGlobalIndexOffset + geoIndicesIter.Current * TRIANGLE_STRIDE);
+                        accelerationGeometryMapping.Add(geoLocalToGlobalIndexOffset + geoIndicesIter.Current * RTMeshBVH.TRIANGLE_STRIDE);
                     }
                     accelerationGeometryMapping.Insert(0, accelerationGeometryMapping.Count);
 

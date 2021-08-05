@@ -22,26 +22,6 @@
       "absPath": "Assets/SRP/ComputeShader/Shading/Phong.compute",
       "shaderType": 1
     },
-    "1a245b97-ee6f-4385-936d-6d8529111bfe": {
-      "name": "Green",
-      "absPath": "Assets/SRP/ComputeShader/Shading/Green.compute",
-      "shaderType": 1
-    },
-    "e8ef6fe3-1424-43d2-86b9-be368b8f6cc4": {
-      "name": "SinShader",
-      "absPath": "Assets/SRP/ComputeShader/Shading/Sin.compute",
-      "shaderType": 1
-    },
-    "d125b454-8242-4c6a-b62c-beca72fa4d95": {
-      "name": "Red",
-      "absPath": "Assets/SRP/ComputeShader/Shading/Red.compute",
-      "shaderType": 1
-    },
-    "60e52e81-959c-4784-87f1-1110e76152dd": {
-      "name": "Reflective",
-      "absPath": "Assets/SRP/ComputeShader/Shading/Reflective.compute",
-      "shaderType": 1
-    },
     "fc7d9fc5-fa59-47b1-9910-cae29a9c787e": {
       "name": "Translucent",
       "absPath": "Assets/SRP/ComputeShader/Shading/Translucent.compute",
@@ -55,6 +35,11 @@
     "36329863-824d-46f3-97a5-914566f926a3": {
       "name": "Volumetric",
       "absPath": "Assets/SRP/ComputeShader/Shading/Volumetric.compute",
+      "shaderType": 1
+    },
+    "2f8e6059-9978-4d3a-a46a-530e79d6e5e4": {
+      "name": "TextureUnlit",
+      "absPath": "Assets/SRP/ComputeShader/Shading/TextureUnlit.compute",
       "shaderType": 1
     }
   },

@@ -8,5 +8,6 @@ using UnityEngine;
 public class CustomPointLight : OpenRT.RTLight
 {
     [SerializeField] public Color color = Color.white;
+    [SerializeField] public float innerRange = 1;
     [SerializeField] public float range = 1;
 }

@@ -7,7 +7,7 @@
 
 #include "Assets/SRP/ComputeShader/Custom/Lights/CustomDirectionalLight.compute"
 #include "Assets/SRP/ComputeShader/Custom/Lights/CustomPointLight.compute"
-#include "Assets/SRP/ComputeShader/Custom/Lights/CustomPointLight.compute"
+#include "Assets/SRP/ComputeShader/Custom/Lights/CustomDirectionalLight.compute"
 
 LightHit GetIlluminate(float3 hitPos, int medium, int primitiveID, int lightID)
 {

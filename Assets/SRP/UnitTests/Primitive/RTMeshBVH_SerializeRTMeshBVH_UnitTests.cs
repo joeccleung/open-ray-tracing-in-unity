@@ -23,6 +23,11 @@ namespace OpenRT.UnitTests.Primitive
             normals[1] = new Vector3(0, 0, -1);
             normals[2] = new Vector3(0, 0, -1);
 
+            Vector2[] uvs = new Vector2[3];
+            uvs[0] = new Vector2(0, 0);
+            uvs[1] = new Vector2(0.5f, 1);
+            uvs[2] = new Vector2(1, 0);
+
             int[] trianglesVertexOrder = new int[3];
             trianglesVertexOrder[0] = 0;
             trianglesVertexOrder[1] = 1;
@@ -41,6 +46,7 @@ namespace OpenRT.UnitTests.Primitive
             controller.BuildBVHAndTriangleList(0,
                                                normals,
                                                trianglesVertexOrder,
+                                               uvs,
                                                vertices);
             RTMeshBVHBuilder.Flatten(ref flatten,
                                      0,

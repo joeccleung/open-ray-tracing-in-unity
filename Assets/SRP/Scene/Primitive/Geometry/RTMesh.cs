@@ -6,7 +6,7 @@ namespace OpenRT
 {
     public class RTMesh : RTGeometry
     {
-        public const int TRIANGLE_STRIDE = 20;
+        public const int TRIANGLE_STRIDE = 24;
 
         [SerializeField] Mesh m_mesh;
         private int m_meshHashCode = 0;
@@ -29,6 +29,7 @@ namespace OpenRT
             numberOfTriangles = trianglesVertexOrder.Length / 3;
             Vector3[] vertices = m_mesh.vertices;
             Vector3[] normals = m_mesh.normals;
+            Vector2[] uvs = m_mesh.uv;
 
             boundingBox.min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
             boundingBox.max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
@@ -46,7 +47,10 @@ namespace OpenRT
                                                         vertices[trianglesVertexOrder[i + 2]],
                                                         normals[trianglesVertexOrder[i]],
                                                         normals[trianglesVertexOrder[i + 1]],
-                                                        normals[trianglesVertexOrder[i + 2]]);
+                                                        normals[trianglesVertexOrder[i + 2]],
+                                                        uvs[trianglesVertexOrder[i]],
+                                                        uvs[trianglesVertexOrder[i + 1]],
+                                                        uvs[trianglesVertexOrder[i + 2]]);
                 tris.AddRange(triangle);
             }
 
@@ -75,20 +79,23 @@ namespace OpenRT
                                              Vector3 v2,
                                              Vector3 n0,
                                              Vector3 n1,
-                                             Vector3 n2)
+                                             Vector3 n2,
+                                             Vector2 uv0,
+                                             Vector2 uv1,
+                                             Vector2 uv2)
         {
             Vector3 wv0 = transform.localToWorldMatrix.MultiplyPoint(v0);
             Vector3 wv1 = transform.localToWorldMatrix.MultiplyPoint(v1);
             Vector3 wv2 = transform.localToWorldMatrix.MultiplyPoint(v2);
 
-            Vector3 wn0 = transform.localToWorldMatrix.MultiplyVector(n0);
-            Vector3 wn1 = transform.localToWorldMatrix.MultiplyVector(n1);
-            Vector3 wn2 = transform.localToWorldMatrix.MultiplyVector(n2);
+            Vector3 wn0 = Vector3.Normalize(transform.localToWorldMatrix.MultiplyVector(n0));
+            Vector3 wn1 = Vector3.Normalize(transform.localToWorldMatrix.MultiplyVector(n1));
+            Vector3 wn2 = Vector3.Normalize(transform.localToWorldMatrix.MultiplyVector(n2));
 
-            Vector3 _cross = Vector3.Cross(wv1 - wv0, wv2 - wv0);
-            Vector3 normal = Vector3.Normalize(_cross);
-            float planeD = -1 * Vector3.Dot(normal, wv0);
-            float area = Vector3.Dot(normal, _cross);
+            // Vector3 _cross = Vector3.Cross(wv1 - wv0, wv2 - wv0);
+            // Vector3 normal = Vector3.Normalize(_cross);
+            // float planeD = -1 * Vector3.Dot(normal, wv0);
+            // float area = Vector3.Dot(normal, _cross);
 
             return new List<float>() {
                 wv0.x,
@@ -109,8 +116,12 @@ namespace OpenRT
                 wn2.x,
                 wn2.y,
                 wn2.z,
-                planeD,
-                area
+                uv0.x,
+                uv0.y,
+                uv1.x,
+                uv1.y,
+                uv2.x,
+                uv2.y
             };
         }
 

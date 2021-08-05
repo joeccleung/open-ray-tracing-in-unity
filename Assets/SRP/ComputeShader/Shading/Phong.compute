@@ -2,8 +2,12 @@
 #define PHONG_COMPUTE
 
 StructuredBuffer<float4> DemoMat_color;
+StructuredBuffer<int> DemoMat_main;
 
 // [shader(Phong)]
+
+// Forward declaration
+LightHit GetIlluminate(float3 hitPos, int medium, int primitiveID, int lightID);
 
 void Phong_SecRays(
     inout Ray ray,
@@ -20,7 +24,13 @@ float3 Phong(
    float3 secondaryRayColor
 )
 {
+    int w = 1024;
+    int h = 1024;
+    int texIndex = TextureUnlitMat_main[_Primitives[hit.primitiveId].materialInstanceIndex];
+
     float3 color = float3(0, 0, 0);
+
+    float3 tex = _MatTexture[uint3(floor(hit.uv.x * w), floor(hit.uv.y * h), texIndex)];
 
     float4 mat = DemoMat_color[_Primitives[hit.primitiveId].materialInstanceIndex];
 
@@ -28,11 +38,8 @@ float3 Phong(
     {
         LightHit light0 = GetIlluminate(hit.position, ray.medium, hit.primitiveId, l);   // Phong is hit on the surface, so medium = whereever the ray is traversing
 
-        float nDotL = dot(hit.normal, -1 * light0.direction);
-        if (nDotL >= 0)
-        {
-            color += mat.xyz * light0.color * nDotL;
-        }
+        float nDotL = saturate(dot(hit.normal, -1 * light0.direction));
+        color += mat.xyz * tex * light0.color * nDotL;
     }
 
    return color;

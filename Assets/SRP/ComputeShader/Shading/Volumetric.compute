@@ -48,32 +48,36 @@ float3 Volumetric(
     if (ray.medium == hit.primitiveId || hit.mediumToEnter == hit.primitiveId)  // Is my secondary ray inside the volume
     {
         // Integration bounds
-        float travel = hit.distance;
+        float travel = max(hit.distance, 0);
 
         // Integration Variables
         float3 color = secondaryRayColor;
 
         // Sample volume properties
-        float sigma_s = VolumetricMat_sigma[_Primitives[hit.primitiveId].materialInstanceIndex] / stepSize;
+        float sigma_s = VolumetricMat_sigma[_Primitives[hit.primitiveId].materialInstanceIndex];
 
-        float luminance = VolumetricMat_luminanceLight[_Primitives[hit.primitiveId].materialInstanceIndex] / stepSize;
+        float luminance = VolumetricMat_luminanceLight[_Primitives[hit.primitiveId].materialInstanceIndex];
 
         return ComputeTransmittance(color, ray.direction, luminance, hit.primitiveId, hit.position, sigma_s, stepSize, travel);
     }
     return secondaryRayColor;
 }
 
-float3 ComputeTransmittance(float3 color, float3 direction, float luminance, int medium, float3 origin, float sigma, float stepSize, float travel) {
+float3 ComputeTransmittance(float3 color, float3 direction, float luminance, int medium, float3 origin, float sigma, float stepSize, float totalDistance) {
+    // Homogenous media assumption
+    float stepTransmittance = exp( -1 * sigma * stepSize);
+    
     // Integration Variables
-    float3 transmittance = 1;
+    float travelled = stepSize;
+    float transmittance = 1;
 
-    [fastopt] while (travel >= stepSize)
+    while (travelled < totalDistance)
     {
         // Determine sample position
-        float3 p_i = origin + -1 * direction * travel;
+        float3 p_i = origin + direction * travelled;
 
         // Compute Transmittance from previous to current
-        transmittance *= exp( -1 * sigma * stepSize); // T_i
+        transmittance *= stepTransmittance; // T_i
 
         // Sample each light source
         [fastopt] for(int l = 0; l < _NumOfLights; l++)
@@ -83,7 +87,16 @@ float3 ComputeTransmittance(float3 color, float3 direction, float luminance, int
         }
 
         // Move to next position
-        travel -= stepSize;
+        travelled += stepSize;
+    }
+
+    // Determine last position
+    float3 p_0 = origin + direction * totalDistance;
+    transmittance *= exp( -1 * sigma * (totalDistance % stepSize)); // Last mile
+    [fastopt] for(int lb = 0; lb < _NumOfLights; lb++)
+    {
+        LightHit lightHit = GetIlluminate(p_0, medium, medium, lb);   // We are traversing inside, so medium = primitiveId
+        color = saturate(color + transmittance * sigma * luminance * lightHit.color);
     }
 
     return color;
@@ -91,7 +104,7 @@ float3 ComputeTransmittance(float3 color, float3 direction, float luminance, int
 
 float3 Volumetric_OnShadowRayHit(Ray ray, RayHit hit)
 {
-    if (ray.medium == hit.mediumToLeave)
+    if (ray.medium == hit.primitiveId)
     {
         // Inside
         // Sample volume properties
@@ -102,27 +115,28 @@ float3 Volumetric_OnShadowRayHit(Ray ray, RayHit hit)
             return float3(1, 0, 1);
         }
 
-        float sigma = VolumetricMat_sigma[_Primitives[hit.primitiveId].materialInstanceIndex] / stepSize;
-        float luminance = VolumetricMat_luminanceLight[_Primitives[hit.primitiveId].materialInstanceIndex] / stepSize;
+        float sigma = VolumetricMat_sigma[_Primitives[hit.primitiveId].materialInstanceIndex];
+        float luminance = VolumetricMat_luminanceLight[_Primitives[hit.primitiveId].materialInstanceIndex];
         float3 color = ray.color;
-        float travel = hit.distance;
-        float transmittance = 1;
+        float totalDistance = hit.distance;
 
-        [fastopt] while (travel >= stepSize)
-        {
-            // Here we simply the calculation by assuming the medium is uniform so transmittance is the same along the light ray travelling inside the medium
-            // Determine sample position
-            // float3 p_i = origin + -1 * direction * travel;
+        color = saturate(luminance * exp(-sigma * totalDistance) * color);    // When scattering = 0 and luminance = 1, the medium is transparent
 
-            // Compute Transmittance from previous to current
-            transmittance *= exp( -1 * sigma * stepSize); // T_i
+    //     // Homogenous media assumption
+    //     float stepTransmittance = exp( -1 * sigma * stepSize);
 
-            // Integrating the light ray color
-            color = saturate(color + transmittance * sigma * luminance * color);
+    //     // ==========================================================
+    //    while (travelled < totalDistance)
+    //     {
+    //         // Compute Transmittance from previous to current
+    //         transmittance *= stepTransmittance; // T_i
 
-            // Move to next position
-            travel -= stepSize;
-        }
+    //         color = saturate(transmittance * sigma * luminance * color);    // The media is continously scattering the light ray
+
+    //         // Move to next position
+    //         travelled += stepSize;
+    //     }
+    //     // ==========================================================
 
         return color;
     }
