@@ -22,6 +22,12 @@ namespace OpenRT.UnitTests.Primitive
             normals[0] = new Vector3(0, 0, -1); // Facing user
             normals[1] = new Vector3(0, 0, -1); // Facing user
             normals[2] = new Vector3(0, 0, -1); // Facing user
+
+            Vector2[] uvs = new Vector2[3];
+            uvs[0] = new Vector2(0, 0);
+            uvs[1] = new Vector2(0.5f, 1);
+            uvs[2] = new Vector2(1, 0);
+
             var planeD = -1 * Vector3.Dot(normals[0], vertices[0]);
             var area = Vector3.Dot(normals[0], Vector3.Cross(vertices[1] - vertices[0], vertices[2] - vertices[0]));
 
@@ -40,6 +46,7 @@ namespace OpenRT.UnitTests.Primitive
             controller.BuildBVHAndTriangleList(0,
                                                normals,
                                                trianglesVertexOrder,
+                                               uvs,
                                                vertices);
 
             // Assert
@@ -87,6 +94,11 @@ namespace OpenRT.UnitTests.Primitive
             var planeD2 = -1 * Vector3.Dot(normals[0], vert[1]);
             var area2 = Vector3.Dot(normals[0], Vector3.Cross(vert[3] - vert[1], vert[2] - vert[1]));
 
+            Vector2[] uvs = new Vector2[3];
+            uvs[0] = new Vector2(0, 0);
+            uvs[1] = new Vector2(0.5f, 1);
+            uvs[2] = new Vector2(1, 0);
+
             int[] trianglesVertexOrder = new int[6];
             trianglesVertexOrder[0] = 0;
             trianglesVertexOrder[1] = 1;
@@ -105,6 +117,7 @@ namespace OpenRT.UnitTests.Primitive
             controller.BuildBVHAndTriangleList(0,
                                                normals,
                                                trianglesVertexOrder,
+                                               uvs,
                                                vert);
 
             // Assert

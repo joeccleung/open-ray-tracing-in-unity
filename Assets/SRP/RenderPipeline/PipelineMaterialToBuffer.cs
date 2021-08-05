@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -75,8 +76,17 @@ namespace OpenRT
             int texCounter = 0;
             foreach (var tex in sceneParseResult.m_textureCollection)
             {
-                Graphics.CopyTexture(tex, 0, texArr, texCounter);
-                texCounter++;
+                try
+                {
+                    Graphics.CopyTexture(tex, 0, texArr, texCounter);
+                    texCounter++;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"[PipelineMaterialToBuffer] Exception when copying texture:{tex.name} Exp:{e}");
+                    return;
+                }
+
             }
             mainShader.SetTexture(mainShader.FindKernel("CSMain"), "_MatTexture", texArr);
 

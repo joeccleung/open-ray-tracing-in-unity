@@ -45,11 +45,13 @@ public class RTMeshBVHDemoGeometry : IRTMeshBVH
 
     public override void BuildBVHAndTriangleList(Vector3[] normals,
                                                  int[] trianglesVertexOrder,
+                                                 Vector2[] uvs,
                                                  Vector3[] vertices)
     {
         controller.BuildBVHAndTriangleList(m_minNumberOfGeoPerBox,
                                            normals,
                                            trianglesVertexOrder,
+                                           uvs,
                                            vertices);
     }
 
@@ -96,6 +98,11 @@ public class RTMeshBVHDemoGeometry : IRTMeshBVH
     public override int[] GetTrianglesVertexOrder(int bitmap)
     {
         return demoMesh.triangles.Take(numberOfTriangelsFromDemoMesh * 3).ToArray();
+    }
+
+    public override Vector2[] GetUVs()
+    {
+        return demoMesh.uv;
     }
 
     public override Vector3[] GetVertices()

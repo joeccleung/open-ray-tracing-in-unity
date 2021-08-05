@@ -6,13 +6,9 @@ static const float EPSILON = 1.19e-07f;
 
 struct RTTriangle
 {
-    // int id;
     float3 vertices[3];
     float3 normal[3];
-    float planeD;
-    float area;
-    // int isDoubleSide;
-    // int matIndex;
+    float2 uv[3];
 };
 
 StructuredBuffer<RTTriangle> _RTTriangle;
@@ -40,13 +36,15 @@ void RTTriangleIntersect(Ray ray, inout RayHit bestHit, Primitive primitive, int
                 // Ray is inside->outside
                 bestHit.mediumToEnter = 0; // FIXME: Even if an inside ray is leaving, it may not necessary entering the air
                 bestHit.mediumToLeave = primitiveId;
-                bestHit.normal = bestHit.barycentric.x * -1 * tri.normal[0] + bestHit.barycentric.y * -1 * tri.normal[1] + bestHit.barycentric.z * -1 * tri.normal[2];
+                bestHit.normal = bestHit.barycentric.x * -1 * tri.normal[1] + bestHit.barycentric.y * -1 * tri.normal[2] + bestHit.barycentric.z * -1 * tri.normal[0];
+                bestHit.uv = bestHit.barycentric.x * tri.uv[1] + bestHit.barycentric.y * tri.uv[2] + bestHit.barycentric.z * tri.uv[0];
             }
             else
             {
                 bestHit.mediumToEnter = primitiveId;  // Ray is outside->inside
                 bestHit.mediumToLeave = ray.medium;
-                bestHit.normal = bestHit.barycentric.x * tri.normal[0] + bestHit.barycentric.y * tri.normal[1] + bestHit.barycentric.z * tri.normal[2];
+                bestHit.normal = bestHit.barycentric.x * tri.normal[1] + bestHit.barycentric.y * tri.normal[2] + bestHit.barycentric.z * tri.normal[0];
+                bestHit.uv = bestHit.barycentric.x * tri.uv[1] + bestHit.barycentric.y * tri.uv[2] + bestHit.barycentric.z * tri.uv[0];
             }
         }
     }

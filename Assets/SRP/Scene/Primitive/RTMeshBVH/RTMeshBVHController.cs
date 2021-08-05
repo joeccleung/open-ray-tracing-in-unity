@@ -7,12 +7,11 @@ namespace OpenRT
 {
     public class RTMeshBVHController
     {
-        public const int FLOAT_PER_TRIANGLE = 20;
-
         public interface IActuator
         {
             Vector3[] GetNormals();
             int[] GetTrianglesVertexOrder(int bitmap);
+            Vector2[] GetUVs();
             Vector3[] GetVertices();
             Vector3 LocalToWorldDirection(Vector3 local);
             Vector3 LocalToWorldVertex(Vector3 local);
@@ -30,7 +29,10 @@ namespace OpenRT
             m_actuator = actuator;
         }
 
-        public void BuildBVHAndTriangleList(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset, int minNumberOfGeoPerBox)
+        public void BuildBVHAndTriangleList(
+            int geoLocalToGlobalIndexOffset,
+            int mappingLocalToGlobalIndexOffset,
+            int minNumberOfGeoPerBox)
         {
             _BuildFlatternBVHIfDirty(ref m_builder,
                                      geoLocalToGlobalIndexOffset,
@@ -39,6 +41,7 @@ namespace OpenRT
                                      minNumberOfGeoPerBox,
                                      m_actuator.GetNormals(),
                                      m_actuator.GetTrianglesVertexOrder(0),
+                                     m_actuator.GetUVs(),
                                      m_actuator.GetVertices(),
                                      ref m_flattenBVH,
                                      ref m_accelerationGeometryMappingCollection,
@@ -52,6 +55,7 @@ namespace OpenRT
                                               int minNumberOfGeoPerBox,
                                               Vector3[] normals,
                                               in int[] trianglesVertexOrder,
+                                              Vector2[] uvs,
                                               Vector3[] vertices,
                                               ref List<List<float>> flattenBVH,
                                               ref List<List<int>> accelerationGeometryMappingCollection,
@@ -66,6 +70,7 @@ namespace OpenRT
                                          normals,
                                          triangles,
                                          trianglesVertexOrder,
+                                         uvs,
                                          vertices);
 
                 RTMeshBVHBuilder.Flatten(ref flattenBVH,
@@ -226,20 +231,23 @@ namespace OpenRT
                                          Vector3 v2,
                                          Vector3 n0,
                                          Vector3 n1,
-                                         Vector3 n2)
+                                         Vector3 n2,
+                                         Vector2 uv0,
+                                         Vector2 uv1,
+                                         Vector2 uv2)
         {
             Vector3 wv0 = m_actuator.LocalToWorldVertex(v0);
             Vector3 wv1 = m_actuator.LocalToWorldVertex(v1);
             Vector3 wv2 = m_actuator.LocalToWorldVertex(v2);
 
-            Vector3 wn0 = m_actuator.LocalToWorldDirection(n0);
-            Vector3 wn1 = m_actuator.LocalToWorldDirection(n1);
-            Vector3 wn2 = m_actuator.LocalToWorldDirection(n2);
+            Vector3 wn0 = Vector3.Normalize(m_actuator.LocalToWorldDirection(n0));
+            Vector3 wn1 = Vector3.Normalize(m_actuator.LocalToWorldDirection(n1));
+            Vector3 wn2 = Vector3.Normalize(m_actuator.LocalToWorldDirection(n2));
 
-            Vector3 _cross = Vector3.Cross(wv1 - wv0, wv2 - wv0);
-            Vector3 normal = Vector3.Normalize(_cross);
-            float planeD = -1 * Vector3.Dot(normal, wv0);
-            float area = Vector3.Dot(normal, _cross);
+            // Vector3 _cross = Vector3.Cross(wv1 - wv0, wv2 - wv0);
+            // Vector3 normal = Vector3.Normalize(_cross);
+            // float planeD = -1 * Vector3.Dot(normal, wv0);
+            // float area = Vector3.Dot(normal, _cross);
 
             return new float[] {
                 wv0.x,
@@ -260,14 +268,19 @@ namespace OpenRT
                 wn2.x,
                 wn2.y,
                 wn2.z,
-                planeD,
-                area
+                uv0.x,
+                uv0.y,
+                uv1.x,
+                uv1.y,
+                uv2.x,
+                uv2.y
             };
         }
 
         public void BuildBVHAndTriangleList(int minNumberOfGeoPerBox,
                                             Vector3[] normals,
                                             int[] trianglesVertexOrder,
+                                            Vector2[] uvs,
                                             Vector3[] vertices)
         {
             _BuildBVHAndTriangleList(ref m_builder,
@@ -275,6 +288,7 @@ namespace OpenRT
                                      normals,
                                      m_triangles,
                                      trianglesVertexOrder,
+                                     uvs,
                                      vertices);
         }
 
@@ -283,6 +297,7 @@ namespace OpenRT
                                               Vector3[] normals,
                                               List<float> triangles,
                                               int[] trianglesVertexOrder,
+                                              Vector2[] uvs,
                                               Vector3[] vertices)
         {
             int primitiveCounter = 0;
@@ -302,7 +317,11 @@ namespace OpenRT
                                                     vertices[trianglesVertexOrder[i + 2]],
                                                     normals[trianglesVertexOrder[i]],
                                                     normals[trianglesVertexOrder[i + 1]],
-                                                    normals[trianglesVertexOrder[i + 2]]));
+                                                    normals[trianglesVertexOrder[i + 2]],
+                                                    uvs[trianglesVertexOrder[i]],
+                                                    uvs[trianglesVertexOrder[i + 1]],
+                                                    uvs[trianglesVertexOrder[i + 2]]
+                                                    ));
                 primitiveCounter++;
             }
 

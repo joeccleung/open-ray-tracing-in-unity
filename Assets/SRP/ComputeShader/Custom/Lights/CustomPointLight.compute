@@ -6,25 +6,35 @@
 #include "../../RayCasting/Trace.compute"
 
 StructuredBuffer<float4> CustomPointLight_color;
+StructuredBuffer<float> CustomPointLight_innerRange;
 StructuredBuffer<float> CustomPointLight_range;
 
 LightHit GetIlluminate_CustomPointLight(LightInfo lightInfo, float3 hitPos, int medium, int primitiveId)
 {
-    if (distance(hitPos, lightInfo.position) > CustomPointLight_range[lightInfo.instanceIndex]) {
+    float3 fullColor = CustomPointLight_color[lightInfo.instanceIndex];
+    float range = CustomPointLight_range[lightInfo.instanceIndex];
+    float innerRange = CustomPointLight_innerRange[lightInfo.instanceIndex];
+    float3 direction = normalize(hitPos - lightInfo.position);
+    float dist = distance(hitPos, lightInfo.position);
+
+    if (dist > range || range <= 0) {
         return CreateLightHit(float3(0, 0, 0), float3(0, 0, 0));    // Beyond the point light range
+    }
+    if (dist < innerRange) {
+        return CreateLightHit(fullColor, direction);    // Full intensity inside inner range
     }
 
     Ray ray;
-    ray.color = CustomPointLight_color[lightInfo.instanceIndex];
+    ray.color = fullColor * (1 - smoothstep(innerRange, range, dist));
     ray.origin = lightInfo.position;
-    ray.direction = normalize(hitPos - ray.origin);
+    ray.direction = direction;
     ray.gen = 1;
     ray.tmin = 0.0001f;
-    ray.tmax = distance(hitPos, lightInfo.position);    // Any hit behind me does not considered as blocking
+    ray.tmax = dist;    // Any hit behind me does not considered as blocking
     ray.medium = medium;
     ray.weight = 1;
 
-    return CreateLightHit(ShadowTrace(ray, primitiveId), ray.direction);
+    return CreateLightHit(ShadowTrace(ray, primitiveId), direction);
 }
 
 

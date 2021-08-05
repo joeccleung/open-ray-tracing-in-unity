@@ -34,6 +34,7 @@ namespace OpenRT
                     {
                         meshBVH.BuildBVHAndTriangleList(meshBVH.GetNormals(),
                                                         meshBVH.GetTrianglesVertexOrder(0),
+                                                        meshBVH.GetUVs(),
                                                         meshBVH.GetVertices());
                     }
                 }

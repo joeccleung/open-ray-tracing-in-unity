@@ -10,6 +10,7 @@ struct RayHit
     int mediumToEnter;    // The primitive ID of the medium the ray hit will enter
     int mediumToLeave;    // The primitive ID of the medium the ray hit will leave
     float3 normal;
+    float2 uv;
 };
 
 RayHit CreateRayHit()
@@ -22,6 +23,7 @@ RayHit CreateRayHit()
     hit.mediumToLeave = 0;
     hit.normal = float3(0.0f, 0.0f, 0.0f);
     hit.primitiveId = -1;
+    hit.uv = float2(0, 0);
     return hit;
 }
 

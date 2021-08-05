@@ -16,12 +16,12 @@ namespace OpenRT
         public Vector3 normal0;
         public Vector3 normal1;
         public Vector3 normal2;
-        public float planeD;
-        public float area;
-        public int isDoubleSide;
-        public int materialIndex;
+        public Vector2 uv0;
+        public Vector2 uv1;
+        public Vector2 uv2;
 
-        public List<float> GetGeometryInstanceData(int geoLocalToGlobalIndexOffset, int mappingLocalToGlobalIndexOffset)
+        public List<float> GetGeometryInstanceData(int geoLocalToGlobalIndexOffset,
+                                                   int mappingLocalToGlobalIndexOffset)
         {
             return new List<float> {
                 vert0.x,
@@ -42,14 +42,18 @@ namespace OpenRT
                 normal2.x,
                 normal2.y,
                 normal2.z,
-                planeD,
-                area
+                uv0.x,
+                uv0.y,
+                uv1.x,
+                uv1.y,
+                uv2.x,
+                uv2.y
             };
         }
 
         public int GetFloatCount()
         {
-            return 3 * 6 + 2;   // 3 vertex + 3 normal + planeD (1f) + area (1f)
+            return 3 * 6 + 2 * 3;   // 3 vertex + 3 normal + 2 uv * 3
         }
 
         public int GetStride()

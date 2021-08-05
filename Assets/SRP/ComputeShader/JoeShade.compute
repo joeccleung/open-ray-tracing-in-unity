@@ -25,9 +25,6 @@ float4x4 _CameraLocalToWorld;
 // Ray Generation
 int _RayGenID;
 
-// Secondary Ray Stack
-// RWStructuredBuffer<Ray> _secondaryRayStack;
-
 //Skybox
 Texture2D<float4> _SkyboxTexture;
 SamplerState sampler_SkyboxTexture;
@@ -236,6 +233,4 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     }
     
     Result[id.xy] = finalColor;
-
-
 }

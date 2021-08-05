@@ -530,11 +530,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1433261026}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad3d247d9deba43c79a981791672d60a, type: 3}
+  m_Script: {fileID: 11500000, guid: c288133c709753a4db0db734f434609b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   lightIndex: 0
-  shaderGUID: 
+  shaderGUID: 5a7e6178-ac2d-4824-9dad-f560a6074d72
+  color: {r: 1, g: 1, b: 1, a: 1}
 --- !u!4 &1433261028
 Transform:
   m_ObjectHideFlags: 0
@@ -613,7 +614,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   intersectShaderGUID: 47924f01-597c-4371-8442-d375d585e790
   sphereData:
-    center: {x: 0, y: 3, z: -14.5}
+    center: {x: 0, y: 3, z: -14}
     radius: 2
 --- !u!4 &1436876530
 Transform:
@@ -623,7 +624,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1436876526}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3, z: -14.5}
+  m_LocalPosition: {x: 0, y: 3, z: -14}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1022,7 +1023,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   closestHitGUID: 39feb2bd-5273-4001-be13-a9b18abc1368
   color: {r: 1, g: 1, b: 1, a: 1}
-  main: {fileID: 0}
+  main: {fileID: 2800000, guid: b883a5f3b02fe4f08ad4ef201cae5e91, type: 3}
 --- !u!114 &2008632515
 MonoBehaviour:
   m_ObjectHideFlags: 0
