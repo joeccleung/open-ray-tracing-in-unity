@@ -19,58 +19,168 @@ namespace OpenRT
                     sceneParseResult: sceneParseResult);
             }
 
+            // If no lights in scene, ensure shader properties are still set with dummy buffers
+            // to avoid "Property not set" errors. The shader declares these buffers based on
+            // light types available in the project (CustomDirectionalLight, CustomPointLight, etc.)
+            bool hasLights = sceneParseResult.Lights.Count > 0;
+
             foreach (var colors in sceneParseResult.m_lightColorList)
             {
-                ComputeBuffer cb = new ComputeBuffer(colors.Value.Count, sizeof(float) * 4);
-                cb.SetData(colors.Value);
-                mainShader.SetBuffer(0, colors.Key, cb);
-                computeBuffersForLightProperties.Add(cb);
-                // Do NOT release the compute buffer before the actual draw commands is being sent
+                int count = colors.Value.Count;
+                if (count > 0)
+                {
+                    ComputeBuffer cb = new ComputeBuffer(count, sizeof(float) * 4);
+                    cb.SetData(colors.Value);
+                    mainShader.SetBuffer(0, colors.Key, cb);
+                    computeBuffersForLightProperties.Add(cb);
+                    // Do NOT release the compute buffer before the actual draw commands is being sent
+                }
+                else
+                {
+                    // Set dummy buffer to avoid "property not set" shader error
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float) * 4);
+                    mainShader.SetBuffer(0, colors.Key, cb);
+                    computeBuffersForLightProperties.Add(cb);
+                }
+            }
+
+            // If no lights, set up dummy buffers for expected light properties
+            // These are the properties from CustomDirectionalLight and CustomPointLight
+            if (!hasLights)
+            {
+                // CustomDirectionalLight_color
+                if (!sceneParseResult.m_lightColorList.ContainsKey("CustomDirectionalLight_color"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float) * 4);
+                    mainShader.SetBuffer(0, "CustomDirectionalLight_color", cb);
+                    computeBuffersForLightProperties.Add(cb);
+                }
+                // CustomPointLight_color
+                if (!sceneParseResult.m_lightColorList.ContainsKey("CustomPointLight_color"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float) * 4);
+                    mainShader.SetBuffer(0, "CustomPointLight_color", cb);
+                    computeBuffersForLightProperties.Add(cb);
+                }
             }
 
             foreach (var ints in sceneParseResult.m_lightIntList)
             {
-                ComputeBuffer cb = new ComputeBuffer(ints.Value.Count, sizeof(int));
-                cb.SetData(ints.Value);
-                mainShader.SetBuffer(0, ints.Key, cb);
-                computeBuffersForLightProperties.Add(cb);
-                // Do NOT release the compute buffer before the actual draw commands is being sent
+                int count = ints.Value.Count;
+                if (count > 0)
+                {
+                    ComputeBuffer cb = new ComputeBuffer(count, sizeof(int));
+                    cb.SetData(ints.Value);
+                    mainShader.SetBuffer(0, ints.Key, cb);
+                    computeBuffersForLightProperties.Add(cb);
+                    // Do NOT release the compute buffer before the actual draw commands is being sent
+                }
+                else
+                {
+                    // Set dummy buffer to avoid "property not set" shader error
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(int));
+                    mainShader.SetBuffer(0, ints.Key, cb);
+                    computeBuffersForLightProperties.Add(cb);
+                }
             }
 
             foreach (var floats in sceneParseResult.m_lightFloatList)
             {
-                ComputeBuffer cb = new ComputeBuffer(floats.Value.Count, sizeof(float));
-                cb.SetData(floats.Value);
-                mainShader.SetBuffer(0, floats.Key, cb);
-                computeBuffersForLightProperties.Add(cb);
-                // Do NOT release the compute buffer before the actual draw commands is being sent
+                int count = floats.Value.Count;
+                if (count > 0)
+                {
+                    ComputeBuffer cb = new ComputeBuffer(count, sizeof(float));
+                    cb.SetData(floats.Value);
+                    mainShader.SetBuffer(0, floats.Key, cb);
+                    computeBuffersForLightProperties.Add(cb);
+                    // Do NOT release the compute buffer before the actual draw commands is being sent
+                }
+                else
+                {
+                    // Set dummy buffer to avoid "property not set" shader error
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float));
+                    mainShader.SetBuffer(0, floats.Key, cb);
+                    computeBuffersForLightProperties.Add(cb);
+                }
+            }
+
+            // If no lights, set up dummy buffers for CustomPointLight float properties
+            if (!hasLights)
+            {
+                // CustomPointLight_innerRange
+                if (!sceneParseResult.m_lightFloatList.ContainsKey("CustomPointLight_innerRange"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float));
+                    mainShader.SetBuffer(0, "CustomPointLight_innerRange", cb);
+                    computeBuffersForLightProperties.Add(cb);
+                }
+                // CustomPointLight_range
+                if (!sceneParseResult.m_lightFloatList.ContainsKey("CustomPointLight_range"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float));
+                    mainShader.SetBuffer(0, "CustomPointLight_range", cb);
+                    computeBuffersForLightProperties.Add(cb);
+                }
             }
 
             foreach (var vector2s in sceneParseResult.m_lightVector2List)
             {
-                ComputeBuffer cb = new ComputeBuffer(vector2s.Value.Count, sizeof(float) * 2);
-                cb.SetData(vector2s.Value);
-                mainShader.SetBuffer(0, vector2s.Key, cb);
-                computeBuffersForLightProperties.Add(cb);
-                // Do NOT release the compute buffer before the actual draw commands is being sent
+                int count = vector2s.Value.Count;
+                if (count > 0)
+                {
+                    ComputeBuffer cb = new ComputeBuffer(count, sizeof(float) * 2);
+                    cb.SetData(vector2s.Value);
+                    mainShader.SetBuffer(0, vector2s.Key, cb);
+                    computeBuffersForLightProperties.Add(cb);
+                    // Do NOT release the compute buffer before the actual draw commands is being sent
+                }
+                else
+                {
+                    // Set dummy buffer to avoid "property not set" shader error
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float) * 2);
+                    mainShader.SetBuffer(0, vector2s.Key, cb);
+                    computeBuffersForLightProperties.Add(cb);
+                }
             }
 
             foreach (var vector3s in sceneParseResult.m_lightVector3List)
             {
-                ComputeBuffer cb = new ComputeBuffer(vector3s.Value.Count, sizeof(float) * 3);
-                cb.SetData(vector3s.Value);
-                mainShader.SetBuffer(0, vector3s.Key, cb);
-                computeBuffersForLightProperties.Add(cb);
-                // Do NOT release the compute buffer before the actual draw commands is being sent
+                int count = vector3s.Value.Count;
+                if (count > 0)
+                {
+                    ComputeBuffer cb = new ComputeBuffer(count, sizeof(float) * 3);
+                    cb.SetData(vector3s.Value);
+                    mainShader.SetBuffer(0, vector3s.Key, cb);
+                    computeBuffersForLightProperties.Add(cb);
+                    // Do NOT release the compute buffer before the actual draw commands is being sent
+                }
+                else
+                {
+                    // Set dummy buffer to avoid "property not set" shader error
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float) * 3);
+                    mainShader.SetBuffer(0, vector3s.Key, cb);
+                    computeBuffersForLightProperties.Add(cb);
+                }
             }
 
             foreach (var vector4s in sceneParseResult.m_lightVector4List)
             {
-                ComputeBuffer cb = new ComputeBuffer(vector4s.Value.Count, sizeof(float) * 4);
-                cb.SetData(vector4s.Value);
-                mainShader.SetBuffer(0, vector4s.Key, cb);
-                computeBuffersForLightProperties.Add(cb);
-                // Do NOT release the compute buffer before the actual draw commands is being sent
+                int count = vector4s.Value.Count;
+                if (count > 0)
+                {
+                    ComputeBuffer cb = new ComputeBuffer(count, sizeof(float) * 4);
+                    cb.SetData(vector4s.Value);
+                    mainShader.SetBuffer(0, vector4s.Key, cb);
+                    computeBuffersForLightProperties.Add(cb);
+                    // Do NOT release the compute buffer before the actual draw commands is being sent
+                }
+                else
+                {
+                    // Set dummy buffer to avoid "property not set" shader error
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float) * 4);
+                    mainShader.SetBuffer(0, vector4s.Key, cb);
+                    computeBuffersForLightProperties.Add(cb);
+                }
             }
         }
 

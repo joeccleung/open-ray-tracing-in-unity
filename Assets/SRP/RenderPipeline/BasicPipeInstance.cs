@@ -203,46 +203,83 @@ namespace OpenRT
             var geoInsIter = sceneParseResult.GeometryInstances.GetEnumerator();
             while (geoInsIter.MoveNext())
             {
-                var buffer = new GeometryInstanceBuffer(sceneParseResult.GetGeometryInstancesCount(geoInsIter.Current.Key), sceneParseResult.GetGeometryInstancesStride(geoInsIter.Current.Key));
-                buffer.SetData(geoInsIter.Current.Value);
-                gemoetryInstanceBuffers.Add(geoInsIter.Current.Key, buffer);
+                int count = sceneParseResult.GetGeometryInstancesCount(geoInsIter.Current.Key);
+                if (count > 0)
+                {
+                    var buffer = new GeometryInstanceBuffer(count, sceneParseResult.GetGeometryInstancesStride(geoInsIter.Current.Key));
+                    buffer.SetData(geoInsIter.Current.Value);
+                    gemoetryInstanceBuffers.Add(geoInsIter.Current.Key, buffer);
+                }
             }
 
             var objectLevelAccGeoIter = sceneParseResult.ObjectLevelAccelerationGeometries.GetEnumerator();
             while (objectLevelAccGeoIter.MoveNext())
             {
-                var buffer = new ObjectLevelAccelerationGeometryBuffer(objectLevelAccGeoIter.Current.Value.Count, sizeof(float));
-                buffer.SetData(objectLevelAccGeoIter.Current.Value);
-                objectLvAccGeoBuffers.Add(objectLevelAccGeoIter.Current.Key, buffer);
+                int count = objectLevelAccGeoIter.Current.Value.Count;
+                if (count > 0)
+                {
+                    var buffer = new ObjectLevelAccelerationGeometryBuffer(count, sizeof(float));
+                    buffer.SetData(objectLevelAccGeoIter.Current.Value);
+                    objectLvAccGeoBuffers.Add(objectLevelAccGeoIter.Current.Key, buffer);
+                }
             }
 
             var objectLvAccGeoMapIter = sceneParseResult.ObjectLevelAccelerationGeometryMapping.GetEnumerator();
             while (objectLvAccGeoMapIter.MoveNext())
             {
-                var buffer = new ObjectLevelAccelerationGeometryMappingCollectionBuffer(objectLvAccGeoMapIter.Current.Value.Count, sizeof(int));
-                buffer.SetData(objectLvAccGeoMapIter.Current.Value);
-                objectLvAccGeoMapBuffers.Add(objectLvAccGeoMapIter.Current.Key, buffer);
+                int count = objectLvAccGeoMapIter.Current.Value.Count;
+                if (count > 0)
+                {
+                    var buffer = new ObjectLevelAccelerationGeometryMappingCollectionBuffer(count, sizeof(int));
+                    buffer.SetData(objectLvAccGeoMapIter.Current.Value);
+                    objectLvAccGeoMapBuffers.Add(objectLvAccGeoMapIter.Current.Key, buffer);
+                }
             }
 
             var objectLevelAccStrInsIter = sceneParseResult.ObjectLevelAccelerationStructures.GetEnumerator();
             while (objectLevelAccStrInsIter.MoveNext())
             {
-                var buffer = new GeometryInstanceBuffer(objectLevelAccStrInsIter.Current.Value.Count, sizeof(float));
-                buffer.SetData(objectLevelAccStrInsIter.Current.Value);
-                gemoetryInstanceBuffers.Add(objectLevelAccStrInsIter.Current.Key, buffer);
+                int count = objectLevelAccStrInsIter.Current.Value.Count;
+                if (count > 0)
+                {
+                    var buffer = new GeometryInstanceBuffer(count, sizeof(float));
+                    buffer.SetData(objectLevelAccStrInsIter.Current.Value);
+                    gemoetryInstanceBuffers.Add(objectLevelAccStrInsIter.Current.Key, buffer);
+                }
             }
 
             sceneParseResult.TopLevelBVH.Flatten(
                 flatten: out List<RTBoundingBoxToGPU> _flattenBVH,
                 accelerationGeometryMapping: out List<int> _topLevelAccelerationGeometryMapping);
-            bvhBuffer = new TopLevelAccelerationBuffer(_flattenBVH.Count, RTBoundingBox.stride);
-            bvhBuffer.SetData(_flattenBVH);
-            primitiveBuffer = new PrimitiveBuffer(sceneParseResult.Primitives.Count, Primitive.GetStride());
-            primitiveBuffer.SetData(sceneParseResult.Primitives);
-            topLevelAccGeoMapColBuffer = new TopLevelAccelerationGeometryMappingCollectionBuffer(_topLevelAccelerationGeometryMapping.Count, sizeof(int));
-            topLevelAccGeoMapColBuffer.SetData(_topLevelAccelerationGeometryMapping);
-            worldToPrimitiveBuffer = new WorldToLocalBuffer(sceneParseResult.WorldToPrimitive.Count, sizeof(float) * 16);
-            worldToPrimitiveBuffer.SetData(sceneParseResult.WorldToPrimitive);
+            
+            // Ensure buffers have at least 1 element to avoid zero-length ComputeBuffer exception
+            int bvhCount = Mathf.Max(1, _flattenBVH.Count);
+            bvhBuffer = new TopLevelAccelerationBuffer(bvhCount, RTBoundingBox.stride);
+            if (_flattenBVH.Count > 0)
+            {
+                bvhBuffer.SetData(_flattenBVH);
+            }
+            
+            int primitiveCount = Mathf.Max(1, sceneParseResult.Primitives.Count);
+            primitiveBuffer = new PrimitiveBuffer(primitiveCount, Primitive.GetStride());
+            if (sceneParseResult.Primitives.Count > 0)
+            {
+                primitiveBuffer.SetData(sceneParseResult.Primitives);
+            }
+            
+            int topLevelMapCount = Mathf.Max(1, _topLevelAccelerationGeometryMapping.Count);
+            topLevelAccGeoMapColBuffer = new TopLevelAccelerationGeometryMappingCollectionBuffer(topLevelMapCount, sizeof(int));
+            if (_topLevelAccelerationGeometryMapping.Count > 0)
+            {
+                topLevelAccGeoMapColBuffer.SetData(_topLevelAccelerationGeometryMapping);
+            }
+            
+            int worldToPrimCount = Mathf.Max(1, sceneParseResult.WorldToPrimitive.Count);
+            worldToPrimitiveBuffer = new WorldToLocalBuffer(worldToPrimCount, sizeof(float) * 16);
+            if (sceneParseResult.WorldToPrimitive.Count > 0)
+            {
+                worldToPrimitiveBuffer.SetData(sceneParseResult.WorldToPrimitive);
+            }
         }
 
         private void RunLoadGeometryToBuffer(SceneParseResult sceneParseResult,
@@ -272,8 +309,13 @@ namespace OpenRT
         {
             int numberOfLights = sceneParseResult.Lights.Count;
 
-            lightInfoBuffer = new ComputeBuffer(numberOfLights, RTLightInfo.Stride);
-            lightInfoBuffer.SetData(sceneParseResult.LightPrimitives);
+            // Ensure buffer has at least 1 element to avoid zero-length ComputeBuffer exception
+            int lightBufferCount = Mathf.Max(1, numberOfLights);
+            lightInfoBuffer = new ComputeBuffer(lightBufferCount, RTLightInfo.Stride);
+            if (numberOfLights > 0)
+            {
+                lightInfoBuffer.SetData(sceneParseResult.LightPrimitives);
+            }
 
 
             PipelineLightslToBuffer.LightsToBuffer(computeShadersForLights,
@@ -328,24 +370,32 @@ namespace OpenRT
                 {
                     m_mainShader.SetBuffer(kIndex, $"_{intersectShaderNames[intersectIdx]}", empty);
                 }
+                
+                // Set GeometryData buffer, use empty if not available
+                if (objectLvAccGeoBuffers.ContainsKey(intersectIdx))
+                {
+                    m_mainShader.SetBuffer(kIndex, $"_{intersectShaderNames[intersectIdx]}GeometryData", objectLvAccGeoBuffers[intersectIdx]);
+                }
+                else
+                {
+                    m_mainShader.SetBuffer(kIndex, $"_{intersectShaderNames[intersectIdx]}GeometryData", empty);
+                }
+                
+                // Set GeometryMapping buffer, use empty if not available
+                if (objectLvAccGeoMapBuffers.ContainsKey(intersectIdx))
+                {
+                    m_mainShader.SetBuffer(kIndex, $"_{intersectShaderNames[intersectIdx]}GeometryMapping", objectLvAccGeoMapBuffers[intersectIdx]);
+                }
+                else
+                {
+                    m_mainShader.SetBuffer(kIndex, $"_{intersectShaderNames[intersectIdx]}GeometryMapping", empty);
+                }
             }
             // -
             // -
             // -
             // -
             // -
-
-            var objectLvAccGeoBuffersIter = objectLvAccGeoBuffers.GetEnumerator();
-            while (objectLvAccGeoBuffersIter.MoveNext())
-            {
-                m_mainShader.SetBuffer(kIndex, $"_{intersectShaderNames[objectLvAccGeoBuffersIter.Current.Key]}GeometryData", objectLvAccGeoBuffersIter.Current.Value);
-            }
-
-            var objectLvAccGeoMapBuffersIter = objectLvAccGeoMapBuffers.GetEnumerator();
-            while (objectLvAccGeoMapBuffersIter.MoveNext())
-            {
-                m_mainShader.SetBuffer(kIndex, $"_{intersectShaderNames[objectLvAccGeoMapBuffersIter.Current.Key]}GeometryMapping", objectLvAccGeoMapBuffersIter.Current.Value);
-            }
         }
 
         private void RunSetLightsToMainShader(int count, ref ComputeBuffer lightInfoBuffer)

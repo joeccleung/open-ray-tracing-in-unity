@@ -18,61 +18,209 @@ namespace OpenRT
                                  sceneParseResult: sceneParseResult);
             }
 
+            // If no materials in scene, ensure shader properties are still set with dummy buffers
+            // to avoid "Property not set" errors. The shader declares these buffers based on
+            // material types available in the project (DemoMat, TextureUnlitMat, etc.)
+            bool hasMaterials = sceneParseResult.Materials.Count > 0;
+
             foreach (var materialColorList in sceneParseResult.m_materialsColorList)
             {
-                ComputeBuffer cb = new ComputeBuffer(materialColorList.Value.Count, sizeof(float) * 4);
-                cb.SetData(materialColorList.Value);
-                mainShader.SetBuffer(0, materialColorList.Key, cb);
-                computeBuffersForMaterialProperties.Add(cb);
-                // Do NOT release the compute buffer before the actual draw commands is being sent
+                int count = materialColorList.Value.Count;
+                if (count > 0)
+                {
+                    ComputeBuffer cb = new ComputeBuffer(count, sizeof(float) * 4);
+                    cb.SetData(materialColorList.Value);
+                    mainShader.SetBuffer(0, materialColorList.Key, cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                    // Do NOT release the compute buffer before the actual draw commands is being sent
+                }
+            }
+
+            // If no materials, set up dummy buffers for expected material properties
+            // These are the properties from materials used in shaders (DemoMat, TextureUnlitMat, TranslucentMat, MarsMat, etc.)
+            if (!hasMaterials)
+            {
+                // DemoMat properties (used in Phong.compute)
+                if (!sceneParseResult.m_materialsColorList.ContainsKey("DemoMat_color"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float) * 4);
+                    mainShader.SetBuffer(0, "DemoMat_color", cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                }
+                // TranslucentMat properties (used in Translucent.compute)
+                if (!sceneParseResult.m_materialsColorList.ContainsKey("TranslucentMat_color"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float) * 4);
+                    mainShader.SetBuffer(0, "TranslucentMat_color", cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                }
+                // MarsMat properties
+                if (!sceneParseResult.m_materialsColorList.ContainsKey("MarsMat_color"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float) * 4);
+                    mainShader.SetBuffer(0, "MarsMat_color", cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                }
+                // TextureUnlitMat properties
+                if (!sceneParseResult.m_materialsColorList.ContainsKey("TextureUnlitMat_color"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float) * 4);
+                    mainShader.SetBuffer(0, "TextureUnlitMat_color", cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                }
             }
 
             foreach (var materialIntList in sceneParseResult.m_materialsIntList)
             {
-                ComputeBuffer cb = new ComputeBuffer(materialIntList.Value.Count, sizeof(int));
-                cb.SetData(materialIntList.Value);
-                mainShader.SetBuffer(0, materialIntList.Key, cb);
-                computeBuffersForMaterialProperties.Add(cb);
-                // Do NOT release the compute buffer before the actual draw commands is being sent
+                int count = materialIntList.Value.Count;
+                if (count > 0)
+                {
+                    ComputeBuffer cb = new ComputeBuffer(count, sizeof(int));
+                    cb.SetData(materialIntList.Value);
+                    mainShader.SetBuffer(0, materialIntList.Key, cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                    // Do NOT release the compute buffer before the actual draw commands is being sent
+                }
+            }
+
+            // If no materials, set up dummy buffers for expected material int properties
+            if (!hasMaterials)
+            {
+                // DemoMat_main (used in Phong.compute)
+                if (!sceneParseResult.m_materialsIntList.ContainsKey("DemoMat_main"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(int));
+                    mainShader.SetBuffer(0, "DemoMat_main", cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                }
+                // TextureUnlitMat_main (used in Phong.compute)
+                if (!sceneParseResult.m_materialsIntList.ContainsKey("TextureUnlitMat_main"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(int));
+                    mainShader.SetBuffer(0, "TextureUnlitMat_main", cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                }
+                // MarsMat_main
+                if (!sceneParseResult.m_materialsIntList.ContainsKey("MarsMat_main"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(int));
+                    mainShader.SetBuffer(0, "MarsMat_main", cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                }
             }
 
             foreach (var materialFloatList in sceneParseResult.m_materialsFloatList)
             {
-                ComputeBuffer cb = new ComputeBuffer(materialFloatList.Value.Count, sizeof(float));
-                cb.SetData(materialFloatList.Value);
-                mainShader.SetBuffer(0, materialFloatList.Key, cb);
-                computeBuffersForMaterialProperties.Add(cb);
-                // Do NOT release the compute buffer before the actual draw commands is being sent
+                int count = materialFloatList.Value.Count;
+                if (count > 0)
+                {
+                    ComputeBuffer cb = new ComputeBuffer(count, sizeof(float));
+                    cb.SetData(materialFloatList.Value);
+                    mainShader.SetBuffer(0, materialFloatList.Key, cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                    // Do NOT release the compute buffer before the actual draw commands is being sent
+                }
+            }
+
+            // If no materials, set up dummy buffers for expected material float properties
+            if (!hasMaterials)
+            {
+                // RefractiveMat properties
+                if (!sceneParseResult.m_materialsFloatList.ContainsKey("RefractiveMat_refractiveIndex"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float));
+                    mainShader.SetBuffer(0, "RefractiveMat_refractiveIndex", cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                }
+                // SinMat properties
+                if (!sceneParseResult.m_materialsFloatList.ContainsKey("SinMat_sin"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float));
+                    mainShader.SetBuffer(0, "SinMat_sin", cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                }
+                // TranslucentMat properties
+                if (!sceneParseResult.m_materialsFloatList.ContainsKey("TranslucentMat_reflectivity"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float));
+                    mainShader.SetBuffer(0, "TranslucentMat_reflectivity", cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                }
+                if (!sceneParseResult.m_materialsFloatList.ContainsKey("TranslucentMat_secondaryRayEffect"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float));
+                    mainShader.SetBuffer(0, "TranslucentMat_secondaryRayEffect", cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                }
+                if (!sceneParseResult.m_materialsFloatList.ContainsKey("TranslucentMat_transparency"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float));
+                    mainShader.SetBuffer(0, "TranslucentMat_transparency", cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                }
+                // VolumetricMat properties
+                if (!sceneParseResult.m_materialsFloatList.ContainsKey("VolumetricMat_luminanceLight"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float));
+                    mainShader.SetBuffer(0, "VolumetricMat_luminanceLight", cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                }
+                if (!sceneParseResult.m_materialsFloatList.ContainsKey("VolumetricMat_sigma"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float));
+                    mainShader.SetBuffer(0, "VolumetricMat_sigma", cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                }
+                if (!sceneParseResult.m_materialsFloatList.ContainsKey("VolumetricMat_stepSize"))
+                {
+                    ComputeBuffer cb = new ComputeBuffer(1, sizeof(float));
+                    mainShader.SetBuffer(0, "VolumetricMat_stepSize", cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                }
             }
 
             foreach (var materialVector2List in sceneParseResult.m_materialsVector2List)
             {
-                ComputeBuffer cb = new ComputeBuffer(materialVector2List.Value.Count, sizeof(float) * 2);
-                cb.SetData(materialVector2List.Value);
-                mainShader.SetBuffer(0, materialVector2List.Key, cb);
-                computeBuffersForMaterialProperties.Add(cb);
-                // Do NOT release the compute buffer before the actual draw commands is being sent
+                int count = materialVector2List.Value.Count;
+                if (count > 0)
+                {
+                    ComputeBuffer cb = new ComputeBuffer(count, sizeof(float) * 2);
+                    cb.SetData(materialVector2List.Value);
+                    mainShader.SetBuffer(0, materialVector2List.Key, cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                    // Do NOT release the compute buffer before the actual draw commands is being sent
+                }
             }
 
             foreach (var materialVector3List in sceneParseResult.m_materialsVector3List)
             {
-                ComputeBuffer cb = new ComputeBuffer(materialVector3List.Value.Count, sizeof(float) * 3);
-                cb.SetData(materialVector3List.Value);
-                mainShader.SetBuffer(0, materialVector3List.Key, cb);
-                computeBuffersForMaterialProperties.Add(cb);
-                // Do NOT release the compute buffer before the actual draw commands is being sent
+                int count = materialVector3List.Value.Count;
+                if (count > 0)
+                {
+                    ComputeBuffer cb = new ComputeBuffer(count, sizeof(float) * 3);
+                    cb.SetData(materialVector3List.Value);
+                    mainShader.SetBuffer(0, materialVector3List.Key, cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                    // Do NOT release the compute buffer before the actual draw commands is being sent
+                }
             }
 
             foreach (var materialVector4List in sceneParseResult.m_materialsVector4List)
             {
-                ComputeBuffer cb = new ComputeBuffer(materialVector4List.Value.Count, sizeof(float) * 4);
-                cb.SetData(materialVector4List.Value);
-                mainShader.SetBuffer(0, materialVector4List.Key, cb);
-                computeBuffersForMaterialProperties.Add(cb);
-                // Do NOT release the compute buffer before the actual draw commands is being sent
+                int count = materialVector4List.Value.Count;
+                if (count > 0)
+                {
+                    ComputeBuffer cb = new ComputeBuffer(count, sizeof(float) * 4);
+                    cb.SetData(materialVector4List.Value);
+                    mainShader.SetBuffer(0, materialVector4List.Key, cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                    // Do NOT release the compute buffer before the actual draw commands is being sent
+                }
             }
 
-            Texture2DArray texArr = new Texture2DArray(1024, 1024, sceneParseResult.m_textureCollection.Count, TextureFormat.RGBA32, 1, false);
+            // Ensure Texture2DArray has at least depth 1 to avoid out of range exception
+            int textureCount = Mathf.Max(1, sceneParseResult.m_textureCollection.Count);
+            Texture2DArray texArr = new Texture2DArray(1024, 1024, textureCount, TextureFormat.RGBA32, 1, false);
             int texCounter = 0;
             foreach (var tex in sceneParseResult.m_textureCollection)
             {
@@ -92,11 +240,15 @@ namespace OpenRT
 
             foreach (var materialTextureIndex in sceneParseResult.m_materialsTextureIndexList)
             {
-                ComputeBuffer cb = new ComputeBuffer(materialTextureIndex.Value.Count, sizeof(int));
-                cb.SetData(materialTextureIndex.Value);
-                mainShader.SetBuffer(0, materialTextureIndex.Key, cb);
-                computeBuffersForMaterialProperties.Add(cb);
-                // Do NOT release the compute buffer before the actual draw commands is being sent
+                int count = materialTextureIndex.Value.Count;
+                if (count > 0)
+                {
+                    ComputeBuffer cb = new ComputeBuffer(count, sizeof(int));
+                    cb.SetData(materialTextureIndex.Value);
+                    mainShader.SetBuffer(0, materialTextureIndex.Key, cb);
+                    computeBuffersForMaterialProperties.Add(cb);
+                    // Do NOT release the compute buffer before the actual draw commands is being sent
+                }
             }
         }
 
