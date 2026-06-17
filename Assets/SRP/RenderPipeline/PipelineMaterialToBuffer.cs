@@ -226,13 +226,55 @@ namespace OpenRT
             {
                 try
                 {
-                    Graphics.CopyTexture(tex, 0, texArr, texCounter);
+                    // Check if source texture matches destination format and size
+                    // Graphics.CopyTexture requires matching formats and dimensions for full mipmap copies
+                    bool needsConversion = tex.width != 1024 || tex.height != 1024 || 
+                                          tex.format != TextureFormat.RGBA32;
+                    
+                    if (needsConversion)
+                    {
+                        // Log warning to help developers identify textures that need re-importing
+                        // with correct settings (1024x1024, RGBA32) for optimal performance
+#if UNITY_EDITOR
+                        string assetPath = UnityEditor.AssetDatabase.GetAssetPath(tex);
+                        string pathInfo = string.IsNullOrEmpty(assetPath) ? "(built-in or runtime texture)" : $"at path: {assetPath}";
+#else
+                        string pathInfo = "(asset path unavailable in build)";
+#endif
+                        Debug.LogWarning($"[PipelineMaterialToBuffer] Texture '{tex.name}' {pathInfo} does not match required format. " +
+                                       $"Current: {tex.width}x{tex.height}, {tex.format}. " +
+                                       $"Required: 1024x1024, RGBA32. " +
+                                       $"Texture will be converted at runtime (impacts performance). " +
+                                       $"Consider re-importing with correct settings.", tex);
+                        
+                        // Create a temporary RenderTexture with the target format and size
+                        // Blit handles format conversion and resizing
+                        RenderTexture tempRT = RenderTexture.GetTemporary(1024, 1024, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
+                        tempRT.filterMode = FilterMode.Bilinear;
+                        
+                        // Blit source texture to temporary RT (handles format conversion and scaling)
+                        Graphics.Blit(tex, tempRT);
+                        
+                        // Copy from temporary RT to the texture array slice
+                        Graphics.CopyTexture(tempRT, 0, 0, texArr, texCounter, 0);
+                        
+                        // Release temporary RT
+                        RenderTexture.ReleaseTemporary(tempRT);
+                    }
+                    else
+                    {
+                        // Direct copy if format and size match
+                        Graphics.CopyTexture(tex, 0, texArr, texCounter);
+                    }
                     texCounter++;
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"[PipelineMaterialToBuffer] Exception when copying texture:{tex.name} Exp:{e}");
-                    return;
+                    Debug.LogError($"[PipelineMaterialToBuffer] Exception when copying texture '{tex.name}'. " +
+                                 $"Texture will be skipped. Error: {e}", tex);
+                    // Do NOT return early - continue to set up remaining buffers
+                    // The texture array slice will remain empty (black), but shader properties must be set
+                    texCounter++;
                 }
 
             }
